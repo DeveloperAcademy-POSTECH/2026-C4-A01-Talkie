@@ -9,25 +9,45 @@
 enum FakeCallAudioSession {
     static func activate(speakerEnabled: Bool) throws {
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(
-            .playAndRecord,
-            mode: .voiceChat,
-            options: [.allowBluetoothHFP]
-        )
-        try session.setActive(true)
-        try setSpeakerEnabled(speakerEnabled)
+        try configureAndActivate(session)
+        try applyOutputRoute(speakerEnabled: speakerEnabled, to: session)
     }
 
     static func setSpeakerEnabled(_ enabled: Bool) throws {
-        try AVAudioSession.sharedInstance().overrideOutputAudioPort(
-            enabled ? .speaker : .none
-        )
+        let session = AVAudioSession.sharedInstance()
+        try configureAndActivate(session)
+        try applyOutputRoute(speakerEnabled: enabled, to: session)
     }
 
     static func deactivate() {
         try? AVAudioSession.sharedInstance().setActive(
             false,
             options: .notifyOthersOnDeactivation
+        )
+    }
+
+    private static func configureAndActivate(_ session: AVAudioSession) throws {
+        let desiredOptions: AVAudioSession.CategoryOptions = [.allowBluetoothHFP]
+
+        if session.category != .playAndRecord
+            || session.mode != .voiceChat
+            || session.categoryOptions != desiredOptions {
+            try session.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: desiredOptions
+            )
+        }
+
+        try session.setActive(true)
+    }
+
+    private static func applyOutputRoute(
+        speakerEnabled: Bool,
+        to session: AVAudioSession
+    ) throws {
+        try session.overrideOutputAudioPort(
+            speakerEnabled ? .speaker : .none
         )
     }
 }
