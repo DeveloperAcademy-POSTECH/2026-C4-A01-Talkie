@@ -11,6 +11,8 @@ struct ActiveFakeCallView: View {
     let callStartedAt: Date
     let phase: FakeCallPhase
     let speechThreshold: Double
+    let currentInputLevel: Double
+    let voiceMonitoringState: VoiceMonitoringState
     let isSpeakerEnabled: Bool
     let onEndCall: () -> Void
     let onSkipLine: () -> Void
@@ -79,15 +81,134 @@ struct ActiveFakeCallView: View {
             .accessibilityHint("값을 낮추면 작은 목소리에도 반응합니다")
 
             HStack {
-                Text("작은 소리")
+                Text("민감함")
                 Spacer()
-                Text("큰 소리")
+                Text("둔감함")
             }
             .font(.caption2)
             .foregroundStyle(.white.opacity(0.68))
+
+            monitoringStatus
+
+            inputLevelMeter
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 8)
+    }
+
+    private var monitoringStatus: some View {
+        HStack(spacing: 8) {
+            Label(monitoringStatusText, systemImage: monitoringStatusIcon)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+
+            Spacer(minLength: 8)
+
+            if voiceMonitoringState == .listening
+                || voiceMonitoringState == .speechDetected {
+                Text("입력 \(Int(currentInputLevel.rounded())) dB")
+                    .monospacedDigit()
+            }
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(monitoringStatusColor)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var inputLevelMeter: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.white.opacity(0.16))
+
+                Capsule()
+                    .fill(isInputAboveThreshold ? Color.green : Color.white.opacity(0.72))
+                    .frame(width: width * inputLevelFraction)
+
+                Rectangle()
+                    .fill(.white)
+                    .frame(width: 2, height: 14)
+                    .offset(x: max(0, min(width - 2, width * thresholdFraction - 1)))
+            }
+        }
+        .frame(height: 14)
+        .accessibilityLabel("마이크 입력 레벨")
+        .accessibilityValue(
+            "입력 \(Int(currentInputLevel.rounded())) 데시벨, "
+            + "임계값 \(Int(speechThreshold.rounded())) 데시벨"
+        )
+    }
+
+    private var monitoringStatusText: String {
+        if case .playingLine = phase {
+            return "상대 음성 재생 중"
+        }
+
+        if phase == .waitingForNextLine {
+            return "무음 감지됨"
+        }
+
+        if phase == .completed {
+            return "통화 완료"
+        }
+
+        switch voiceMonitoringState {
+        case .inactive:
+            return "발화 감지 준비 중"
+        case .listening:
+            return "발화 대기"
+        case .speechDetected:
+            return "발화 감지됨"
+        case .unavailable:
+            return "마이크 감지 사용 불가"
+        }
+    }
+
+    private var monitoringStatusIcon: String {
+        if case .playingLine = phase {
+            return "waveform"
+        }
+
+        switch voiceMonitoringState {
+        case .inactive:
+            return "pause.fill"
+        case .listening:
+            return "mic.fill"
+        case .speechDetected:
+            return "waveform"
+        case .unavailable:
+            return "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var monitoringStatusColor: Color {
+        if case .playingLine = phase {
+            return .white.opacity(0.78)
+        }
+
+        switch voiceMonitoringState {
+        case .speechDetected:
+            return .green
+        case .unavailable:
+            return .yellow
+        case .inactive, .listening:
+            return .white.opacity(0.78)
+        }
+    }
+
+    private var isInputAboveThreshold: Bool {
+        (voiceMonitoringState == .listening || voiceMonitoringState == .speechDetected)
+            && currentInputLevel >= speechThreshold
+    }
+
+    private var inputLevelFraction: Double {
+        min(max((currentInputLevel + 80) / 80, 0), 1)
+    }
+
+    private var thresholdFraction: Double {
+        min(max((speechThreshold + 80) / 80, 0), 1)
     }
 
     private var callerHeader: some View {
@@ -223,6 +344,8 @@ private struct ActiveCallControlButton: View {
         callStartedAt: .now.addingTimeInterval(-43),
         phase: .waitingForUser,
         speechThreshold: -35,
+        currentInputLevel: -42,
+        voiceMonitoringState: .listening,
         isSpeakerEnabled: false,
         onEndCall: {},
         onSkipLine: {},

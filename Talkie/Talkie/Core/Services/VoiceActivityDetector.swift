@@ -3,20 +3,13 @@
 //  Talkie
 //
 
-
 @preconcurrency import AVFoundation
 import Accelerate
 import Foundation
 
 final class VoiceActivityDetector: @unchecked Sendable {
-    static let speechThresholdRange: ClosedRange<Float> = -60 ... -20
-
-    struct Configuration: Sendable {
-        var speechThreshold: Float = -35
-        var minimumSpeechDuration: TimeInterval = 0.2
-        var silenceDurationToFinish: TimeInterval = 0.7
-        var interruptedSpeechTolerance: TimeInterval = 0.12
-    }
+    static let speechThresholdRange = VoiceActivityGate.speechThresholdRange
+    typealias Configuration = VoiceActivityGate.Configuration
 
     enum DetectorError: LocalizedError {
         case audioInputUnavailable
@@ -31,34 +24,30 @@ final class VoiceActivityDetector: @unchecked Sendable {
 
     var onSpeechStarted: (@Sendable () -> Void)?
     var onSpeechEnded: (@Sendable () -> Void)?
+    var onInputLevelChanged: (@Sendable (Float) -> Void)?
 
     private let audioEngine = AVAudioEngine()
-    private var configuration: Configuration
     private let stateLock = NSLock()
+    private var gate: VoiceActivityGate
 
     private var isRunning = false
     private var isTapInstalled = false
     private var isSpeakerEnabled = false
-    private var speechCandidateStartedAt: TimeInterval?
-    private var lastSpeechDetectedAt: TimeInterval?
-    private var hasConfirmedSpeech = false
+    private var smoothedInputLevel: Float?
+    private var lastPublishedLevelAt: TimeInterval = 0
 
     init() {
-        configuration = Configuration()
+        gate = VoiceActivityGate()
     }
 
     init(configuration: Configuration) {
-        var configuration = configuration
-        configuration.speechThreshold = Self.clampedSpeechThreshold(
-            configuration.speechThreshold
-        )
-        self.configuration = configuration
+        gate = VoiceActivityGate(configuration: configuration)
     }
 
     var speechThreshold: Float {
         stateLock.lock()
         defer { stateLock.unlock() }
-        return configuration.speechThreshold
+        return gate.speechThreshold
     }
 
     static func requestPermission() async -> Bool {
@@ -67,13 +56,7 @@ final class VoiceActivityDetector: @unchecked Sendable {
 
     func updateSpeechThreshold(_ threshold: Float) {
         stateLock.lock()
-        configuration.speechThreshold = Self.clampedSpeechThreshold(threshold)
-
-        if !hasConfirmedSpeech {
-            speechCandidateStartedAt = nil
-            lastSpeechDetectedAt = nil
-        }
-
+        gate.updateSpeechThreshold(threshold)
         stateLock.unlock()
     }
 
@@ -105,7 +88,7 @@ final class VoiceActivityDetector: @unchecked Sendable {
             format: format
         ) { [weak self] buffer, _ in
             guard let self else { return }
-            self.process(decibels: Self.decibels(from: buffer))
+            self.process(rawDecibels: Self.decibels(from: buffer))
         }
         isTapInstalled = true
 
@@ -134,10 +117,10 @@ final class VoiceActivityDetector: @unchecked Sendable {
         resetDetectionState(isRunning: false)
     }
 
-    private func process(decibels: Float) {
+    private func process(rawDecibels: Float) {
         let now = ProcessInfo.processInfo.systemUptime
-        var shouldNotifySpeechStarted = false
-        var shouldNotifySpeechEnded = false
+        var event: VoiceActivityGate.Event?
+        var publishedLevel: Float?
 
         stateLock.lock()
 
@@ -146,50 +129,49 @@ final class VoiceActivityDetector: @unchecked Sendable {
             return
         }
 
-        if decibels >= configuration.speechThreshold {
-            if speechCandidateStartedAt == nil {
-                speechCandidateStartedAt = now
-            }
+        let inputLevel = smoothed(decibels: rawDecibels)
+        event = gate.process(decibels: inputLevel, at: now)
 
-            lastSpeechDetectedAt = now
-
-            if !hasConfirmedSpeech,
-               let candidateStart = speechCandidateStartedAt,
-               now - candidateStart >= configuration.minimumSpeechDuration {
-                hasConfirmedSpeech = true
-                shouldNotifySpeechStarted = true
-            }
-        } else if hasConfirmedSpeech,
-                  let lastSpeechDetectedAt,
-                  now - lastSpeechDetectedAt >= configuration.silenceDurationToFinish {
-            hasConfirmedSpeech = false
-            speechCandidateStartedAt = nil
-            self.lastSpeechDetectedAt = nil
-            shouldNotifySpeechEnded = true
-        } else if !hasConfirmedSpeech,
-                  let lastSpeechDetectedAt,
-                  now - lastSpeechDetectedAt >= configuration.interruptedSpeechTolerance {
-            speechCandidateStartedAt = nil
-            self.lastSpeechDetectedAt = nil
+        if now - lastPublishedLevelAt >= 0.1 {
+            lastPublishedLevelAt = now
+            publishedLevel = inputLevel
         }
 
         stateLock.unlock()
 
-        if shouldNotifySpeechStarted {
-            onSpeechStarted?()
+        if let publishedLevel {
+            onInputLevelChanged?(publishedLevel)
         }
 
-        if shouldNotifySpeechEnded {
+        switch event {
+        case .speechStarted:
+            onSpeechStarted?()
+        case .speechEnded:
             onSpeechEnded?()
+        case nil:
+            break
         }
+    }
+
+    private func smoothed(decibels: Float) -> Float {
+        let clampedLevel = min(max(decibels, -80), 0)
+
+        guard let previousLevel = smoothedInputLevel else {
+            smoothedInputLevel = clampedLevel
+            return clampedLevel
+        }
+
+        let nextLevel = previousLevel + 0.3 * (clampedLevel - previousLevel)
+        smoothedInputLevel = nextLevel
+        return nextLevel
     }
 
     private func resetDetectionState(isRunning: Bool) {
         stateLock.lock()
         self.isRunning = isRunning
-        speechCandidateStartedAt = nil
-        lastSpeechDetectedAt = nil
-        hasConfirmedSpeech = false
+        gate.reset()
+        smoothedInputLevel = nil
+        lastPublishedLevelAt = 0
         stateLock.unlock()
     }
 
@@ -206,12 +188,5 @@ final class VoiceActivityDetector: @unchecked Sendable {
 
         let rootMeanSquare = sqrt(meanSquare)
         return 20 * log10(max(rootMeanSquare, 0.000_000_1))
-    }
-
-    private static func clampedSpeechThreshold(_ threshold: Float) -> Float {
-        min(
-            max(threshold, speechThresholdRange.lowerBound),
-            speechThresholdRange.upperBound
-        )
     }
 }

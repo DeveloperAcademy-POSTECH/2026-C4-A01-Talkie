@@ -240,8 +240,8 @@ enum FakeCallPhase: Equatable {
 speechThreshold: -35 dB 근처에서 시작
 adjustableSpeechThreshold: -60~-20 dB, 1 dB 단위
 minimumSpeechDuration: 0.2초
-silenceDurationToFinish: 0.7초
-nextLineDelayAfterSilence: 0.5초
+silenceDurationToFinish: 0.5초
+nextLineDelayAfterSilence: 0초
 maxWaitForUserSpeech: 8초
 ```
 
@@ -250,7 +250,9 @@ fallback:
 - 사용자가 말하지 않으면 8초 후 다음 문장 재생
 - 소음 때문에 계속 speaking으로 잡히면 수동 다음 버튼 제공
 - 마이크 권한 거부 시 시간 기반 자동 진행으로 대체
-- 실제 기기 테스트 중 통화 화면 슬라이더로 임계값을 조정하고 표시된 dB를 기록
+- 입력 레벨은 완만하게 보정하고 발화 확정 후 3 dB 히스테리시스를 적용해 짧은 음량 흔들림을 흡수
+- 실제 기기 테스트 중 통화 화면에서 실시간 입력 dB와 임계값을 비교해 최적값을 기록
+- 0.5초 연속 무음이 확인되는 즉시 다음 문장을 재생해 추가 대기 시간을 만들지 않음
 - 기본 출력은 수화부이며, 스피커 버튼을 켰을 때만 스피커 출력으로 전환
 - 스피커 전환 전 통화용 `.playAndRecord + voiceChat` 세션을 활성화해 통화 시작 직후에도 라우팅이 동작
 - 스피커를 끄면 `.none` 오버라이드로 돌아가 수화부를 포함한 시스템 기본 통화 경로를 사용

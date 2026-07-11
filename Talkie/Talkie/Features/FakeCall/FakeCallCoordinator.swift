@@ -29,6 +29,13 @@ enum FakeCallPhase: Equatable {
 
 }
 
+enum VoiceMonitoringState: Equatable {
+    case inactive
+    case listening
+    case speechDetected
+    case unavailable
+}
+
 @MainActor
 @Observable
 final class FakeCallCoordinator {
@@ -41,6 +48,8 @@ final class FakeCallCoordinator {
     private(set) var currentLineIndex = 0
     private(set) var callStartedAt: Date?
     private(set) var speechThreshold: Double
+    private(set) var currentInputLevel = -80.0
+    private(set) var voiceMonitoringState: VoiceMonitoringState = .inactive
     private(set) var isSpeakerEnabled = false
 
     private let repository: any FakeCallScriptRepository
@@ -51,7 +60,6 @@ final class FakeCallCoordinator {
     private var hasMicrophonePermission = false
     private var playbackPreparationTask: Task<Void, Never>?
     private var fallbackTask: Task<Void, Never>?
-    private var nextLineTask: Task<Void, Never>?
 
     init(repository: (any FakeCallScriptRepository)? = nil) {
         let voiceActivityDetector = VoiceActivityDetector()
@@ -116,6 +124,7 @@ final class FakeCallCoordinator {
 
         Task {
             hasMicrophonePermission = await VoiceActivityDetector.requestPermission()
+            voiceMonitoringState = hasMicrophonePermission ? .inactive : .unavailable
             playCurrentLine()
         }
     }
@@ -127,7 +136,7 @@ final class FakeCallCoordinator {
     func endCall() {
         cancelPendingWork()
         audioPlayer.stop()
-        voiceActivityDetector.stop()
+        stopVoiceMonitoring()
         FakeCallAudioSession.deactivate()
         resetRuntimeState()
         phase = .idle
@@ -159,7 +168,7 @@ final class FakeCallCoordinator {
 
     private func playCurrentLine() {
         cancelPendingWork()
-        voiceActivityDetector.stop()
+        stopVoiceMonitoring()
 
         guard scriptLines.indices.contains(currentLineIndex) else {
             phase = .completed
@@ -191,13 +200,18 @@ final class FakeCallCoordinator {
 
     private func waitForUserSpeech() {
         phase = .waitingForUser
+        currentInputLevel = -80
 
         if hasMicrophonePermission {
             do {
+                voiceMonitoringState = .listening
                 try voiceActivityDetector.start()
             } catch {
                 hasMicrophonePermission = false
+                voiceMonitoringState = .unavailable
             }
+        } else {
+            voiceMonitoringState = .unavailable
         }
 
         scheduleNoSpeechFallback()
@@ -207,26 +221,21 @@ final class FakeCallCoordinator {
         guard phase == .waitingForUser else { return }
         fallbackTask?.cancel()
         fallbackTask = nil
+        voiceMonitoringState = .speechDetected
         phase = .userSpeaking
     }
 
     private func handleSpeechEnded() {
         guard phase == .userSpeaking else { return }
 
-        voiceActivityDetector.stop()
+        stopVoiceMonitoring()
         phase = .waitingForNextLine
-
-        nextLineTask?.cancel()
-        nextLineTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(500))
-            guard !Task.isCancelled else { return }
-            self?.advanceAfterUserTurn()
-        }
+        advanceAfterUserTurn()
     }
 
     private func advanceAfterUserTurn() {
         cancelPendingWork()
-        voiceActivityDetector.stop()
+        stopVoiceMonitoring()
 
         let nextIndex = currentLineIndex + 1
         guard scriptLines.indices.contains(nextIndex) else {
@@ -261,6 +270,20 @@ final class FakeCallCoordinator {
                 coordinator.handleSpeechEnded()
             }
         }
+
+        voiceActivityDetector.onInputLevelChanged = { [weak self] level in
+            guard let coordinator = self else { return }
+            Task { @MainActor in
+                guard coordinator.voiceMonitoringState == .listening
+                        || coordinator.voiceMonitoringState == .speechDetected else {
+                    return
+                }
+
+                coordinator.currentInputLevel = Double(
+                    min(max(level, -80), 0)
+                )
+            }
+        }
     }
 
     private func cancelPendingWork() {
@@ -268,8 +291,12 @@ final class FakeCallCoordinator {
         playbackPreparationTask = nil
         fallbackTask?.cancel()
         fallbackTask = nil
-        nextLineTask?.cancel()
-        nextLineTask = nil
+    }
+
+    private func stopVoiceMonitoring() {
+        voiceActivityDetector.stop()
+        currentInputLevel = -80
+        voiceMonitoringState = hasMicrophonePermission ? .inactive : .unavailable
     }
 
     private func audioFileURL(for metadata: VoiceClipMetadata?) -> URL? {
@@ -325,6 +352,8 @@ final class FakeCallCoordinator {
         currentLineIndex = 0
         callStartedAt = nil
         hasMicrophonePermission = false
+        currentInputLevel = -80
+        voiceMonitoringState = .inactive
         isSpeakerEnabled = false
         voiceActivityDetector.setSpeakerEnabled(false)
         profile = nil
