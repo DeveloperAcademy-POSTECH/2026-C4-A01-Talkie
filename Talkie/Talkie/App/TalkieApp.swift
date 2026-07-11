@@ -10,6 +10,10 @@ import SwiftData
 
 @main
 struct TalkieApp: App {
+    init() {
+        IncomingCallRingtoneService.shared.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             AppCoordinatorView()
