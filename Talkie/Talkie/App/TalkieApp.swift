@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct TalkieApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppCoordinatorView()
         }
+        .modelContainer(for: CallerProfile.self) // 앱 전체에서 CallerProfile을 저장 및 불러오기
     }
 }
