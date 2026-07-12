@@ -10,10 +10,19 @@ import SwiftData
 
 @main
 struct TalkieApp: App {
+    let container: ModelContainer
+    
+    init(){
+        do {
+            container = try ModelContainer(for: CallerProfile.self, ScriptLine.self)
+        } catch {
+            fatalError("ModelContainer 초기화 실패: \(error.localizedDescription)")
+        }
+    }
     var body: some Scene {
         WindowGroup {
             AppCoordinatorView()
         }
-        .modelContainer(for: CallerProfile.self) // 앱 전체에서 CallerProfile을 저장 및 불러오기
+        .modelContainer(container) // 앱 전체에서 CallerProfile을 저장 및 불러오기
     }
 }

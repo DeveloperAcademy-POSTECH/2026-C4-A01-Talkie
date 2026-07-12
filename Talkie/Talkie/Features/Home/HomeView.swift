@@ -13,6 +13,49 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack{
+            List {
+                ForEach(callerProfiles) { profile in
+                    Section {
+                        let sortedLines = profile.scriptLines.sorted {
+                            $0.sortOrder < $1.sortOrder
+                        }
+                        
+                        if sortedLines.isEmpty {
+                            Text("등록된 대사X")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(sortedLines) { scriptLine in
+                                HStack(alignment: .top, spacing: 12) {
+                                    Text("\(scriptLine.sortOrder + 1).")
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(.blue)
+                                    
+                                    Text(scriptLine.text)
+                                }
+                            }
+                        }
+                    } header : {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(profile.name)
+                                    .font(.headline)
+                                
+                                Text(profile.relationship)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spcaer()
+                            Button("+ 대사 추가") {
+                                addTestScriptLines(to: profile)
+                            }
+                            .font(.caption)
+                            .buttonStyle(.bordered)
+                            .textCase(nil)
+                        }
+                    }
+                }
+            }
             VStack(spacing: 20) {
                 Text("설정된 가짜 전화 상대")
                     .font(.headline)
