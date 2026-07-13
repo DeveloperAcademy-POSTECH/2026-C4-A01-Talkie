@@ -9,15 +9,24 @@ import Foundation
 import SwiftData
 
 @Model
-final class ScriptLine { //final을 사용한 이유 -
+final class ScriptLine {
     var text: String
     var sortOrder: Int
     
-    var callerProfile: CallerProfile
+    var scenario: Scenario?
     
-    init(text: String, sortOrder: Int, callerProfile: CallerProfile) {
+    @Relationship(deleteRule: .cascade, inverse: \AudioClipMetadata.scriptLine)
+    var audioMetadata: AudioClipMetadata?
+    
+    init(
+        text: String,
+        sortOrder: Int,
+        scenario: Scenario? = nil,
+        audioMetadata: AudioClipMetadata? = nil
+    ) {
         self.text = text
         self.sortOrder = sortOrder
-        self.callerProfile = callerProfile
+        self.scenario = scenario
+        self.audioMetadata = audioMetadata
     }
 }

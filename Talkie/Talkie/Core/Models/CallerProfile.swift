@@ -10,14 +10,11 @@ import SwiftData
 
 @Model
 final class CallerProfile {
-    var name: String         // 예: "엄마"
-    var relationship: String // 예: "가족"
+    var name: String
     
-    @Relationship(deleteRule: .cascade, inverse: \ScriptLine.callerProfile) // 프로필 삭제 시 속한 ScriptLine들도 함께 자동 삭제 (Cascade)
-    var scriptLines: [ScriptLine] = []
+    var scenario: Scenario?
     
-    init(name: String, relationship: String) {
+    init(name: String) {
         self.name = name
-        self.relationship = relationship
     }
 }

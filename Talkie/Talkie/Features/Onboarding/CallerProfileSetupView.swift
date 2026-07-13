@@ -19,11 +19,10 @@ struct CallerProfileSetupView: View {
             Form {
                 Section {
                     TextField("상대 이름", text: $viewModel.name)
-                    TextField("관계", text: $viewModel.relationship)
                 } header: {
-                    Text("가짜 전화 프로필")
+                    Text("통화 상대")
                 } footer: {
-                    Text("관계에 따라 기본 통화 대사가 자동으로 설정됩니다.")
+                    Text("저장하면 기본 시나리오와 대사가 함께 생성됩니다.")
                 }
                 
                 if let errorMessage = viewModel.errorMessage {

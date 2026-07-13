@@ -9,25 +9,25 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @Query private var callerProfiles: [CallerProfile]
+    @Query(sort: \Scenario.createdAt, order: .reverse) private var scenarios: [Scenario]
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("설정된 가짜 전화 상대")
+                Text("설정된 가짜 통화 시나리오")
                     .font(.headline)
                 
                 VStack(spacing: 8) {
-                    if let callerProfile = callerProfiles.first {
-                        Text(callerProfile.name)
+                    if let scenario = scenarios.first {
+                        Text(scenario.title)
                             .font(.title)
                             .fontWeight(.bold)
                         
-                        Text(callerProfile.relationship)
+                        Text(scenario.callerProfile?.name ?? "통화 상대 없음")
                             .font(.body)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("설정된 프로필이 없습니다")
+                        Text("설정된 시나리오가 없습니다")
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
@@ -48,9 +48,9 @@ struct HomeView: View {
                 .buttonStyle(.borderedProminent)
                 
                 List {
-                    ForEach(callerProfiles) { profile in
+                    ForEach(scenarios) { scenario in
                         Section {
-                            let sortedLines = profile.scriptLines.sorted {
+                            let sortedLines = scenario.scriptLines.sorted {
                                 $0.sortOrder < $1.sortOrder
                             }
                             
@@ -65,17 +65,23 @@ struct HomeView: View {
                                             .fontWeight(.bold)
                                             .foregroundStyle(.blue)
                                         
-                                        Text(scriptLine.text)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(scriptLine.text)
+                                            
+                                            Text(audioStatusText(for: scriptLine))
+                                                .font(.caption)
+                                                .foregroundStyle(audioStatusColor(for: scriptLine))
+                                        }
                                     }
                                 }
                             }
                         } header: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(profile.name)
+                                    Text(scenario.title)
                                         .font(.headline)
                                     
-                                    Text(profile.relationship)
+                                    Text(scenario.callerProfile?.name ?? "통화 상대 없음")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -91,6 +97,26 @@ struct HomeView: View {
             .padding()
             .navigationTitle("Home")
         }
+    }
+    
+    private func audioStatusText(for scriptLine: ScriptLine) -> String {
+        guard let audioMetadata = scriptLine.audioMetadata else {
+            return "녹음 없음"
+        }
+        
+        if audioMetadata.audioData == nil {
+            return "메타데이터 있음 / 오디오 데이터 없음"
+        }
+        
+        return "녹음 데이터 있음"
+    }
+    
+    private func audioStatusColor(for scriptLine: ScriptLine) -> Color {
+        guard let audioMetadata = scriptLine.audioMetadata else {
+            return .secondary
+        }
+        
+        return audioMetadata.audioData == nil ? .orange : .green
     }
 }
 

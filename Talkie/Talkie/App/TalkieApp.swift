@@ -14,7 +14,13 @@ struct TalkieApp: App {
     
     init(){
         do {
-            container = try ModelContainer(for: CallerProfile.self, ScriptLine.self, EmergencyContact.self, AudioClipMetadata.self)
+            container = try ModelContainer(
+                for: Scenario.self,
+                CallerProfile.self,
+                ScriptLine.self,
+                AudioClipMetadata.self,
+                EmergencyContact.self
+            )
         } catch {
             fatalError("ModelContainer 초기화 실패: \(error.localizedDescription)")
         }
@@ -23,6 +29,6 @@ struct TalkieApp: App {
         WindowGroup {
             AppCoordinatorView()
         }
-        .modelContainer(container) // 앱 전체에서 CallerProfile을 저장 및 불러오기
+        .modelContainer(container)
     }
 }

@@ -10,10 +10,10 @@ import SwiftData
 
 struct AppCoordinatorView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
-    @Query private var callerProfiles: [CallerProfile]
+    @Query private var scenarios: [Scenario]
     
     var body: some View {
-        if callerProfiles.isEmpty {
+        if scenarios.isEmpty {
             CallerProfileSetupView()
         } else {
             HomeView()
