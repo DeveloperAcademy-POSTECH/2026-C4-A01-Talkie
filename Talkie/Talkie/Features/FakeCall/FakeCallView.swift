@@ -8,11 +8,23 @@
 import SwiftUI
 
 struct FakeCallView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let callerName: String
+    let relationship: String
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        FakeCallEntryView(
+            repository: MockFakeCallScriptRepository(
+                displayName: callerName,
+                relationship: relationship
+            ),
+            startsImmediately: true,
+            onCallEnded: { dismiss() }
+        )
     }
 }
 
 #Preview {
-    FakeCallView()
+    FakeCallView(callerName: "엄마", relationship: "가족")
 }

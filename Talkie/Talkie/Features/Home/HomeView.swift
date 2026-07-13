@@ -10,6 +10,7 @@ import SwiftData
 
 struct HomeView: View {
     @Query private var callerProfiles: [CallerProfile]
+    @State private var isPresentingFakeCall = false
     
     var body: some View {
         NavigationStack{
@@ -37,7 +38,7 @@ struct HomeView: View {
                 .cornerRadius(16)
                 
                 Button {
-                    
+                    isPresentingFakeCall = true
                 } label: {
                     Text("가상 통화 시작")
                         .fontWeight(.semibold)
@@ -45,11 +46,20 @@ struct HomeView: View {
                         .frame(height: 50)
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(callerProfiles.isEmpty)
                 
                 Spacer()
             }
             .padding()
             .navigationTitle("Home")
+            .fullScreenCover(isPresented: $isPresentingFakeCall) {
+                if let callerProfile = callerProfiles.first {
+                    FakeCallView(
+                        callerName: callerProfile.name,
+                        relationship: callerProfile.relationship
+                    )
+                }
+            }
         }
 
     }
