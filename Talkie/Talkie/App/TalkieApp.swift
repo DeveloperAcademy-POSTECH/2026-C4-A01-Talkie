@@ -14,7 +14,7 @@ struct TalkieApp: App {
     
     init(){
         do {
-            container = try ModelContainer(for: CallerProfile.self, ScriptLine.self)
+            container = try ModelContainer(for: CallerProfile.self, ScriptLine.self, EmergencyContact.self, AudioClipMetadata.self)
         } catch {
             fatalError("ModelContainer 초기화 실패: \(error.localizedDescription)")
         }
