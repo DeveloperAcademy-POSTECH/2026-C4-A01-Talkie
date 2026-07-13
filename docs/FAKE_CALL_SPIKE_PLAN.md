@@ -13,7 +13,7 @@
 - [x] mock profile과 문장 3개
 - [x] 오디오 파일이 없을 때 한국어 TTS 재생
 - [x] `AVAudioEngine` 기반 VAD와 말끝 감지 코드 구현
-- [x] 말끝 후 0.5초 대기, 무발화 8초 fallback
+- [x] Apple `SpeechDetector` 기반 발화/말끝 감지, 무발화 3초 fallback
 - [x] 마이크 권한 거부 시 시간 기반 자동 진행
 - [x] `.m4a`가 있으면 우선 재생하고 없으면 TTS로 대체하는 구조
 - [x] iPhone 17 Pro / iOS 26.5 Simulator 수신·통화 화면 검증
@@ -232,26 +232,26 @@ enum FakeCallPhase: Equatable {
 }
 ```
 
-## 8. Voice Activity Detection 기준값 초안
+## 8. Voice Activity Detection 기준
 
-첫 값은 너무 정교하게 잡지 않는다. 실제 기기에서 조정한다.
+발화 여부는 Apple `SpeechDetector`의 결과만 사용한다. dB는 입력 레벨 표시용이며
+발화 시작·종료 이벤트나 fallback 조건에 사용하지 않는다.
 
 ```text
-speechThreshold: -35 dB 근처에서 시작
-adjustableSpeechThreshold: -60~-20 dB, 1 dB 단위
+speechDetection: Apple SpeechDetector medium sensitivity only
 minimumSpeechDuration: 0.2초
 silenceDurationToFinish: 0.5초
 nextLineDelayAfterSilence: 0초
-maxWaitForUserSpeech: 8초
+maxWaitForUserSpeech: 3초
 ```
 
 fallback:
 
-- 사용자가 말하지 않으면 8초 후 다음 문장 재생
+- 사용자가 말하지 않으면 3초 후 다음 문장 재생
+- SpeechDetector 분석 실패 시 dB 판정으로 전환하지 않고 3초 무응답 정책으로 진행
 - 소음 때문에 계속 speaking으로 잡히면 수동 다음 버튼 제공
 - 마이크 권한 거부 시 시간 기반 자동 진행으로 대체
-- 입력 레벨은 완만하게 보정하고 발화 확정 후 3 dB 히스테리시스를 적용해 짧은 음량 흔들림을 흡수
-- 실제 기기 테스트 중 통화 화면에서 실시간 입력 dB와 임계값을 비교해 최적값을 기록
+- 입력 dB는 통화 화면의 레벨 시각화에만 사용
 - 0.5초 연속 무음이 확인되는 즉시 다음 문장을 재생해 추가 대기 시간을 만들지 않음
 - 기본 출력은 수화부이며, 스피커 버튼을 켰을 때만 스피커 출력으로 전환
 - 스피커 전환 전 통화용 `.playAndRecord + voiceChat` 세션을 활성화해 통화 시작 직후에도 라우팅이 동작

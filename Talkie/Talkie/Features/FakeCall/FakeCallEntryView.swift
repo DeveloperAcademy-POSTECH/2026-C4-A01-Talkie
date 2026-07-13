@@ -61,13 +61,11 @@ struct FakeCallEntryView: View {
                         profile: profile,
                         callStartedAt: callStartedAt,
                         phase: coordinator.phase,
-                        speechThreshold: coordinator.speechThreshold,
                         currentInputLevel: coordinator.currentInputLevel,
                         voiceMonitoringState: coordinator.voiceMonitoringState,
                         isSpeakerEnabled: coordinator.isSpeakerEnabled,
                         onEndCall: finishActiveCall,
                         onSkipLine: coordinator.skipToNextLine,
-                        onSpeechThresholdChange: coordinator.updateSpeechThreshold,
                         onSpeakerChange: coordinator.setSpeakerEnabled
                     )
                 }
