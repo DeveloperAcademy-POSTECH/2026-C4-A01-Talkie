@@ -13,7 +13,7 @@ final class ScriptLine {
     var text: String
     var sortOrder: Int
     
-    var scenario: Scenario?
+    var scenario: Scenario
     
     @Relationship(deleteRule: .cascade, inverse: \AudioClipMetadata.scriptLine)
     var audioMetadata: AudioClipMetadata?
@@ -21,7 +21,7 @@ final class ScriptLine {
     init(
         text: String,
         sortOrder: Int,
-        scenario: Scenario? = nil,
+        scenario: Scenario,
         audioMetadata: AudioClipMetadata? = nil
     ) {
         self.text = text
