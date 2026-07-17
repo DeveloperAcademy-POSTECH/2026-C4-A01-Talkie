@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+enum MainTab: Hashable {
+    case phone
+    case scenario
+    case sos
+}
 struct MainTabView: View {
     @State private var selectedTab: MainTab = .phone
     
@@ -17,7 +22,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label("전화", systemImage: "phone.fill")
                 }
-            ScenarioListView()
+            ScenarioView()
                 .tag(MainTab.scenario)
                 .tabItem {
                     Label("시나리오", systemImage: "recordingtape")

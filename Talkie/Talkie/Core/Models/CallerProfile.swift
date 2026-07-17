@@ -11,10 +11,19 @@ import SwiftData
 @Model
 final class CallerProfile {
     var name: String
-    
     var scenario: Scenario?
     
     init(name: String) {
         self.name = name
     }
 }
+
+
+//@Model
+//final class CallerProfileModel {
+//    var name: String
+//    
+//    init(name: String) {
+//        self.name = name
+//    }
+//}

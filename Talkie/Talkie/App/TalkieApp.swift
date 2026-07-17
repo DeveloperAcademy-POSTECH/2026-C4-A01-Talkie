@@ -14,6 +14,13 @@ struct TalkieApp: App {
         WindowGroup {
             MainTabView()
         }
-        .modelContainer(for: [Scenario.self, CallerProfile.self, ScriptLine.self, AudioClipMetadata.self, CallReservation.self])
+        .modelContainer(for: [
+            Scenario.self,
+            CallerProfile.self,
+            ScriptLine.self,
+            AudioClipMetadata.self,
+            CallReservation.self,
+            EmergencyContact.self
+        ])
     }
 }

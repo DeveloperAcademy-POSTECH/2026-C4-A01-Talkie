@@ -27,7 +27,10 @@ final class CallerProfileSetupViewModel {
         }
         
         let profile = CallerProfile(name: trimmedName)
-        let scenario = Scenario(title: "\(trimmedName)와의 통화")
+        let scenario = Scenario(
+            title: "\(trimmedName)와의 통화",
+            callerProfile: profile
+        )
         
         let presetTexts = scriptPreset()
         let scriptLines = presetTexts.enumerated().map { index, text in
