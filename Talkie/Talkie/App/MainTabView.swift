@@ -36,6 +36,6 @@ struct MainTabView: View {
     }
 }
 
-//#Preview {
-//    MainTab()
-//}
+#Preview {
+    MainTabView()
+}

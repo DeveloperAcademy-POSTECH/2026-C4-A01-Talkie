@@ -11,6 +11,7 @@ import SwiftData
 final class Scenario {
     var title: String
     var createdAt: Date
+    var presetID: String?
     
     @Relationship(deleteRule: .cascade, inverse: \CallerProfile.scenario)
     var callerProfile: CallerProfile
@@ -21,11 +22,13 @@ final class Scenario {
     init(
         title: String,
         callerProfile: CallerProfile,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        presetID: String? = nil
     ) {
         self.title = title
         self.callerProfile = callerProfile
         self.createdAt = createdAt
+        self.presetID = presetID
     }
     
 //    @Relationship(deleteRule: .cascade, inverse: \CallReservation.scenario)

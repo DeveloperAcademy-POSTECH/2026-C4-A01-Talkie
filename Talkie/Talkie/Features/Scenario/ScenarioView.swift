@@ -40,9 +40,18 @@ struct ScenarioView: View {
                     .padding(.horizontal)
                     .padding(.top, 20)
 //                    scenarioCount
-//
+                    Text("총 \(scenarios.count)개")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
 //                    scenarioList
-
+                    ScrollView{
+                        LazyVStack(spacing: 16) {
+                            ForEach(scenarios) { scenario in
+                                ScenarioCardView(scenario: scenario)
+                            }
+                        }
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, 24)
@@ -57,4 +66,5 @@ struct ScenarioView: View {
 
 #Preview {
     ScenarioView()
+        .modelContainer(for: Scenario.self, inMemory: true)
 }
