@@ -6,11 +6,14 @@
 //
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct ScriptEditView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: ScriptEditViewModel
+    @State private var isEditingScripts = false
+    @State private var draggedScriptLine: ScriptLine?
     private let onComplete: (() -> Void)?
 
     init(
@@ -45,14 +48,25 @@ struct ScriptEditView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
                     Spacer()
-                    Button { } label: {
-                        Text("편집")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.08))
-                            .cornerRadius(40)
+                    Button {
+                        isEditingScripts.toggle()
+                    } label: {
+                        if isEditingScripts {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(Constants.grey800)
+                                .frame(width: 56, height: 56)
+                                .background(Constants.main500)
+                                .clipShape(Circle())
+                        } else {
+                            Text("편집")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.white.opacity(0.08))
+                                .cornerRadius(40)
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -80,13 +94,49 @@ struct ScriptEditView: View {
                             ScriptLineCardView(
                                 scriptLine: scriptLine,
                                 isRecording: viewModel.isRecording(scriptLine),
+                                isEditing: isEditingScripts,
+                                onDrag: {
+                                    draggedScriptLine = scriptLine
+                                    return NSItemProvider(object: "\(scriptLine.sortOrder)" as NSString)
+                                },
                                 onPlay: {
                                     viewModel.playRecording(for: scriptLine)
                                 },
                                 onRecordToggle: {
                                     viewModel.toggleRecording(for: scriptLine)
+                                },
+                                onTextChange: { text in
+                                    viewModel.updateText(text, for: scriptLine)
+                                },
+                                onDelete: {
+                                    viewModel.deleteScriptLine(scriptLine)
                                 }
                             )
+                            .onDrop(
+                                of: [.text],
+                                delegate: ScriptLineDropDelegate(
+                                    targetScriptLine: scriptLine,
+                                    draggedScriptLine: $draggedScriptLine,
+                                    moveAction: { source, destination in
+                                        viewModel.moveScriptLine(source, before: destination)
+                                    }
+                                )
+                            )
+                        }
+                        
+                        if isEditingScripts {
+                            Button {
+                                viewModel.addScriptLine()
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.48))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 84)
+                                    .background(Constants.grey700)
+                                    .cornerRadius(16)
+                            }
+                            .accessibilityLabel("대사 추가")
                         }
                     }
                     .padding(.horizontal, 16)
@@ -128,6 +178,25 @@ struct ScriptEditView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+}
+
+private struct ScriptLineDropDelegate: DropDelegate {
+    let targetScriptLine: ScriptLine
+    @Binding var draggedScriptLine: ScriptLine?
+    let moveAction: (ScriptLine, ScriptLine) -> Void
+    
+    func dropEntered(info: DropInfo) {
+        guard let draggedScriptLine, draggedScriptLine !== targetScriptLine else {
+            return
+        }
+        
+        moveAction(draggedScriptLine, targetScriptLine)
+    }
+    
+    func performDrop(info: DropInfo) -> Bool {
+        draggedScriptLine = nil
+        return true
     }
 }
 

@@ -101,6 +101,62 @@ final class ScriptEditViewModel {
         playAudio(for: scriptLine)
     }
     
+    // MARK: - Script Editing
+    
+    func updateText(_ text: String, for scriptLine: ScriptLine) {
+        scriptLine.text = text
+        saveChanges()
+    }
+    
+    func addScriptLine() {
+        let scriptLine = ScriptLine(
+            text: "자유롭게 녹음해보세요.",
+            sortOrder: scenario.scriptLines.count,
+            scenario: scenario
+        )
+        
+        scenario.scriptLines.append(scriptLine)
+        reassignSortOrders()
+        saveChanges()
+    }
+    
+    func deleteScriptLine(_ scriptLine: ScriptLine) {
+        if isRecording(scriptLine) {
+            cancelCurrentRecording()
+        }
+        
+        do {
+            try AudioFileManager.deleteIfNeeded(fileName: scriptLine.audioFileName)
+        } catch {
+            errorMessage = "연결된 녹음 파일을 삭제하지 못했습니다."
+            print("오디오 파일 삭제 실패: \(error.localizedDescription)")
+        }
+        
+        scenario.scriptLines.removeAll { $0 === scriptLine }
+        modelContext.delete(scriptLine)
+        reassignSortOrders()
+        saveChanges()
+    }
+    
+    func moveScriptLine(_ source: ScriptLine, before destination: ScriptLine) {
+        var lines = sortedScriptLines
+        
+        guard
+            let sourceIndex = lines.firstIndex(where: { $0 === source }),
+            let destinationIndex = lines.firstIndex(where: { $0 === destination }),
+            sourceIndex != destinationIndex
+        else {
+            return
+        }
+        
+        let movedLine = lines.remove(at: sourceIndex)
+        let adjustedDestinationIndex = sourceIndex < destinationIndex ? destinationIndex - 1 : destinationIndex
+        lines.insert(movedLine, at: adjustedDestinationIndex)
+        scenario.scriptLines = lines
+        reassignSortOrders()
+        saveChanges()
+    }
+    
     func playAudio(for scriptLine: ScriptLine) {
         guard scriptLine.isRecorded else {
             errorMessage = "아직 녹음된 대사가 없습니다."
@@ -245,6 +301,12 @@ final class ScriptEditViewModel {
             AVNumberOfChannelsKey: 1,
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
         ]
+    }
+    
+    private func reassignSortOrders() {
+        for (index, scriptLine) in sortedScriptLines.enumerated() {
+            scriptLine.sortOrder = index
+        }
     }
 
     // MARK: - Persistence

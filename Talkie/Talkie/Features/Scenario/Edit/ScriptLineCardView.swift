@@ -10,33 +10,77 @@ import SwiftUI
 struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
+    let isEditing: Bool
+    let onDrag: () -> NSItemProvider
     let onPlay: () -> Void
     let onRecordToggle: () -> Void
+    let onTextChange: (String) -> Void
+    let onDelete: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            RecordingStateBadgeView(
-                isRecording: isRecording,
-                isRecorded: scriptLine.isRecorded
-            )
+        HStack(alignment: .center, spacing: 14) {
+            if isEditing {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.white.opacity(0.36))
+                    .onDrag(onDrag)
+                    .accessibilityLabel("순서 변경")
+            }
             
-            Text(scriptLine.text)
-                .font(.custom("Pretendard", size: 16))
-                .foregroundColor(textColor)
-                .lineSpacing(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack {
-                Spacer()
-                
-                HStack(spacing: 12) {
-                    if scriptLine.isRecorded && !isRecording {
-                        playButton
-                    }
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top) {
+                    RecordingStateBadgeView(
+                        isRecording: isRecording,
+                        isRecorded: scriptLine.isRecorded
+                    )
                     
-                    recordButton
+                    Spacer()
+                    
+                    if isEditing {
+                        Button(action: onDelete) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white.opacity(0.44))
+                        }
+                        .accessibilityLabel("대사 삭제")
+                    }
+                }
+                
+                if isEditing {
+                    TextField(
+                        "대사를 입력하세요.",
+                        text: Binding(
+                            get: { scriptLine.text },
+                            set: { onTextChange($0) }
+                        ),
+                        axis: .vertical
+                    )
+                    .font(.custom("Pretendard", size: 16))
+                    .foregroundColor(textColor)
+                    .lineLimit(1...4)
+                } else {
+                    Text(scriptLine.text)
+                        .font(.custom("Pretendard", size: 16))
+                        .foregroundColor(textColor)
+                        .lineSpacing(4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                
+                if !isEditing {
+                    HStack {
+                        Spacer()
+                        
+                        HStack(spacing: 12) {
+                            if scriptLine.isRecorded && !isRecording {
+                                playButton
+                            }
+                            
+                            recordButton
+                        }
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(20)
         .background(cardBackground)
