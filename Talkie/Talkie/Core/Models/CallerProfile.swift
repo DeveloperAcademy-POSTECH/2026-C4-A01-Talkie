@@ -10,11 +10,20 @@ import SwiftData
 
 @Model
 final class CallerProfile {
-    var name: String         // 예: "엄마"
-    var relationship: String // 예: "가족"
+    var name: String
+    var scenario: Scenario?
     
-    init(name: String, relationship: String) {
+    init(name: String) {
         self.name = name
-        self.relationship = relationship
     }
 }
+
+
+//@Model
+//final class CallerProfileModel {
+//    var name: String
+//    
+//    init(name: String) {
+//        self.name = name
+//    }
+//}
