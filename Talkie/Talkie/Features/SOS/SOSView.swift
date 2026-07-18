@@ -8,12 +8,12 @@
 import SwiftUI
 import SwiftData
 
-struct FakeCallView: View {
+struct SOSView: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    FakeCallView()
+    SOSView()
 }

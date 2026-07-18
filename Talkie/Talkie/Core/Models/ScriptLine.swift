@@ -12,6 +12,7 @@ import SwiftData
 final class ScriptLine {
     var text: String
     var sortOrder: Int
+    var isRecorded: Bool
     var scenario: Scenario?
     
     @Relationship(deleteRule: .cascade, inverse: \AudioClipMetadata.scriptLine)
@@ -20,11 +21,13 @@ final class ScriptLine {
     init(
         text: String,
         sortOrder: Int,
+        isRecorded: Bool = false,
         scenario: Scenario?,
         audioMetadata: AudioClipMetadata? = nil
     ) {
         self.text = text
         self.sortOrder = sortOrder
+        self.isRecorded = isRecorded
         self.scenario = scenario
         self.audioMetadata = audioMetadata
     }

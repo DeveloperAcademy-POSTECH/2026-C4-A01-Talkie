@@ -4,10 +4,6 @@
 //
 //  Created by DS on 7/13/26.
 //
-
-import SwiftUI
-import SwiftData
-
 import SwiftUI
 import SwiftData
 
@@ -30,12 +26,16 @@ struct ScenarioView: View {
                             .font(.largeTitle)
                             .bold()
                         Spacer()
-//                        Button(action: addMockScenario) {
+                        
+                        Button{
+                            isShowingCreateView = true
+                        } label : {
                             Image(systemName: "plus.circle.fill")
                                 .resizable()
                                 .frame(width: 36, height: 36)
                                 .foregroundColor(.white)
-//                        }
+                            //                        }
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, 20)
@@ -48,7 +48,15 @@ struct ScenarioView: View {
                     ScrollView{
                         LazyVStack(spacing: 16) {
                             ForEach(scenarios) { scenario in
-                                ScenarioCardView(scenario: scenario)
+                                NavigationLink {
+                                    ScriptEditView(
+                                        scenario: scenario,
+                                        modelContext: modelContext
+                                    )
+                                } label: {
+                                    ScenarioCardView(scenario: scenario)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -57,8 +65,8 @@ struct ScenarioView: View {
                 .padding(.horizontal, 24)
             }
             .preferredColorScheme(.dark)
-            .sheet(isPresented: $isShowingCreateView) {
-//                ScenarioCreateView()
+            .navigationDestination(isPresented: $isShowingCreateView) {
+                ScenarioCreateView()
             }
         }
     }
@@ -66,5 +74,10 @@ struct ScenarioView: View {
 
 #Preview {
     ScenarioView()
-        .modelContainer(for: Scenario.self, inMemory: true)
+        .modelContainer(for: [
+            Scenario.self,
+            CallerProfile.self,
+            ScriptLine.self,
+            AudioClipMetadata.self
+        ], inMemory: true)
 }
