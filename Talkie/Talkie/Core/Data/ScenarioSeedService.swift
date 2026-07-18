@@ -10,11 +10,15 @@ import SwiftData
 
 enum ScenarioSeedService {
     static func insertDefaultScenariosIfNeeded(into modelContext: ModelContext) throws {
-        let descriptor = FetchDescriptor<Scenario>()
-        let savedScenarios = try modelContext.fetch(descriptor)
+        let descriptor = FetchDescriptor<Scenario>(
+            sortBy: [
+                SortDescriptor(\Scenario.createdAt, order: .reverse)
+            ]
+        )
+        var savedScenarios = try modelContext.fetch(descriptor)
         let savedPresetIDs = Set(savedScenarios.compactMap(\.presetID))
         
-        var didInsertScenario = false
+        var needsSave = false
         
         for preset in ScenarioPreset.all where !savedPresetIDs.contains(preset.id) {
             let callerProfile = CallerProfile(name: preset.callerName)
@@ -34,10 +38,18 @@ enum ScenarioSeedService {
             
             scenario.scriptLines = scriptLines
             modelContext.insert(scenario)
-            didInsertScenario = true
+            savedScenarios.append(scenario)
+            needsSave = true
         }
         
-        if didInsertScenario {
+        if !savedScenarios.contains(where: \.isCurrentSelection),
+           let defaultScenario = savedScenarios.first {
+            // 아직 현재 선택된 시나리오가 없다면, 가장 최근 시나리오를 Phone 탭 기본 카드로 사용합니다.
+            defaultScenario.isCurrentSelection = true
+            needsSave = true
+        }
+        
+        if needsSave {
             try modelContext.save()
         }
     }

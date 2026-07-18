@@ -12,6 +12,7 @@ final class Scenario {
     var title: String
     var createdAt: Date
     var presetID: String?
+    var isCurrentSelection: Bool
     
     @Relationship(deleteRule: .cascade, inverse: \CallerProfile.scenario)
     var callerProfile: CallerProfile
@@ -23,12 +24,14 @@ final class Scenario {
         title: String,
         callerProfile: CallerProfile,
         createdAt: Date = Date(),
-        presetID: String? = nil
+        presetID: String? = nil,
+        isCurrentSelection: Bool = false
     ) {
         self.title = title
         self.callerProfile = callerProfile
         self.createdAt = createdAt
         self.presetID = presetID
+        self.isCurrentSelection = isCurrentSelection
     }
     
 //    @Relationship(deleteRule: .cascade, inverse: \CallReservation.scenario)
