@@ -10,10 +10,31 @@ import SwiftData
 
 @main
 struct TalkieApp: App {
+    let container: ModelContainer
+    
+    init() {
+        do {
+            container = try ModelContainer(
+                for: Scenario.self,
+                CallerProfile.self,
+                ScriptLine.self,
+                AudioClipMetadata.self,
+                CallReservation.self,
+                EmergencyContact.self
+            )
+            
+            try ScenarioSeedService.insertDefaultScenariosIfNeeded(
+                into: ModelContext(container)
+            )
+        } catch {
+            fatalError("ModelContainer 초기화 실패: \(error.localizedDescription)")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
-            AppCoordinatorView()
+            MainTabView()
         }
-        .modelContainer(for: CallerProfile.self) // 앱 전체에서 CallerProfile을 저장 및 불러오기
+        .modelContainer(container)
     }
 }
