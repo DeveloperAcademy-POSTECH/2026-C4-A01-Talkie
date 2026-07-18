@@ -22,12 +22,16 @@ struct TalkieApp: App {
                 CallReservation.self,
                 EmergencyContact.self
             )
-            
+        } catch {
+            fatalError("ModelContainer 생성 실패: \(String(reflecting: error))")
+        }
+        
+        do {
             try ScenarioSeedService.insertDefaultScenariosIfNeeded(
                 into: ModelContext(container)
             )
         } catch {
-            fatalError("ModelContainer 초기화 실패: \(error.localizedDescription)")
+            fatalError("기본 시나리오 seed 실패: \(String(reflecting: error))")
         }
     }
     
