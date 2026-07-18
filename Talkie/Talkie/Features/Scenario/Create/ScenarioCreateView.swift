@@ -120,7 +120,10 @@ struct ScenarioCreateView: View {
                 ScriptEditView(
                     scenario: scenario,
                     modelContext: modelContext
-                )
+                ) {
+                    viewModel.shouldNavigateToScriptEdit = false
+                    dismiss()
+                }
             }
         }
     }

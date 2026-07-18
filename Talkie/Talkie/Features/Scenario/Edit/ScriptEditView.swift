@@ -11,11 +11,17 @@ struct ScriptEditView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: ScriptEditViewModel
+    private let onComplete: (() -> Void)?
 
-    init(scenario: Scenario, modelContext: ModelContext) {
+    init(
+        scenario: Scenario,
+        modelContext: ModelContext,
+        onComplete: (() -> Void)? = nil
+    ) {
         _viewModel = State(
             initialValue: ScriptEditViewModel(scenario: scenario, modelContext: modelContext)
         )
+        self.onComplete = onComplete
     }
 
     var body: some View {
@@ -89,7 +95,15 @@ struct ScriptEditView: View {
                 Spacer()
                 
                 // 4. 하단 고정 버튼
-                Button { } label: {
+                Button {
+                    if viewModel.completeEditing() {
+                        if let onComplete {
+                            onComplete()
+                        } else {
+                            dismiss()
+                        }
+                    }
+                } label: {
                     Text("대화 생성")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
@@ -103,6 +117,17 @@ struct ScriptEditView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .alert(
+            "저장 실패",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.clearErrorMessage() } }
+            )
+        ) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 }
 
