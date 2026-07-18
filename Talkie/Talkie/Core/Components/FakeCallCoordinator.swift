@@ -38,16 +38,19 @@ enum VoiceMonitoringState: Equatable {
 
 @MainActor
 @Observable
+/// 가상 통화 화면의 상태와 재생/VAD 수명주기를 한 곳에서 조정한다.
+/// SpeechDetector 서비스의 callback은 임의 실행 문맥에서 오므로 `bindVoiceActivityEvents()`에서
+/// MainActor로 되돌린 뒤에만 phase와 SwiftUI 관찰 상태를 변경한다.
 final class FakeCallCoordinator {
-    static let speechThresholdRange = Double(VoiceActivityDetector.speechThresholdRange.lowerBound)
-        ... Double(VoiceActivityDetector.speechThresholdRange.upperBound)
+    // SpeechDetector가 결과를 내지 못하거나 사용자가 말하지 않아도 통화가 멈추지 않게 하는 시간 정책.
+    // 이것은 발화 판정 대체 알고리즘이 아니라, VAD와 독립된 진행 안전장치다.
+    static let noSpeechFallbackDelay: Duration = .seconds(3)
 
     private(set) var phase: FakeCallPhase = .idle
     private(set) var profile: VirtualCallerProfile?
     private(set) var scriptLines: [FakeCallScriptLine] = []
     private(set) var currentLineIndex = 0
     private(set) var callStartedAt: Date?
-    private(set) var speechThreshold: Double
     private(set) var currentInputLevel = -80.0
     private(set) var voiceMonitoringState: VoiceMonitoringState = .inactive
     private(set) var isSpeakerEnabled = false
@@ -67,7 +70,6 @@ final class FakeCallCoordinator {
         audioPlayer = ScriptedAudioPlayer()
         self.voiceActivityDetector = voiceActivityDetector
         ringtonePlayer = IncomingCallRingtoneService.shared
-        speechThreshold = Double(voiceActivityDetector.speechThreshold)
         bindVoiceActivityEvents()
     }
 
@@ -81,7 +83,6 @@ final class FakeCallCoordinator {
         self.audioPlayer = audioPlayer
         self.voiceActivityDetector = voiceActivityDetector
         self.ringtonePlayer = ringtonePlayer ?? IncomingCallRingtoneService.shared
-        speechThreshold = Double(voiceActivityDetector.speechThreshold)
         bindVoiceActivityEvents()
     }
 
@@ -147,15 +148,6 @@ final class FakeCallCoordinator {
         advanceAfterUserTurn()
     }
 
-    func updateSpeechThreshold(_ threshold: Double) {
-        let clampedThreshold = min(
-            max(threshold, Self.speechThresholdRange.lowerBound),
-            Self.speechThresholdRange.upperBound
-        )
-        voiceActivityDetector.updateSpeechThreshold(Float(clampedThreshold))
-        speechThreshold = clampedThreshold
-    }
-
     func setSpeakerEnabled(_ enabled: Bool) {
         do {
             try FakeCallAudioSession.setSpeakerEnabled(enabled)
@@ -167,6 +159,7 @@ final class FakeCallCoordinator {
     }
 
     private func playCurrentLine() {
+        // 상대방 음성이 마이크로 다시 들어가 사용자 발화로 오인되지 않도록 재생 중에는 VAD를 멈춘다.
         cancelPendingWork()
         stopVoiceMonitoring()
 
@@ -199,6 +192,7 @@ final class FakeCallCoordinator {
     }
 
     private func waitForUserSpeech() {
+        // 상대 문장 재생이 끝난 시점부터 마이크 분석과 3초 무응답 타이머를 동시에 시작한다.
         phase = .waitingForUser
         currentInputLevel = -80
 
@@ -219,6 +213,7 @@ final class FakeCallCoordinator {
 
     private func handleSpeechStarted() {
         guard phase == .waitingForUser else { return }
+        // 실제 발화가 시작됐으므로 무응답 타이머가 문장 중간에 다음 턴으로 넘기지 않게 취소한다.
         fallbackTask?.cancel()
         fallbackTask = nil
         voiceMonitoringState = .speechDetected
@@ -228,9 +223,21 @@ final class FakeCallCoordinator {
     private func handleSpeechEnded() {
         guard phase == .userSpeaking else { return }
 
+        // Gate가 이미 연속 무음을 확인했으므로 입력을 정리하고 즉시 다음 문장으로 진행한다.
         stopVoiceMonitoring()
         phase = .waitingForNextLine
         advanceAfterUserTurn()
+    }
+
+    private func handleDetectionUnavailable() {
+        guard phase == .waitingForUser || phase == .userSpeaking else { return }
+        voiceActivityDetector.stop()
+        voiceMonitoringState = .unavailable
+        currentInputLevel = -80
+        phase = .waitingForUser
+        // Apple 파이프라인이 중간에 실패했을 때도 dB 판정으로 전환하지 않는다.
+        // 이미 speechStarted를 받은 뒤 실패한 경우까지 waitingForUser로 되돌려 3초 후 안전하게 진행한다.
+        scheduleNoSpeechFallback()
     }
 
     private func advanceAfterUserTurn() {
@@ -248,15 +255,17 @@ final class FakeCallCoordinator {
     }
 
     private func scheduleNoSpeechFallback() {
+        // 호출될 때마다 이전 Task를 취소해 한 턴에 여러 타이머가 경쟁하지 않게 한다.
         fallbackTask?.cancel()
         fallbackTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(8))
+            try? await Task.sleep(for: Self.noSpeechFallbackDelay)
             guard !Task.isCancelled else { return }
             self?.advanceAfterUserTurn()
         }
     }
 
     private func bindVoiceActivityEvents() {
+        // VoiceActivityDetector는 nonisolated 서비스다. 모든 UI 상태 변경은 명시적으로 MainActor에서 수행한다.
         voiceActivityDetector.onSpeechStarted = { [weak self] in
             guard let coordinator = self else { return }
             Task { @MainActor in
@@ -271,6 +280,13 @@ final class FakeCallCoordinator {
             }
         }
 
+        voiceActivityDetector.onDetectionUnavailable = { [weak self] in
+            guard let coordinator = self else { return }
+            Task { @MainActor in
+                coordinator.handleDetectionUnavailable()
+            }
+        }
+
         voiceActivityDetector.onInputLevelChanged = { [weak self] level in
             guard let coordinator = self else { return }
             Task { @MainActor in
@@ -279,6 +295,7 @@ final class FakeCallCoordinator {
                     return
                 }
 
+                // 입력 dB는 화면 레벨 표시 전용이다. 이 값을 사용해 phase를 바꾸거나 발화를 판정하지 않는다.
                 coordinator.currentInputLevel = Double(
                     min(max(level, -80), 0)
                 )

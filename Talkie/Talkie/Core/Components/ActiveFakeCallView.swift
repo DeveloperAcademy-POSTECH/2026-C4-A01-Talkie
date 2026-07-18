@@ -10,13 +10,11 @@ struct ActiveFakeCallView: View {
     let profile: VirtualCallerProfile
     let callStartedAt: Date
     let phase: FakeCallPhase
-    let speechThreshold: Double
     let currentInputLevel: Double
     let voiceMonitoringState: VoiceMonitoringState
     let isSpeakerEnabled: Bool
     let onEndCall: () -> Void
     let onSkipLine: () -> Void
-    let onSpeechThresholdChange: (Double) -> Void
     let onSpeakerChange: (Bool) -> Void
 
     @State private var isMuted = false
@@ -36,7 +34,7 @@ struct ActiveFakeCallView: View {
 
                 Spacer(minLength: 18)
 
-                sensitivityControl
+                voiceActivityStatus
 
                 Spacer(minLength: 18)
 
@@ -55,39 +53,11 @@ struct ActiveFakeCallView: View {
         .accessibilityAction(named: "다음 문장 재생", onSkipLine)
     }
 
-    private var sensitivityControl: some View {
+    /// SpeechDetector의 상태와 마이크 입력 크기를 보여 주는 진단성 UI.
+    /// 레벨 막대의 dB는 사용자가 마이크 동작 여부를 확인하기 위한 값이며,
+    /// 색상 전환은 dB 임계값이 아니라 coordinator의 SpeechDetector 상태를 따른다.
+    private var voiceActivityStatus: some View {
         VStack(spacing: 8) {
-            HStack(spacing: 12) {
-                Label("발화 민감도", systemImage: "waveform")
-                    .font(.subheadline.weight(.semibold))
-
-                Spacer(minLength: 8)
-
-                Text("\(Int(speechThreshold.rounded())) dB")
-                    .font(.subheadline.monospacedDigit().weight(.semibold))
-            }
-
-            Slider(
-                value: Binding(
-                    get: { speechThreshold },
-                    set: onSpeechThresholdChange
-                ),
-                in: FakeCallCoordinator.speechThresholdRange,
-                step: 1
-            )
-            .tint(.white)
-            .accessibilityLabel("발화 감지 임계값")
-            .accessibilityValue("\(Int(speechThreshold.rounded())) 데시벨")
-            .accessibilityHint("값을 낮추면 작은 목소리에도 반응합니다")
-
-            HStack {
-                Text("민감함")
-                Spacer()
-                Text("둔감함")
-            }
-            .font(.caption2)
-            .foregroundStyle(.white.opacity(0.68))
-
             monitoringStatus
 
             inputLevelMeter
@@ -124,20 +94,18 @@ struct ActiveFakeCallView: View {
                     .fill(.white.opacity(0.16))
 
                 Capsule()
-                    .fill(isInputAboveThreshold ? Color.green : Color.white.opacity(0.72))
+                    .fill(
+                        voiceMonitoringState == .speechDetected
+                            ? Color.green
+                            : Color.white.opacity(0.72)
+                    )
                     .frame(width: width * inputLevelFraction)
-
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 2, height: 14)
-                    .offset(x: max(0, min(width - 2, width * thresholdFraction - 1)))
             }
         }
         .frame(height: 14)
         .accessibilityLabel("마이크 입력 레벨")
         .accessibilityValue(
-            "입력 \(Int(currentInputLevel.rounded())) 데시벨, "
-            + "임계값 \(Int(speechThreshold.rounded())) 데시벨"
+            "입력 \(Int(currentInputLevel.rounded())) 데시벨"
         )
     }
 
@@ -198,17 +166,8 @@ struct ActiveFakeCallView: View {
         }
     }
 
-    private var isInputAboveThreshold: Bool {
-        (voiceMonitoringState == .listening || voiceMonitoringState == .speechDetected)
-            && currentInputLevel >= speechThreshold
-    }
-
     private var inputLevelFraction: Double {
         min(max((currentInputLevel + 80) / 80, 0), 1)
-    }
-
-    private var thresholdFraction: Double {
-        min(max((speechThreshold + 80) / 80, 0), 1)
     }
 
     private var callerHeader: some View {
@@ -343,13 +302,11 @@ private struct ActiveCallControlButton: View {
         profile: .preview,
         callStartedAt: .now.addingTimeInterval(-43),
         phase: .waitingForUser,
-        speechThreshold: -35,
         currentInputLevel: -42,
         voiceMonitoringState: .listening,
         isSpeakerEnabled: false,
         onEndCall: {},
         onSkipLine: {},
-        onSpeechThresholdChange: { _ in },
         onSpeakerChange: { _ in }
     )
 }
