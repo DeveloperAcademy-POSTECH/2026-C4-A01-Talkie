@@ -251,7 +251,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
+				DEVELOPMENT_TEAM = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화 중 사용자가 말한 뒤 다음 문장으로 자연스럽게 넘어가기 위해 마이크를 사용합니다. 음성은 기기 안에서만 처리됩니다.";
@@ -284,7 +284,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
+				DEVELOPMENT_TEAM = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화 중 사용자가 말한 뒤 다음 문장으로 자연스럽게 넘어가기 위해 마이크를 사용합니다. 음성은 기기 안에서만 처리됩니다.";
