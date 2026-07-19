@@ -3,7 +3,6 @@
 //  Talkie
 //
 
-
 import SwiftUI
 
 struct ActiveFakeCallView: View {
@@ -27,232 +26,100 @@ struct ActiveFakeCallView: View {
     var body: some View {
         ZStack {
             CallScreenBackground()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 callerHeader
-                    .padding(.top, 58)
+                    .padding(.top, 52)
 
-                Spacer(minLength: 18)
-
-                voiceActivityStatus
-
-                Spacer(minLength: 18)
+                Spacer(minLength: 24)
 
                 controls
-
-                Spacer(minLength: 20)
-
-                endCallButton
-                    .padding(.bottom, 46)
+                    .padding(.bottom, 4)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 28)
             .frame(maxWidth: 520)
         }
-        .ignoresSafeArea()
-        .statusBarHidden()
+        .preferredColorScheme(.dark)
         .accessibilityAction(named: "다음 문장 재생", onSkipLine)
     }
 
-    /// SpeechDetector의 상태와 마이크 입력 크기를 보여 주는 진단성 UI.
-    /// 레벨 막대의 dB는 사용자가 마이크 동작 여부를 확인하기 위한 값이며,
-    /// 색상 전환은 dB 임계값이 아니라 coordinator의 SpeechDetector 상태를 따른다.
-    private var voiceActivityStatus: some View {
-        VStack(spacing: 8) {
-            monitoringStatus
+    private var callerHeader: some View {
+        HStack(spacing: 14) {
+            ActiveCallerAvatar(systemImageName: profile.imageSystemName)
 
-            inputLevelMeter
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 8)
-    }
+            VStack(alignment: .leading, spacing: 2) {
+                TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
+                    Text(callDuration(at: context.date))
+                        .font(.system(size: 22, weight: .medium).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.58))
+                        .contentTransition(.numericText())
+                        .onLongPressGesture(minimumDuration: 1) {
+                            onSkipLine()
+                        }
+                        .accessibilityLabel("통화 시간 \(callDuration(at: context.date))")
+                }
 
-    private var monitoringStatus: some View {
-        HStack(spacing: 8) {
-            Label(monitoringStatusText, systemImage: monitoringStatusIcon)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-
-            Spacer(minLength: 8)
-
-            if voiceMonitoringState == .listening
-                || voiceMonitoringState == .speechDetected {
-                Text("입력 \(Int(currentInputLevel.rounded())) dB")
-                    .monospacedDigit()
+                Text(profile.displayName)
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.62)
             }
+
+            Spacer(minLength: 0)
         }
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(monitoringStatusColor)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
-    private var inputLevelMeter: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(.white.opacity(0.16))
-
-                Capsule()
-                    .fill(
-                        voiceMonitoringState == .speechDetected
-                            ? Color.green
-                            : Color.white.opacity(0.72)
-                    )
-                    .frame(width: width * inputLevelFraction)
-            }
-        }
-        .frame(height: 14)
-        .accessibilityLabel("마이크 입력 레벨")
-        .accessibilityValue(
-            "입력 \(Int(currentInputLevel.rounded())) 데시벨"
-        )
-    }
-
-    private var monitoringStatusText: String {
-        if case .playingLine = phase {
-            return "상대 음성 재생 중"
-        }
-
-        if phase == .waitingForNextLine {
-            return "무음 감지됨"
-        }
-
-        if phase == .completed {
-            return "통화 완료"
-        }
-
-        switch voiceMonitoringState {
-        case .inactive:
-            return "발화 감지 준비 중"
-        case .listening:
-            return "발화 대기"
-        case .speechDetected:
-            return "발화 감지됨"
-        case .unavailable:
-            return "마이크 감지 사용 불가"
-        }
-    }
-
-    private var monitoringStatusIcon: String {
-        if case .playingLine = phase {
-            return "waveform"
-        }
-
-        switch voiceMonitoringState {
-        case .inactive:
-            return "pause.fill"
-        case .listening:
-            return "mic.fill"
-        case .speechDetected:
-            return "waveform"
-        case .unavailable:
-            return "exclamationmark.triangle.fill"
-        }
-    }
-
-    private var monitoringStatusColor: Color {
-        if case .playingLine = phase {
-            return .white.opacity(0.78)
-        }
-
-        switch voiceMonitoringState {
-        case .speechDetected:
-            return .green
-        case .unavailable:
-            return .yellow
-        case .inactive, .listening:
-            return .white.opacity(0.78)
-        }
-    }
-
-    private var inputLevelFraction: Double {
-        min(max((currentInputLevel + 80) / 80, 0), 1)
-    }
-
-    private var callerHeader: some View {
-        VStack(spacing: 8) {
-            Text(profile.displayName)
-                .font(.system(size: 34, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-
-            TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
-                Text(callDuration(at: context.date))
-                    .font(.body.monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.74))
-                    .contentTransition(.numericText())
-                    .onLongPressGesture(minimumDuration: 1) {
-                        onSkipLine()
-                    }
-                    .accessibilityLabel("통화 시간 \(callDuration(at: context.date))")
-            }
-        }
-        .foregroundStyle(.white)
-    }
-
+    // 발화 감지와 입력 레벨은 통화 진행에 계속 사용하지만 실제 전화 화면에는 표시하지 않습니다.
     private var controls: some View {
-        LazyVGrid(columns: columns, spacing: 24) {
-            ActiveCallControlButton(
-                title: "소리 끔",
-                systemImage: isMuted ? "mic.slash.fill" : "mic.fill",
-                isSelected: isMuted
-            ) {
-                isMuted.toggle()
-            }
-
-            ActiveCallControlButton(
-                title: "키패드",
-                systemImage: "circle.grid.3x3.fill",
-                isEnabled: false,
-                action: {}
-            )
-
+        LazyVGrid(columns: columns, spacing: 28) {
             ActiveCallControlButton(
                 title: "스피커",
-                systemImage: "speaker.wave.3.fill",
+                icon: .system("speaker.wave.3.fill"),
                 isSelected: isSpeakerEnabled
             ) {
                 onSpeakerChange(!isSpeakerEnabled)
             }
 
             ActiveCallControlButton(
-                title: "통화 추가",
-                systemImage: "plus",
-                isEnabled: false,
-                action: {}
-            )
-
-            ActiveCallControlButton(
                 title: "FaceTime",
-                systemImage: "video.fill",
+                icon: .faceTime,
                 isEnabled: false,
                 action: {}
             )
 
             ActiveCallControlButton(
-                title: "연락처",
-                systemImage: "person.crop.circle",
+                title: "소리 끔",
+                icon: .system(isMuted ? "mic.fill" : "mic.slash.fill"),
+                isSelected: isMuted
+            ) {
+                isMuted.toggle()
+            }
+
+            ActiveCallControlButton(
+                title: "더 보기",
+                icon: .system("ellipsis"),
+                isEnabled: false,
+                action: {}
+            )
+
+            ActiveCallControlButton(
+                title: "종료",
+                icon: .system("phone.down.fill"),
+                backgroundColor: Color(red: 0.93, green: 0.17, blue: 0.21),
+                action: onEndCall
+            )
+
+            ActiveCallControlButton(
+                title: "키패드",
+                icon: .system("circle.grid.3x3.fill"),
                 isEnabled: false,
                 action: {}
             )
         }
-    }
-
-    private var endCallButton: some View {
-        Button(action: onEndCall) {
-            Image(systemName: "phone.down.fill")
-                .font(.system(size: 31, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 76, height: 76)
-                .background(
-                    Color(red: 0.93, green: 0.17, blue: 0.21),
-                    in: Circle()
-                )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("통화 종료")
-        .accessibilityHint("가상 통화를 종료합니다")
     }
 
     private func callDuration(at date: Date) -> String {
@@ -261,39 +128,96 @@ struct ActiveFakeCallView: View {
     }
 }
 
+private struct ActiveCallerAvatar: View {
+    let systemImageName: String?
+
+    var body: some View {
+        Image(systemName: systemImageName ?? "person.crop.circle.fill")
+            .resizable()
+            .scaledToFill()
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(.white.opacity(0.9))
+            .frame(width: 64, height: 64)
+            .background(.white.opacity(0.12), in: Circle())
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(.white.opacity(0.16), lineWidth: 0.5)
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+private enum ActiveCallControlIcon {
+    case system(String)
+    case faceTime
+}
+
 private struct ActiveCallControlButton: View {
     let title: String
-    let systemImage: String
+    let icon: ActiveCallControlIcon
     var isSelected = false
     var isEnabled = true
+    var backgroundColor: Color?
     let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 9) {
             Button(action: action) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 27, weight: .medium))
+                iconView
                     .foregroundStyle(isSelected ? .black : .white)
-                    .frame(width: 72, height: 72)
-                    .background(
-                        isSelected ? Color.white : Color.white.opacity(0.18),
-                        in: Circle()
-                    )
+                    .frame(width: 80, height: 80)
+                    .background(circleBackground, in: Circle())
+                    .overlay {
+                        if backgroundColor == nil && !isSelected {
+                            Circle()
+                                .stroke(.white.opacity(0.52), lineWidth: 1)
+                        }
+                    }
             }
             .buttonStyle(.plain)
             .disabled(!isEnabled)
+            .opacity(1)
 
             Text(title)
-                .font(.footnote)
+                .font(.system(size: 17, weight: .regular))
                 .foregroundStyle(.white)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
         .accessibilityValue(isSelected ? "켬" : "끔")
         .accessibilityAddTraits(.isButton)
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case let .system(name):
+            Image(systemName: name)
+                .font(.system(size: 30, weight: .semibold))
+
+        case .faceTime:
+            ZStack {
+                Image(systemName: "video.fill")
+                    .font(.system(size: 30, weight: .semibold))
+
+                Text("?")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color.black.opacity(0.7))
+                    .offset(x: -4)
+            }
+        }
+    }
+
+    private var circleBackground: Color {
+        if let backgroundColor {
+            return backgroundColor
+        }
+
+        return isSelected ? .white : .white.opacity(0.12)
     }
 }
 
