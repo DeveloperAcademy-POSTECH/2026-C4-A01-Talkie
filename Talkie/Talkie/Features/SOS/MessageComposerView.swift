@@ -9,9 +9,22 @@ import SwiftUI
 import MessageUI
 
 struct MessageComposerView: UIViewControllerRepresentable {
+    let mode: SOSMessageComposeMode
     let recipients: [String]
     let body: String
     let onFinish: () -> Void
+    
+    init(
+        mode: SOSMessageComposeMode,
+        recipients: [String],
+        body: String,
+        onFinish: @escaping () -> Void
+    ) {
+        self.mode = mode
+        self.recipients = recipients
+        self.body = body
+        self.onFinish = onFinish
+    }
     
     func makeUIViewController(context: Context) -> MFMessageComposeViewController {
         let viewController = MFMessageComposeViewController()

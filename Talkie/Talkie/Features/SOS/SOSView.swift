@@ -49,7 +49,7 @@ struct SOSView: View {
                 }
                 
                 Button {
-                    sosManager.call112()
+                    sosManager.callEmergencyServices()
                 } label: {
                     actionRowTitle("112 전화 신고")
                 }
@@ -60,11 +60,27 @@ struct SOSView: View {
         .padding(24)
         .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
             MessageComposerView(
+                mode: sosManager.messageComposeMode,
                 recipients: sosManager.messageRecipients,
                 body: sosManager.messageBody
             ) {
                 sosManager.shouldShowMessageCompose = false
             }
+        }
+        .alert(
+            "SOS 오류",
+            isPresented: Binding(
+                get: { sosManager.currentError != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        sosManager.currentError = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(sosManager.currentError?.message ?? "")
         }
     }
 }
@@ -78,11 +94,11 @@ private extension SOSView {
             Text("isLoading: \(sosManager.isLoading.description)")
             Text("hasEmergencyContacts: \(sosManager.hasEmergencyContacts.description)")
             
-            if let locationError = sosManager.locationError {
-                Text("locationError: \(locationError.message)")
+            if let currentError = sosManager.currentError {
+                Text("currentError: \(currentError.message)")
                     .foregroundStyle(.red)
             } else {
-                Text("locationError: nil")
+                Text("currentError: nil")
                     .foregroundStyle(.secondary)
             }
             
