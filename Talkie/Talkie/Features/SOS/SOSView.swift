@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SOSView: View {
     @State private var sosManager = SOSManager()
+    
+    @Query(sort: \EmergencyContact.sortOrder)
+    private var emergencyContacts: [EmergencyContact]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -30,7 +34,9 @@ struct SOSView: View {
             
             VStack(spacing: 12) {
                 Button {
-                    sosManager.shareLocationToContacts()
+                    sosManager.shareLocationToContacts(
+                        emergencyContacts: emergencyContacts
+                    )
                 } label: {
                     actionRowTitle("안전 연락망에 위치 공유")
                 }
@@ -52,6 +58,14 @@ struct SOSView: View {
             Spacer()
         }
         .padding(24)
+        .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
+            MessageComposerView(
+                recipients: sosManager.messageRecipients,
+                body: sosManager.messageBody
+            ) {
+                sosManager.shouldShowMessageCompose = false
+            }
+        }
     }
 }
 
