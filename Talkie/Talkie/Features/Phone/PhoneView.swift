@@ -9,6 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct PhoneView: View {
+    @State private var isFakeCallPresented = false
+    @State private var fakeCallCoordinator = FakeCallCoordinator()
+
     @Query(
         filter: #Predicate<Scenario> { scenario in
             scenario.isCurrentSelection == true
@@ -37,7 +40,8 @@ struct PhoneView: View {
                 )
                 
                 Button {
-                    // 실제 통화 기능은 다음 단계에서 연결합니다.
+                    fakeCallCoordinator.startIncomingCall()
+                    isFakeCallPresented = true
                 } label: {
                     Text("Make a call")
                         .font(.system(size: 18, weight: .bold))
@@ -58,6 +62,83 @@ struct PhoneView: View {
             .padding(.horizontal, 20)
             .padding(.top, 32)
         }
+        .fullScreenCover(
+            isPresented: $isFakeCallPresented,
+            onDismiss: stopFakeCallIfNeeded
+        ) {
+            fakeCallScreen
+        }
+    }
+
+    @ViewBuilder
+    private var fakeCallScreen: some View {
+        if fakeCallCoordinator.phase == .incoming,
+           let profile = fakeCallCoordinator.profile {
+            IncomingFakeCallView(
+                profile: profile,
+                onAccept: fakeCallCoordinator.acceptCall,
+                onDecline: finishFakeCall
+            )
+        } else if fakeCallCoordinator.phase.isActiveCall,
+                  let profile = fakeCallCoordinator.profile,
+                  let callStartedAt = fakeCallCoordinator.callStartedAt {
+            ActiveFakeCallView(
+                profile: profile,
+                callStartedAt: callStartedAt,
+                phase: fakeCallCoordinator.phase,
+                currentInputLevel: fakeCallCoordinator.currentInputLevel,
+                voiceMonitoringState: fakeCallCoordinator.voiceMonitoringState,
+                isSpeakerEnabled: fakeCallCoordinator.isSpeakerEnabled,
+                onEndCall: finishFakeCall,
+                onSkipLine: fakeCallCoordinator.skipToNextLine,
+                onSpeakerChange: fakeCallCoordinator.setSpeakerEnabled
+            )
+        } else if case let .failed(message) = fakeCallCoordinator.phase {
+            failedCall(message: message)
+        } else {
+            preparingCall
+        }
+    }
+
+    private var preparingCall: some View {
+        ZStack {
+            CallScreenBackground()
+                .ignoresSafeArea()
+
+            ProgressView()
+                .tint(.white)
+                .accessibilityLabel("가상 통화 준비 중")
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func failedCall(message: String) -> some View {
+        ZStack {
+            CallScreenBackground()
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Text(message)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+
+                Button("돌아가기", action: finishFakeCall)
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding(24)
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func finishFakeCall() {
+        fakeCallCoordinator.endCall()
+        isFakeCallPresented = false
+    }
+
+    private func stopFakeCallIfNeeded() {
+        guard fakeCallCoordinator.phase != .idle else { return }
+        fakeCallCoordinator.endCall()
     }
 }
 
