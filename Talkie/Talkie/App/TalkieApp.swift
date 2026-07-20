@@ -37,7 +37,7 @@ struct TalkieApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            AppMainView()
         }
         .modelContainer(container)
     }
