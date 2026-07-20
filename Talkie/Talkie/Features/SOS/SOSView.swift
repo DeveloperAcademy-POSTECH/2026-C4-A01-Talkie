@@ -11,8 +11,8 @@ import SwiftData
 struct SOSView: View {
     @State private var sosManager = SOSManager()
     
-    @Query(sort: \EmergencyContact.sortOrder)
-    private var emergencyContacts: [EmergencyContact]
+    @Query(sort: \SafetyContact.name)
+    private var safetyContacts: [SafetyContact]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -35,7 +35,7 @@ struct SOSView: View {
             VStack(spacing: 12) {
                 Button {
                     sosManager.shareLocationToContacts(
-                        emergencyContacts: emergencyContacts
+                        safetyContacts: safetyContacts
                     )
                 } label: {
                     actionRowTitle("안전 연락망에 위치 공유")

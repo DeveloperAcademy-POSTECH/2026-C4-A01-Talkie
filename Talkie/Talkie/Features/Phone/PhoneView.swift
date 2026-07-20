@@ -10,6 +10,7 @@ import SwiftData
 
 struct PhoneView: View {
     @State private var isFakeCallPresented = false
+    @State private var isSafetyContactListPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
 
     @Query(
@@ -31,9 +32,22 @@ struct PhoneView: View {
                 .ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: 28) {
-                Text("전화")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white)
+                HStack {
+                    Text("전화")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    Button {
+                        isSafetyContactListPresented = true
+                    } label: {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.white)
+                    }
+                    .accessibilityLabel("마이페이지")
+                }
                 
                 PhoneCardView(
                     scenario: currentScenario
@@ -67,6 +81,11 @@ struct PhoneView: View {
             onDismiss: stopFakeCallIfNeeded
         ) {
             fakeCallScreen
+        }
+        .sheet(isPresented: $isSafetyContactListPresented) {
+            NavigationStack {
+                SafetyContactListView()
+            }
         }
     }
 

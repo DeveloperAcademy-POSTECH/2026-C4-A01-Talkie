@@ -20,7 +20,7 @@ struct TalkieApp: App {
                 ScriptLine.self,
                 AudioClipMetadata.self,
                 CallReservation.self,
-                EmergencyContact.self
+                SafetyContact.self
             )
         } catch {
             fatalError("ModelContainer 생성 실패: \(String(reflecting: error))")
