@@ -15,18 +15,24 @@ struct OnboardingView: View {
     private let pages = OnboardingData.pages
     
     var body: some View {
-        VStack(spacing: 0) {
-            TabView(selection: $selectedIndex) {
-                ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
-                    OnboardingPageView(data: page)
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
             
-            bottomControls
+            VStack(spacing: 0) {
+                TabView(selection: $selectedIndex) {
+                    ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
+                        OnboardingPageView(data: page)
+                            .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                
+                bottomControls
+            }
+            .padding(.bottom, 24)
         }
-        .padding(.bottom, 24)
+        .preferredColorScheme(.dark)
     }
 }
 
@@ -54,6 +60,7 @@ private extension OnboardingView {
                     Button("건너뛰기") {
                         onFinish()
                     }
+                    .foregroundStyle(.white)
                 }
                 .padding(.horizontal)
             }

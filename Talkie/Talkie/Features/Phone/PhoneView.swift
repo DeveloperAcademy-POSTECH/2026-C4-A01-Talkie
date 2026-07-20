@@ -10,7 +10,7 @@ import SwiftData
 
 struct PhoneView: View {
     @State private var isFakeCallPresented = false
-    @State private var isSafetyContactListPresented = false
+    @State private var isMyPagePresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
 
     @Query(
@@ -40,7 +40,7 @@ struct PhoneView: View {
                     Spacer()
                     
                     Button {
-                        isSafetyContactListPresented = true
+                        isMyPagePresented = true
                     } label: {
                         Image(systemName: "person.crop.circle")
                             .font(.system(size: 28))
@@ -82,10 +82,8 @@ struct PhoneView: View {
         ) {
             fakeCallScreen
         }
-        .sheet(isPresented: $isSafetyContactListPresented) {
-            NavigationStack {
-                SafetyContactListView()
-            }
+        .sheet(isPresented: $isMyPagePresented) {
+            MyPageView()
         }
     }
 

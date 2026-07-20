@@ -13,11 +13,11 @@ struct OnboardingPageView: View {
     var body: some View {
         VStack(spacing: 24) {
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.16))
+                .fill(Color.white.opacity(0.12))
                 .frame(height: 350)
                 .overlay {
                     Text("Illustration Placeholder")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.6))
                 }
                 // TODO: Designer Illustration
             
@@ -25,11 +25,12 @@ struct OnboardingPageView: View {
                 Text(data.title)
                     .font(.title2)
                     .bold()
+                    .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                 
                 Text(data.description)
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
             }
         }
@@ -39,4 +40,5 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingPageView(data: OnboardingData.pages[0])
+        .background(Color.black)
 }
