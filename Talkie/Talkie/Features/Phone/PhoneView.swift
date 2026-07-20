@@ -16,7 +16,10 @@ struct PhoneView: View {
 
     @State private var isFakeCallPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
+    @State private var sosManager = SOSManager()
     @State private var historySaveError: String?
+    @State private var pendingSOSAction: ActiveCallSOSAction?
+    @State private var queuedSOSAction: ActiveCallSOSAction?
 
     @Query(
         filter: #Predicate<Scenario> { scenario in
@@ -26,6 +29,9 @@ struct PhoneView: View {
         order: .reverse
     )
     private var currentScenarios: [Scenario]
+
+    @Query(sort: \EmergencyContact.sortOrder)
+    private var emergencyContacts: [EmergencyContact]
     
     private var currentScenario: Scenario? {
         currentScenarios.first
@@ -68,9 +74,18 @@ struct PhoneView: View {
         }
         .fullScreenCover(
             isPresented: $isFakeCallPresented,
-            onDismiss: stopFakeCallIfNeeded
+            onDismiss: handleFakeCallDismissed
         ) {
             fakeCallScreen
+        }
+        .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
+            MessageComposerView(
+                mode: sosManager.messageComposeMode,
+                recipients: sosManager.messageRecipients,
+                body: sosManager.messageBody
+            ) {
+                sosManager.shouldShowMessageCompose = false
+            }
         }
         .alert(
             "통화내역 저장 실패",
@@ -82,6 +97,17 @@ struct PhoneView: View {
             Button("확인", role: .cancel) { }
         } message: {
             Text(historySaveError ?? "")
+        }
+        .alert(
+            "SOS 실행 실패",
+            isPresented: Binding(
+                get: { sosManager.currentError != nil },
+                set: { if !$0 { sosManager.currentError = nil } }
+            )
+        ) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(sosManager.currentError?.message ?? "")
         }
     }
 
@@ -110,33 +136,51 @@ struct PhoneView: View {
         }
     }
 
-    @ViewBuilder
     private var fakeCallScreen: some View {
-        if fakeCallCoordinator.phase == .incoming,
-           let profile = fakeCallCoordinator.profile {
-            IncomingFakeCallView(
-                profile: profile,
-                onAccept: acceptFakeCall,
-                onDecline: finishFakeCall
+        Group {
+            if fakeCallCoordinator.phase == .incoming,
+               let profile = fakeCallCoordinator.profile {
+                IncomingFakeCallView(
+                    profile: profile,
+                    onAccept: acceptFakeCall,
+                    onDecline: finishFakeCall
+                )
+            } else if fakeCallCoordinator.phase.isActiveCall,
+                      let profile = fakeCallCoordinator.profile,
+                      let callStartedAt = fakeCallCoordinator.callStartedAt {
+                ActiveFakeCallView(
+                    profile: profile,
+                    callStartedAt: callStartedAt,
+                    phase: fakeCallCoordinator.phase,
+                    currentInputLevel: fakeCallCoordinator.currentInputLevel,
+                    voiceMonitoringState: fakeCallCoordinator.voiceMonitoringState,
+                    isSpeakerEnabled: fakeCallCoordinator.isSpeakerEnabled,
+                    onEndCall: finishFakeCall,
+                    onSkipLine: fakeCallCoordinator.skipToNextLine,
+                    onSpeakerChange: fakeCallCoordinator.setSpeakerEnabled,
+                    onShareLocation: { requestSOSAction(.locationShare) },
+                    onEmergencySMS: { requestSOSAction(.emergencySMS) },
+                    onEmergencyCall: { requestSOSAction(.emergencyCall) }
+                )
+            } else if case let .failed(message) = fakeCallCoordinator.phase {
+                failedCall(message: message)
+            } else {
+                preparingCall
+            }
+        }
+        .alert(item: $pendingSOSAction) { action in
+            Alert(
+                title: Text(action.confirmationTitle),
+                message: Text(action.confirmationMessage),
+                primaryButton: action.isEmergency
+                    ? .destructive(Text(action.confirmButtonTitle)) {
+                        finishFakeCallAndQueue(action)
+                    }
+                    : .default(Text(action.confirmButtonTitle)) {
+                        finishFakeCallAndQueue(action)
+                    },
+                secondaryButton: .cancel()
             )
-        } else if fakeCallCoordinator.phase.isActiveCall,
-                  let profile = fakeCallCoordinator.profile,
-                  let callStartedAt = fakeCallCoordinator.callStartedAt {
-            ActiveFakeCallView(
-                profile: profile,
-                callStartedAt: callStartedAt,
-                phase: fakeCallCoordinator.phase,
-                currentInputLevel: fakeCallCoordinator.currentInputLevel,
-                voiceMonitoringState: fakeCallCoordinator.voiceMonitoringState,
-                isSpeakerEnabled: fakeCallCoordinator.isSpeakerEnabled,
-                onEndCall: finishFakeCall,
-                onSkipLine: fakeCallCoordinator.skipToNextLine,
-                onSpeakerChange: fakeCallCoordinator.setSpeakerEnabled
-            )
-        } else if case let .failed(message) = fakeCallCoordinator.phase {
-            failedCall(message: message)
-        } else {
-            preparingCall
         }
     }
 
@@ -181,6 +225,11 @@ struct PhoneView: View {
         persist(fakeCallCoordinator.endCall(reason: .interrupted))
     }
 
+    private func handleFakeCallDismissed() {
+        stopFakeCallIfNeeded()
+        performQueuedSOSActionIfNeeded()
+    }
+
     private func startFakeCall() {
         fakeCallCoordinator.startIncomingCall()
         isFakeCallPresented = true
@@ -191,6 +240,35 @@ struct PhoneView: View {
             recordsAudio: isAutomaticRecordingEnabled,
             scenarioTitle: currentScenario?.title ?? "가상 통화"
         )
+    }
+
+    private func requestSOSAction(_ action: ActiveCallSOSAction) {
+        pendingSOSAction = action
+    }
+
+    /// SOS 서비스가 sheet나 시스템 앱을 열기 전에 현재 통화의 녹음과 메타데이터를 먼저 확정합니다.
+    /// 실제 SOS 실행은 fullScreenCover의 dismiss가 끝난 뒤 `handleFakeCallDismissed()`에서 이어집니다.
+    private func finishFakeCallAndQueue(_ action: ActiveCallSOSAction) {
+        pendingSOSAction = nil
+        persist(fakeCallCoordinator.endCall(reason: .sosTriggered))
+        queuedSOSAction = action
+        isFakeCallPresented = false
+    }
+
+    private func performQueuedSOSActionIfNeeded() {
+        guard let action = queuedSOSAction else { return }
+        queuedSOSAction = nil
+
+        switch action {
+        case .locationShare:
+            sosManager.shareLocationToContacts(
+                emergencyContacts: emergencyContacts
+            )
+        case .emergencySMS:
+            sosManager.sendEmergencySMS112()
+        case .emergencyCall:
+            sosManager.callEmergencyServices()
+        }
     }
 
     private func persist(_ completedSession: CompletedFakeCallSession?) {
@@ -224,6 +302,51 @@ struct PhoneView: View {
             modelContext.rollback()
             historySaveError = "통화내역을 저장하지 못했습니다."
         }
+    }
+}
+
+private enum ActiveCallSOSAction: String, Identifiable {
+    case locationShare
+    case emergencySMS
+    case emergencyCall
+
+    var id: String { rawValue }
+
+    var confirmationTitle: String {
+        switch self {
+        case .locationShare:
+            "안전 연락망에 위치를 공유할까요?"
+        case .emergencySMS:
+            "112 문자 신고를 준비할까요?"
+        case .emergencyCall:
+            "112에 전화할까요?"
+        }
+    }
+
+    var confirmationMessage: String {
+        switch self {
+        case .locationShare:
+            "현재 가상 통화를 종료하고 위치가 포함된 메시지 작성 화면을 엽니다. 메시지는 사용자가 직접 전송합니다."
+        case .emergencySMS:
+            "현재 가상 통화를 종료하고 위치가 포함된 \(SOSEmergencyDestination.displayName) 문자 작성 화면을 엽니다. 문자는 사용자가 직접 전송합니다."
+        case .emergencyCall:
+            "현재 가상 통화를 종료하고 시스템 전화 확인 화면을 엽니다. 확인하면 \(SOSEmergencyDestination.displayName)로 연결됩니다."
+        }
+    }
+
+    var confirmButtonTitle: String {
+        switch self {
+        case .locationShare:
+            "위치 공유 준비"
+        case .emergencySMS:
+            "문자 작성"
+        case .emergencyCall:
+            "112 전화"
+        }
+    }
+
+    var isEmergency: Bool {
+        self != .locationShare
     }
 }
 

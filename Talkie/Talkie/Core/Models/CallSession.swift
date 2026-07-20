@@ -52,6 +52,7 @@ enum CallEndReason: String, Codable, Sendable {
     case userEnded
     case completed
     case interrupted
+    case sosTriggered
     case failed
     case unknown
 }
