@@ -10,6 +10,7 @@ import SwiftUI
 
 struct PhoneView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
@@ -18,6 +19,7 @@ struct PhoneView: View {
     @State private var isScenarioSelectionSheetPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
     @State private var sosManager = SOSManager()
+    @State private var widgetStatusManager = WidgetStatusManager()
     @State private var historySaveError: String?
     @State private var pendingSOSAction: ActiveCallSOSAction?
     @State private var queuedSOSAction: ActiveCallSOSAction?
@@ -49,6 +51,15 @@ struct PhoneView: View {
 
                 VStack(alignment: .leading, spacing: 28) {
                     phoneHeader
+
+                    if !widgetStatusManager.isWidgetInstalled {
+                        NavigationLink {
+                            WidgetInstallUI()
+                        } label: {
+                            WidgetInstallBannerView()
+                        }
+                        .buttonStyle(.plain)
+                    }
 
                     PhoneCardView(
                         scenario: currentScenario,
@@ -123,6 +134,19 @@ struct PhoneView: View {
                 Button("확인", role: .cancel) { }
             } message: {
                 Text(sosManager.currentError?.message ?? "")
+            }
+            .task {
+                syncCurrentScenarioToWidget()
+                await widgetStatusManager.checkWidgetStatus()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active else {
+                    return
+                }
+
+                Task {
+                    await widgetStatusManager.checkWidgetStatus()
+                }
             }
         }
     }
@@ -325,10 +349,19 @@ struct PhoneView: View {
 
         do {
             try modelContext.save()
+            WidgetScenarioStore.save(scenario: selectedScenario)
         } catch {
             modelContext.rollback()
             print("시나리오 선택 저장 실패: \(error.localizedDescription)")
         }
+    }
+
+    private func syncCurrentScenarioToWidget() {
+        guard let currentScenario else {
+            return
+        }
+
+        WidgetScenarioStore.save(scenario: currentScenario)
     }
 }
 
