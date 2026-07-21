@@ -78,9 +78,9 @@ struct ScenarioDetailView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(Circle())
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
 
             Spacer()
 
@@ -102,9 +102,9 @@ struct ScenarioDetailView: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(Circle())
                 }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
             }
         }
         .padding(.horizontal, 16)
@@ -114,7 +114,7 @@ struct ScenarioDetailView: View {
     private var scenarioHeader: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.scenario.title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
@@ -134,12 +134,12 @@ struct ScenarioDetailView: View {
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Constants.main500)
+                    .foregroundColor(.main500)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .overlay {
                         Capsule()
-                            .stroke(Constants.main500, lineWidth: 1)
+                            .stroke(.main500, lineWidth: 1)
                     }
                 }
                 .buttonStyle(.plain)
@@ -175,9 +175,9 @@ struct ScenarioDetailView: View {
             } label: {
                 Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(viewModel.isPlaying(scriptLine) ? .main500 : .grey100)
                     .frame(width: 36, height: 36)
-                    .background(Color.white.opacity(0.1))
+                    .background(.grey900)
                     .clipShape(Circle())
             }
             .disabled(!scriptLine.isRecorded)
@@ -187,11 +187,11 @@ struct ScenarioDetailView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(viewModel.isPlaying(scriptLine) ? Constants.main500.opacity(0.22) : Constants.grey700)
+                .fill(viewModel.isPlaying(scriptLine) ? .main500.opacity(0.22) : .grey700)
                 .overlay {
                     if viewModel.isPlaying(scriptLine) {
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Constants.main500.opacity(0.9), lineWidth: 1)
+                            .stroke(.main500.opacity(0.9), lineWidth: 1)
                     }
                 }
         )
