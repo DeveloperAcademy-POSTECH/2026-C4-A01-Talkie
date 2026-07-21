@@ -100,7 +100,7 @@ struct ScenarioDetailView: View {
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.grey100)
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.glass)
@@ -117,11 +117,11 @@ struct ScenarioDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.scenario.title)
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.grey100)
 
                     Text("발화자 | \(viewModel.callerName)")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Constants.grey300)
+                        .foregroundColor(.grey300)
                 }
 
                 Spacer()
@@ -166,7 +166,7 @@ struct ScenarioDetailView: View {
         HStack(alignment: .center, spacing: 14) {
             Text(scriptLine.text)
                 .font(.custom("Pretendard", size: 16))
-                .foregroundColor(.white)
+                .foregroundColor(.grey100)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
