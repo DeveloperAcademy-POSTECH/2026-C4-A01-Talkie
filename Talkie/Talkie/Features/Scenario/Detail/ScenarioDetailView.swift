@@ -40,7 +40,8 @@ struct ScenarioDetailView: View {
         .navigationDestination(isPresented: $isShowingScriptEditView) {
             ScriptEditView(
                 scenario: viewModel.scenario,
-                modelContext: modelContext
+                modelContext: modelContext,
+                actionButtonTitle: "수정하기"
             ) {
                 isShowingScriptEditView = false
             }
@@ -207,14 +208,12 @@ struct ScenarioDetailView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Scenario.self,
-        CallerProfile.self,
         ScriptLine.self,
         AudioClipMetadata.self,
         configurations: config
     )
 
-    let profile = CallerProfile(name: "엄마")
-    let scenario = Scenario(title: "사용자가 입력한 제목", callerProfile: profile)
+    let scenario = Scenario(title: "사용자가 입력한 제목", callerName: "엄마")
     scenario.scriptLines = [
         ScriptLine(text: "여보세요?", sortOrder: 0, scenario: scenario),
         ScriptLine(text: "아직 밖이야? 집에 오는 길 맞지?", sortOrder: 1, scenario: scenario),

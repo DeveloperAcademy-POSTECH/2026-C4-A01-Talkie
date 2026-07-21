@@ -41,7 +41,7 @@ final class ScenarioDetailViewModel {
     }
 
     var callerName: String {
-        scenario.callerProfile.name
+        scenario.callerName
     }
 
     func togglePlayAll() {

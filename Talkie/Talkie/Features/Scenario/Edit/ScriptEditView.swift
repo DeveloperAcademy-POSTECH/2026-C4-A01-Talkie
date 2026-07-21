@@ -16,16 +16,19 @@ struct ScriptEditView: View {
     @State private var pendingDeleteOffsets: IndexSet?
     @State private var isShowingDeleteConfirmation = false
 
+    private let actionButtonTitle: String
     private let onComplete: (() -> Void)?
 
     init(
         scenario: Scenario,
         modelContext: ModelContext,
+        actionButtonTitle: String = "대화 생성",
         onComplete: (() -> Void)? = nil
     ) {
         _viewModel = State(
             initialValue: ScriptEditViewModel(scenario: scenario, modelContext: modelContext)
         )
+        self.actionButtonTitle = actionButtonTitle
         self.onComplete = onComplete
     }
 
@@ -228,7 +231,7 @@ struct ScriptEditView: View {
                 }
             }
         } label: {
-            Text(viewModel.isPresetScenario ? "돌아가기" : "대화 생성")
+            Text(viewModel.isPresetScenario ? "돌아가기" : actionButtonTitle)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -267,14 +270,12 @@ struct ScriptEditView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Scenario.self,
-        CallerProfile.self,
         ScriptLine.self,
         AudioClipMetadata.self,
         configurations: config
     )
 
-    let sampleProfile = CallerProfile(name: "엄마")
-    let sampleScenario = Scenario(title: "집에 오는 길 통화", callerProfile: sampleProfile)
+    let sampleScenario = Scenario(title: "집에 오는 길 통화", callerName: "엄마")
 
     let line1 = ScriptLine(text: "여보세요?", sortOrder: 0, isRecorded: true, scenario: sampleScenario)
     let line2 = ScriptLine(text: "아직 밖이야? 집에 오는 길 맞지?", sortOrder: 1, isRecorded: true, scenario: sampleScenario)

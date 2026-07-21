@@ -27,8 +27,7 @@ final class ScenarioCreateViewModel {
             return
         }
         
-        let profile = CallerProfile(name: trimmedCallerName)
-        let scenario = Scenario(title: trimmedScenarioTitle, callerProfile: profile)
+        let scenario = Scenario(title: trimmedScenarioTitle, callerName: trimmedCallerName)
         
         let scriptLines = defaultScriptTexts.enumerated().map { index, text in
             ScriptLine(

@@ -144,7 +144,6 @@ struct ScenarioCreateView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Scenario.self,
-        CallerProfile.self,
         ScriptLine.self,
         configurations: config
     )

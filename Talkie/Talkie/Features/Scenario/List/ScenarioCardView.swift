@@ -18,12 +18,6 @@ struct ScenarioCardView: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                
-                Spacer()
-                
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.72))
             }
             
             Rectangle()
@@ -69,13 +63,11 @@ struct ScenarioCardView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Scenario.self,
-        CallerProfile.self,
         ScriptLine.self,
         configurations: config
     )
     
-    let dummyProfile = CallerProfile(name: "사용자 설정 이름")
-    let dummyScenario = Scenario(title: "기본 제공 시나리오 제목", callerProfile: dummyProfile)
+    let dummyScenario = Scenario(title: "기본 제공 시나리오 제목", callerName: "사용자 설정 이름")
     
     let line1 = ScriptLine(text: "시나리오 내용 첫 문장", sortOrder: 0, scenario: dummyScenario)
     let line2 = ScriptLine(text: "시나리오 두 번째 문장", sortOrder: 1, scenario: dummyScenario)

@@ -21,7 +21,7 @@ struct ScenarioInfoEditView: View {
     init(scenario: Scenario) {
         self.scenario = scenario
         _title = State(initialValue: scenario.title)
-        _callerName = State(initialValue: scenario.callerProfile.name)
+        _callerName = State(initialValue: scenario.callerName)
     }
 
     private var isFormValid: Bool {
@@ -125,7 +125,7 @@ struct ScenarioInfoEditView: View {
         }
 
         scenario.title = trimmedTitle
-        scenario.callerProfile.name = trimmedCallerName
+        scenario.callerName = trimmedCallerName
 
         do {
             try modelContext.save()
@@ -149,14 +149,12 @@ struct ScenarioInfoEditView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Scenario.self,
-        CallerProfile.self,
         ScriptLine.self,
         AudioClipMetadata.self,
         configurations: config
     )
 
-    let profile = CallerProfile(name: "엄마")
-    let scenario = Scenario(title: "엄마와의 대화", callerProfile: profile)
+    let scenario = Scenario(title: "엄마와의 대화", callerName: "엄마")
     container.mainContext.insert(scenario)
 
     return NavigationStack {

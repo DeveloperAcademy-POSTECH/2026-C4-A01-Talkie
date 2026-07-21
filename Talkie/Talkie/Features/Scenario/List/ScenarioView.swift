@@ -75,7 +75,6 @@ struct ScenarioView: View {
     ScenarioView()
         .modelContainer(for: [
             Scenario.self,
-            CallerProfile.self,
             ScriptLine.self,
             AudioClipMetadata.self
         ], inMemory: true)
