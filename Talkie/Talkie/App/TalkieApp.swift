@@ -19,7 +19,7 @@ struct TalkieApp: App {
                 ScriptLine.self,
                 AudioClipMetadata.self,
                 CallReservation.self,
-                EmergencyContact.self,
+                SafetyContact.self,
                 CallSession.self,
                 CallRecording.self
             )

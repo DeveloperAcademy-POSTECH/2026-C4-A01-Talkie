@@ -1,12 +1,12 @@
 //
-//  FakeCallView.swift
+//  PhoneView.swift
 //  Talkie
 //
 //  Created by DS on 7/11/26.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct PhoneView: View {
     @Environment(\.modelContext) private var modelContext
@@ -15,7 +15,6 @@ struct PhoneView: View {
     private var isAutomaticRecordingEnabled = false
 
     @State private var isFakeCallPresented = false
-    @State private var isMyPagePresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
     @State private var sosManager = SOSManager()
     @State private var historySaveError: String?
@@ -31,9 +30,9 @@ struct PhoneView: View {
     )
     private var currentScenarios: [Scenario]
 
-    @Query(sort: \EmergencyContact.sortOrder)
-    private var emergencyContacts: [EmergencyContact]
-    
+    @Query(sort: \SafetyContact.name)
+    private var safetyContacts: [SafetyContact]
+
     private var currentScenario: Scenario? {
         currentScenarios.first
     }
@@ -67,89 +66,48 @@ struct PhoneView: View {
                     .disabled(currentScenario == nil)
 
                     Spacer()
-        ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-            
-            VStack(alignment: .leading, spacing: 28) {
-                HStack {
-                    Text("전화")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(.white)
-                    
-                    Spacer()
-                    
-                    Button {
-                        isMyPagePresented = true
-                    } label: {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white)
-                    }
-                    .accessibilityLabel("마이페이지")
-                }
-                
-                PhoneCardView(
-                    scenario: currentScenario
-                )
-                
-                Button {
-                    fakeCallCoordinator.startIncomingCall()
-                    isFakeCallPresented = true
-                } label: {
-                    Text("Make a call")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(
-                            currentScenario == nil
-                            ? Constants.main500.opacity(0.24)
-                            : Constants.main500
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 32)
             }
             .toolbar(.hidden, for: .navigationBar)
-        }
-        .fullScreenCover(
-            isPresented: $isFakeCallPresented,
-            onDismiss: handleFakeCallDismissed
-        ) {
-            fakeCallScreen
-        }
-        .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
-            MessageComposerView(
-                mode: sosManager.messageComposeMode,
-                recipients: sosManager.messageRecipients,
-                body: sosManager.messageBody
+            .fullScreenCover(
+                isPresented: $isFakeCallPresented,
+                onDismiss: handleFakeCallDismissed
             ) {
-                sosManager.shouldShowMessageCompose = false
+                fakeCallScreen
             }
-        }
-        .alert(
-            "통화내역 저장 실패",
-            isPresented: Binding(
-                get: { historySaveError != nil },
-                set: { if !$0 { historySaveError = nil } }
-            )
-        ) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(historySaveError ?? "")
-        }
-        .alert(
-            "SOS 실행 실패",
-            isPresented: Binding(
-                get: { sosManager.currentError != nil },
-                set: { if !$0 { sosManager.currentError = nil } }
-            )
-        ) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(sosManager.currentError?.message ?? "")
+            .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
+                MessageComposerView(
+                    mode: sosManager.messageComposeMode,
+                    recipients: sosManager.messageRecipients,
+                    body: sosManager.messageBody
+                ) {
+                    sosManager.shouldShowMessageCompose = false
+                }
+            }
+            .alert(
+                "통화내역 저장 실패",
+                isPresented: Binding(
+                    get: { historySaveError != nil },
+                    set: { if !$0 { historySaveError = nil } }
+                )
+            ) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(historySaveError ?? "")
+            }
+            .alert(
+                "SOS 실행 실패",
+                isPresented: Binding(
+                    get: { sosManager.currentError != nil },
+                    set: { if !$0 { sosManager.currentError = nil } }
+                )
+            ) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(sosManager.currentError?.message ?? "")
+            }
         }
     }
 
@@ -175,8 +133,6 @@ struct PhoneView: View {
                     }
             }
             .accessibilityLabel("마이페이지")
-        .sheet(isPresented: $isMyPagePresented) {
-            MyPageView()
         }
     }
 
@@ -259,6 +215,18 @@ struct PhoneView: View {
         .preferredColorScheme(.dark)
     }
 
+    private func startFakeCall() {
+        fakeCallCoordinator.startIncomingCall()
+        isFakeCallPresented = true
+    }
+
+    private func acceptFakeCall() {
+        fakeCallCoordinator.acceptCall(
+            recordsAudio: isAutomaticRecordingEnabled,
+            scenarioTitle: currentScenario?.title ?? "가상 통화"
+        )
+    }
+
     private func finishFakeCall() {
         persist(fakeCallCoordinator.endCall())
         isFakeCallPresented = false
@@ -274,24 +242,10 @@ struct PhoneView: View {
         performQueuedSOSActionIfNeeded()
     }
 
-    private func startFakeCall() {
-        fakeCallCoordinator.startIncomingCall()
-        isFakeCallPresented = true
-    }
-
-    private func acceptFakeCall() {
-        fakeCallCoordinator.acceptCall(
-            recordsAudio: isAutomaticRecordingEnabled,
-            scenarioTitle: currentScenario?.title ?? "가상 통화"
-        )
-    }
-
     private func requestSOSAction(_ action: ActiveCallSOSAction) {
         pendingSOSAction = action
     }
 
-    /// SOS 서비스가 sheet나 시스템 앱을 열기 전에 현재 통화의 녹음과 메타데이터를 먼저 확정합니다.
-    /// 실제 SOS 실행은 fullScreenCover의 dismiss가 끝난 뒤 `handleFakeCallDismissed()`에서 이어집니다.
     private func finishFakeCallAndQueue(_ action: ActiveCallSOSAction) {
         pendingSOSAction = nil
         persist(fakeCallCoordinator.endCall(reason: .sosTriggered))
@@ -306,7 +260,7 @@ struct PhoneView: View {
         switch action {
         case .locationShare:
             sosManager.shareLocationToContacts(
-                emergencyContacts: emergencyContacts
+                safetyContacts: safetyContacts
             )
         case .emergencySMS:
             sosManager.sendEmergencySMS112()

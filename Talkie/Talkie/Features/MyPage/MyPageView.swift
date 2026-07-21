@@ -5,120 +5,180 @@
 //  Created by DS on 7/21/26.
 //
 
+import SwiftData
 import SwiftUI
 
 struct MyPageView: View {
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var isAutoRecordingEnabled = true
-    @State private var isiCloudSyncEnabled = true
-    
+
+    @Query(sort: \CallSession.startedAt, order: .reverse)
+    private var callSessions: [CallSession]
+
+    @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
+    private var isAutomaticRecordingEnabled = false
+
+    @AppStorage(TalkiePreferenceKey.iCloudSyncEnabled)
+    private var isICloudSyncEnabled = false
+
+    private var recordedCallCount: Int {
+        callSessions.lazy.filter { $0.recording != nil }.count
+    }
+
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.black
-                    .ignoresSafeArea()
-                
-                VStack(alignment: .leading, spacing: 28) {
-                    navigationBar
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("안전 연락망")
-                            .foregroundStyle(.white.opacity(0.5))
-                        
+        ZStack {
+            Constants.grey800
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 36) {
+                    MyPageHeader(title: "마이페이지", onBack: dismiss.callAsFunction)
+
+                    MyPageMenuSection(title: "안전 연락망") {
                         NavigationLink {
                             SafetyContactListView()
                         } label: {
-                            row("안전 연락망 모두 보기")
+                            MyPageNavigationRow(title: "안전 연락망 모두 보기")
                         }
                     }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("이전 통화내역 보기")
-                            .foregroundStyle(.white.opacity(0.5))
-                        
-                        row("모든 통화내역 보기", trailingText: "9")
+
+                    MyPageMenuSection(title: "이전 통화내역 보기") {
+                        NavigationLink {
+                            CallHistoryView()
+                        } label: {
+                            MyPageNavigationRow(
+                                title: "모든 통화내역 보기",
+                                trailingText: "\(recordedCallCount)"
+                            )
+                        }
                     }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("자동 녹음")
-                            .foregroundStyle(.white.opacity(0.5))
-                        
-                        Toggle("가상 통화 시 자동 녹음", isOn: $isAutoRecordingEnabled)
-                            .padding()
-                            .background(Constants.grey700)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                    MyPageMenuSection(title: "자동 녹음") {
+                        MyPageToggleRow(
+                            title: "가상 통화 시 자동 녹음",
+                            isOn: $isAutomaticRecordingEnabled
+                        )
                     }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("iCloud 동기화")
-                            .foregroundStyle(.white.opacity(0.5))
-                        
-                        Toggle("iCloud 동기화", isOn: $isiCloudSyncEnabled)
-                            .padding()
-                            .background(Constants.grey700)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                    MyPageMenuSection(title: "iCloud 동기화") {
+                        MyPageToggleRow(
+                            title: "iCloud 동기화",
+                            isOn: $isICloudSyncEnabled
+                        )
+                        .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
                     }
-                    
-                    Spacer()
                 }
-                .padding(20)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
             }
-            .navigationBarBackButtonHidden(true)
         }
         .preferredColorScheme(.dark)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
-private extension MyPageView {
-    var navigationBar: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-            }
-            .accessibilityLabel("뒤로가기")
-            
-            Spacer()
-            
-            Text("마이페이지")
-                .font(.headline)
+private struct MyPageHeader: View {
+    let title: String
+    let onBack: () -> Void
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.white)
-            
-            Spacer()
-            
-            Color.clear
-                .frame(width: 28, height: 28)
+
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(Color.white.opacity(0.06), in: Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(Color.white.opacity(0.20), lineWidth: 1)
+                        }
+                }
+                .accessibilityLabel("뒤로")
+
+                Spacer()
+            }
+        }
+        .padding(.top, 10)
+    }
+}
+
+private struct MyPageMenuSection<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(Constants.grey300.opacity(0.72))
+
+            content
         }
     }
-    
-    func row(
-        _ title: String,
-        trailingText: String? = nil
-    ) -> some View {
-        HStack {
+}
+
+private struct MyPageNavigationRow: View {
+    let title: String
+    var trailingText: String?
+
+    var body: some View {
+        HStack(spacing: 12) {
             Text(title)
+                .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(.white)
-            
+
             Spacer()
-            
+
             if let trailingText {
                 Text(trailingText)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(.system(size: 17, weight: .medium).monospacedDigit())
+                    .foregroundStyle(.white.opacity(0.68))
             }
-            
+
             Image(systemName: "chevron.right")
-                .foregroundStyle(.white.opacity(0.4))
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.38))
         }
-        .padding()
-        .background(Constants.grey700)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 64)
+        .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 18))
+        .contentShape(Rectangle())
+    }
+}
+
+private struct MyPageToggleRow: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Toggle(title, isOn: $isOn)
+            .font(.system(size: 18, weight: .medium))
+            .foregroundStyle(.white)
+            .tint(Color(red: 0.20, green: 0.78, blue: 0.35))
+            .padding(.horizontal, 20)
+            .frame(minHeight: 64)
+            .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 18))
     }
 }
 
 #Preview {
-    MyPageView()
+    NavigationStack {
+        MyPageView()
+    }
+    .modelContainer(
+        for: [
+            CallSession.self,
+            CallRecording.self,
+            SafetyContact.self
+        ],
+        inMemory: true
+    )
 }
