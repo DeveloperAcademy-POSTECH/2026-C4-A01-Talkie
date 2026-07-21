@@ -49,10 +49,7 @@ struct ScenarioView: View {
                         LazyVStack(spacing: 16) {
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
-                                    ScriptEditView(
-                                        scenario: scenario,
-                                        modelContext: modelContext
-                                    )
+                                    ScenarioDetailView(scenario: scenario)
                                 } label: {
                                     ScenarioCardView(scenario: scenario)
                                 }
