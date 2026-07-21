@@ -35,14 +35,13 @@ struct ScenarioCreateView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.grey100)
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
                     Spacer()
                 }
-                .padding(0)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // 3. 메인 타이틀
@@ -61,7 +60,7 @@ struct ScenarioCreateView: View {
                             .foregroundColor(.grey500)
                     )
                     .font(.custom("Pretendard", size: 16))
-                    .foregroundColor(.white)
+                    .foregroundColor(.grey100)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .background(.grey700)
@@ -79,7 +78,7 @@ struct ScenarioCreateView: View {
                             .foregroundColor(.grey500)
                     )
                     .font(.custom("Pretendard", size: 16))
-                    .foregroundColor(.white)
+                    .foregroundColor(.grey100)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .background(.grey700)
