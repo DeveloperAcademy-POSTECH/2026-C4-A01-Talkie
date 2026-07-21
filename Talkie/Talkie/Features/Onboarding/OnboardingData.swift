@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct OnboardingData: Identifiable {
     let id = UUID()
@@ -17,19 +18,19 @@ struct OnboardingData: Identifiable {
 extension OnboardingData {
     static let pages: [OnboardingData] = [
         OnboardingData(
-            title: "Talkie 시작하기",
-            description: "필요한 순간 자연스럽게 사용할 수 있는 통화 시나리오를 준비합니다.",
-            imageName: nil
+            title: "혼자 걷는 밤길도, 혼자가 아니도록",
+            description: "전화할 사람이 없을 때 가상 전화를 시작해보세요",
+            imageName: "Onboarding_image1"
         ),
         OnboardingData(
-            title: "시나리오 만들기",
-            description: "상황에 맞는 대사를 만들고, 원하는 순서로 정리할 수 있습니다.",
-            imageName: nil
+            title: "한 번의 터치로 바로 통화하세요",
+            description: "위젯을 누르면 간편하게 가상 통화를 시작할 수 있어요.",
+            imageName: "Onboarding_image2"
         ),
         OnboardingData(
-            title: "목소리 녹음하기",
-            description: "대사별로 목소리를 녹음해 더 자연스러운 통화 흐름을 만듭니다.",
-            imageName: nil
+            title: "안심할 수 있는 기록까지",
+            description: "통화와 함께 음성을 자동 기록해 필요한 순간을 남겨요.",
+            imageName: "Onboarding_image3"
         )
     ]
 }

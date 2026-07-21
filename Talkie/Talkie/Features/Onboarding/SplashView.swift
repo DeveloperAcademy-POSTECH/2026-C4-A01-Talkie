@@ -2,7 +2,7 @@
 //  SplashView.swift
 //  Talkie
 //
-//  Created by DS on 7/20/26.
+//  Created by DS on 7/11/26.
 //
 
 import SwiftUI
@@ -13,22 +13,11 @@ struct SplashView: View {
             Color.black
                 .ignoresSafeArea()
             
-            VStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.12))
-                    .frame(width: 96, height: 96)
-                    .overlay {
-                        Text("Logo")
-                            .foregroundStyle(.white.opacity(0.6))
-                    }
-                    // TODO: Designer Logo
-                
-                Text("Talkie")
-                    .font(.title)
-                    .bold()
-                    .foregroundStyle(.white)
-                    // TODO: Designer App Name Style
-            }
+            
+            Image("Talkie_logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
         }
         .preferredColorScheme(.dark)
     }
