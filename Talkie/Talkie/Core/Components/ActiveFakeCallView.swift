@@ -1,0 +1,236 @@
+//
+//  ActiveFakeCallView.swift
+//  Talkie
+//
+
+import SwiftUI
+
+struct ActiveFakeCallView: View {
+    let profile: VirtualCallerProfile
+    let callStartedAt: Date
+    let phase: FakeCallPhase
+    let currentInputLevel: Double
+    let voiceMonitoringState: VoiceMonitoringState
+    let isSpeakerEnabled: Bool
+    let onEndCall: () -> Void
+    let onSkipLine: () -> Void
+    let onSpeakerChange: (Bool) -> Void
+
+    @State private var isMuted = false
+
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: 18),
+        count: 3
+    )
+
+    var body: some View {
+        ZStack {
+            CallScreenBackground()
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                callerHeader
+                    .padding(.top, 52)
+
+                Spacer(minLength: 24)
+
+                controls
+                    .padding(.bottom, 4)
+            }
+            .padding(.horizontal, 28)
+            .frame(maxWidth: 520)
+        }
+        .preferredColorScheme(.dark)
+        .accessibilityAction(named: "다음 문장 재생", onSkipLine)
+    }
+
+    private var callerHeader: some View {
+        HStack(spacing: 14) {
+            ActiveCallerAvatar(systemImageName: profile.imageSystemName)
+
+            VStack(alignment: .leading, spacing: 2) {
+                TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
+                    Text(callDuration(at: context.date))
+                        .font(.system(size: 22, weight: .medium).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.58))
+                        .contentTransition(.numericText())
+                        .onLongPressGesture(minimumDuration: 1) {
+                            onSkipLine()
+                        }
+                        .accessibilityLabel("통화 시간 \(callDuration(at: context.date))")
+                }
+
+                Text(profile.displayName)
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.62)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    // 발화 감지와 입력 레벨은 통화 진행에 계속 사용하지만 실제 전화 화면에는 표시하지 않습니다.
+    private var controls: some View {
+        LazyVGrid(columns: columns, spacing: 28) {
+            ActiveCallControlButton(
+                title: "스피커",
+                icon: .system("speaker.wave.3.fill"),
+                isSelected: isSpeakerEnabled
+            ) {
+                onSpeakerChange(!isSpeakerEnabled)
+            }
+
+            ActiveCallControlButton(
+                title: "FaceTime",
+                icon: .faceTime,
+                isEnabled: false,
+                action: {}
+            )
+
+            ActiveCallControlButton(
+                title: "소리 끔",
+                icon: .system(isMuted ? "mic.fill" : "mic.slash.fill"),
+                isSelected: isMuted
+            ) {
+                isMuted.toggle()
+            }
+
+            ActiveCallControlButton(
+                title: "더 보기",
+                icon: .system("ellipsis"),
+                isEnabled: false,
+                action: {}
+            )
+
+            ActiveCallControlButton(
+                title: "종료",
+                icon: .system("phone.down.fill"),
+                backgroundColor: Color(red: 0.93, green: 0.17, blue: 0.21),
+                action: onEndCall
+            )
+
+            ActiveCallControlButton(
+                title: "키패드",
+                icon: .system("circle.grid.3x3.fill"),
+                isEnabled: false,
+                action: {}
+            )
+        }
+    }
+
+    private func callDuration(at date: Date) -> String {
+        let elapsed = max(0, Int(date.timeIntervalSince(callStartedAt)))
+        return String(format: "%02d:%02d", elapsed / 60, elapsed % 60)
+    }
+}
+
+private struct ActiveCallerAvatar: View {
+    let systemImageName: String?
+
+    var body: some View {
+        Image(systemName: systemImageName ?? "person.crop.circle.fill")
+            .resizable()
+            .scaledToFill()
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(.white.opacity(0.9))
+            .frame(width: 64, height: 64)
+            .background(.white.opacity(0.12), in: Circle())
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(.white.opacity(0.16), lineWidth: 0.5)
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+private enum ActiveCallControlIcon {
+    case system(String)
+    case faceTime
+}
+
+private struct ActiveCallControlButton: View {
+    let title: String
+    let icon: ActiveCallControlIcon
+    var isSelected = false
+    var isEnabled = true
+    var backgroundColor: Color?
+    let action: () -> Void
+
+    var body: some View {
+        VStack(spacing: 9) {
+            Button(action: action) {
+                iconView
+                    .foregroundStyle(isSelected ? .black : .white)
+                    .frame(width: 80, height: 80)
+                    .background(circleBackground, in: Circle())
+                    .overlay {
+                        if backgroundColor == nil && !isSelected {
+                            Circle()
+                                .stroke(.white.opacity(0.52), lineWidth: 1)
+                        }
+                    }
+            }
+            .buttonStyle(.plain)
+            .disabled(!isEnabled)
+            .opacity(1)
+
+            Text(title)
+                .font(.system(size: 17, weight: .regular))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? "켬" : "끔")
+        .accessibilityAddTraits(.isButton)
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case let .system(name):
+            Image(systemName: name)
+                .font(.system(size: 30, weight: .semibold))
+
+        case .faceTime:
+            ZStack {
+                Image(systemName: "video.fill")
+                    .font(.system(size: 30, weight: .semibold))
+
+                Text("?")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color.black.opacity(0.7))
+                    .offset(x: -4)
+            }
+        }
+    }
+
+    private var circleBackground: Color {
+        if let backgroundColor {
+            return backgroundColor
+        }
+
+        return isSelected ? .white : .white.opacity(0.12)
+    }
+}
+
+#Preview("Active call") {
+    ActiveFakeCallView(
+        profile: .preview,
+        callStartedAt: .now.addingTimeInterval(-43),
+        phase: .waitingForUser,
+        currentInputLevel: -42,
+        voiceMonitoringState: .listening,
+        isSpeakerEnabled: false,
+        onEndCall: {},
+        onSkipLine: {},
+        onSpeakerChange: { _ in }
+    )
+}
