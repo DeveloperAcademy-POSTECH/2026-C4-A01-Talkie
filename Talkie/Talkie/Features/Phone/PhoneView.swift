@@ -15,6 +15,7 @@ struct PhoneView: View {
     private var isAutomaticRecordingEnabled = false
 
     @State private var isFakeCallPresented = false
+    @State private var isScenarioSelectionSheetPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
     @State private var sosManager = SOSManager()
     @State private var historySaveError: String?
@@ -29,6 +30,9 @@ struct PhoneView: View {
         order: .reverse
     )
     private var currentScenarios: [Scenario]
+
+    @Query(sort: \Scenario.createdAt, order: .reverse)
+    private var scenarios: [Scenario]
 
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
@@ -47,7 +51,10 @@ struct PhoneView: View {
                     phoneHeader
 
                     PhoneCardView(
-                        scenario: currentScenario
+                        scenario: currentScenario,
+                        onChangeScenario: {
+                            isScenarioSelectionSheetPresented = true
+                        }
                     )
 
                     Button(action: startFakeCall) {
@@ -85,6 +92,15 @@ struct PhoneView: View {
                 ) {
                     sosManager.shouldShowMessageCompose = false
                 }
+            }
+            .sheet(isPresented: $isScenarioSelectionSheetPresented) {
+                ScenarioSelectionSheetView(
+                    scenarios: scenarios,
+                    currentScenario: currentScenario,
+                    onSelect: selectScenario
+                )
+                .presentationDetents([.height(520), .large])
+                .presentationDragIndicator(.hidden)
             }
             .alert(
                 "통화내역 저장 실패",
@@ -299,6 +315,19 @@ struct PhoneView: View {
             }
             modelContext.rollback()
             historySaveError = "통화내역을 저장하지 못했습니다."
+        }
+    }
+
+    private func selectScenario(_ selectedScenario: Scenario) {
+        for scenario in scenarios {
+            scenario.isCurrentSelection = scenario === selectedScenario
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            print("시나리오 선택 저장 실패: \(error.localizedDescription)")
         }
     }
 }
