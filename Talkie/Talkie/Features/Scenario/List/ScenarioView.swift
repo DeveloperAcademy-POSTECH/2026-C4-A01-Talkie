@@ -66,7 +66,9 @@ struct ScenarioView: View {
             }
             .preferredColorScheme(.dark)
             .navigationDestination(isPresented: $isShowingCreateView) {
-                ScenarioCreateView()
+                ScenarioCreateView {
+                    isShowingCreateView = false
+                }
             }
         }
     }

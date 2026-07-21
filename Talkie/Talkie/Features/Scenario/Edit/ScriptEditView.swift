@@ -4,16 +4,18 @@
 //
 //  Created by DS on 7/18/26.
 //
+
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers
 
 struct ScriptEditView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: ScriptEditViewModel
     @State private var isEditingScripts = false
-    @State private var draggedScriptLine: ScriptLine?
+    @State private var pendingDeleteOffsets: IndexSet?
+    @State private var isShowingDeleteConfirmation = false
+
     private let onComplete: (() -> Void)?
 
     init(
@@ -31,142 +33,30 @@ struct ScriptEditView: View {
         ZStack {
             Constants.grey800
                 .ignoresSafeArea()
-            
+
             VStack(alignment: .leading, spacing: 0) {
-                // 1. 상단 네비게이션 바
-                HStack {
-                    Button { dismiss() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 48, height: 48)
-                            .background(Color.white.opacity(0.08))
-                            .clipShape(Circle())
-                    }
-                    Spacer()
-                    Text(viewModel.scenario.title)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                    Spacer()
-                    Button {
-                        isEditingScripts.toggle()
-                    } label: {
-                        if isEditingScripts {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(Constants.grey800)
-                                .frame(width: 56, height: 56)
-                                .background(Constants.main500)
-                                .clipShape(Circle())
-                        } else {
-                            Text("편집")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color.white.opacity(0.08))
-                                .cornerRadius(40)
-                        }
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-                
-                // 2. 녹음 진행도 레이블 영역
-                HStack(spacing: 6) {
-                    Text("대화 문장 녹음 진행도")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
-                    HStack(spacing: 0) {
-                        Text("\(viewModel.recordedCount)").foregroundColor(Constants.main500)
-                        Text("/\(viewModel.totalCount)").foregroundColor(Constants.grey300)
-                    }
-                    .font(.system(size: 16, weight: .bold))
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 32)
-                .padding(.bottom, 24)
-                
-                // 3. 대사 리스트 스크롤 뷰
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(viewModel.sortedScriptLines) { scriptLine in
-                            ScriptLineCardView(
-                                scriptLine: scriptLine,
-                                isRecording: viewModel.isRecording(scriptLine),
-                                isEditing: isEditingScripts,
-                                onDrag: {
-                                    draggedScriptLine = scriptLine
-                                    return NSItemProvider(object: "\(scriptLine.sortOrder)" as NSString)
-                                },
-                                onPlay: {
-                                    viewModel.playRecording(for: scriptLine)
-                                },
-                                onRecordToggle: {
-                                    viewModel.toggleRecording(for: scriptLine)
-                                },
-                                onTextChange: { text in
-                                    viewModel.updateText(text, for: scriptLine)
-                                },
-                                onDelete: {
-                                    viewModel.deleteScriptLine(scriptLine)
-                                }
-                            )
-                            .onDrop(
-                                of: [.text],
-                                delegate: ScriptLineDropDelegate(
-                                    targetScriptLine: scriptLine,
-                                    draggedScriptLine: $draggedScriptLine,
-                                    moveAction: { source, destination in
-                                        viewModel.moveScriptLine(source, before: destination)
-                                    }
-                                )
-                            )
-                        }
-                        
-                        if isEditingScripts {
-                            Button {
-                                viewModel.addScriptLine()
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 24, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.48))
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 84)
-                                    .background(Constants.grey700)
-                                    .cornerRadius(16)
-                            }
-                            .accessibilityLabel("대사 추가")
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                }
-                
-                Spacer()
-                
-                // 4. 하단 고정 버튼
-                Button {
-                    if viewModel.completeEditing() {
-                        if let onComplete {
-                            onComplete()
-                        } else {
-                            dismiss()
-                        }
-                    }
-                } label: {
-                    Text("대화 생성")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Constants.main500)
-                        .cornerRadius(16)
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                navigationBar
+                recordingProgressHeader
+                scriptLineList
+                bottomActionButton
             }
         }
         .navigationBarBackButtonHidden(true)
+        .preferredColorScheme(.dark)
+        .alert(
+            "정말로 삭제하시겠습니까?",
+            isPresented: $isShowingDeleteConfirmation
+        ) {
+            Button("취소", role: .cancel) {
+                pendingDeleteOffsets = nil
+            }
+
+            Button("삭제", role: .destructive) {
+                confirmPendingDeletion()
+            }
+        } message: {
+            Text("삭제한 대사는 되돌릴 수 없습니다.")
+        }
         .alert(
             "저장 실패",
             isPresented: Binding(
@@ -179,46 +69,220 @@ struct ScriptEditView: View {
             Text(viewModel.errorMessage ?? "")
         }
     }
-}
 
-private struct ScriptLineDropDelegate: DropDelegate {
-    let targetScriptLine: ScriptLine
-    @Binding var draggedScriptLine: ScriptLine?
-    let moveAction: (ScriptLine, ScriptLine) -> Void
-    
-    func dropEntered(info: DropInfo) {
-        guard let draggedScriptLine, draggedScriptLine !== targetScriptLine else {
+    private var navigationBar: some View {
+        HStack {
+            Button { dismiss() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 48, height: 48)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Circle())
+            }
+
+            Spacer()
+
+            Text(viewModel.scenario.title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+
+            Spacer()
+
+            trailingNavigationControl
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+    }
+
+    @ViewBuilder
+    private var trailingNavigationControl: some View {
+        if viewModel.canEditScripts {
+            Button {
+                withAnimation {
+                    isEditingScripts.toggle()
+                }
+            } label: {
+                if isEditingScripts {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(Constants.grey800)
+                        .frame(width: 56, height: 56)
+                        .background(Constants.main500)
+                        .clipShape(Circle())
+                } else {
+                    Text("편집")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(40)
+                }
+            }
+        } else {
+            Text("읽기 전용")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.72))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(40)
+        }
+    }
+
+    private var recordingProgressHeader: some View {
+        HStack(spacing: 6) {
+            Text("대화 문장 녹음 진행도")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+
+            HStack(spacing: 0) {
+                Text("\(viewModel.recordedCount)")
+                    .foregroundColor(Constants.main500)
+
+                Text("/\(viewModel.totalCount)")
+                    .foregroundColor(Constants.grey300)
+            }
+            .font(.system(size: 16, weight: .bold))
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 32)
+        .padding(.bottom, 16)
+    }
+
+    private var scriptLineList: some View {
+        List {
+            ForEach(viewModel.sortedScriptLines) { scriptLine in
+                ScriptLineCardView(
+                    scriptLine: scriptLine,
+                    isRecording: viewModel.isRecording(scriptLine),
+                    isEditing: isEditingScripts,
+                    isReadOnly: viewModel.isPresetScenario,
+                    onPlay: {
+                        viewModel.playRecording(for: scriptLine)
+                    },
+                    onRecordToggle: {
+                        viewModel.toggleRecording(for: scriptLine)
+                    },
+                    onTextChange: { text in
+                        viewModel.updateText(text, for: scriptLine)
+                    },
+                    onDelete: {
+                        requestDelete(scriptLine)
+                    }
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                )
+                .deleteDisabled(!isEditingScripts || !viewModel.canEditScripts)
+                .moveDisabled(!isEditingScripts || !viewModel.canEditScripts)
+            }
+            .onMove { source, destination in
+                guard isEditingScripts else { return }
+                viewModel.moveScriptLines(from: source, to: destination)
+            }
+
+            if viewModel.canEditScripts {
+                addScriptLineButton
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(
+                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                    )
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .environment(
+            \.editMode,
+            .constant(isEditingScripts ? EditMode.active : EditMode.inactive)
+        )
+    }
+
+    private var addScriptLineButton: some View {
+        Button {
+            viewModel.addScriptLine()
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 24, weight: .medium))
+                .foregroundColor(.white.opacity(0.48))
+                .frame(maxWidth: .infinity)
+                .frame(height: 84)
+                .background(Constants.grey700)
+                .cornerRadius(16)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("대사 추가")
+    }
+
+    private var bottomActionButton: some View {
+        Button {
+            if viewModel.completeEditing() {
+                if let onComplete {
+                    onComplete()
+                } else {
+                    dismiss()
+                }
+            }
+        } label: {
+            Text(viewModel.isPresetScenario ? "돌아가기" : "대화 생성")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Constants.main500)
+                .cornerRadius(16)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
+    }
+
+    private func requestDelete(_ scriptLine: ScriptLine) {
+        guard let index = viewModel.sortedScriptLines.firstIndex(where: { $0 === scriptLine }) else {
             return
         }
-        
-        moveAction(draggedScriptLine, targetScriptLine)
+
+        requestDelete(IndexSet(integer: index))
     }
-    
-    func performDrop(info: DropInfo) -> Bool {
-        draggedScriptLine = nil
-        return true
+
+    private func requestDelete(_ offsets: IndexSet) {
+        pendingDeleteOffsets = offsets
+        isShowingDeleteConfirmation = true
+    }
+
+    private func confirmPendingDeletion() {
+        guard let pendingDeleteOffsets else {
+            return
+        }
+
+        viewModel.deleteScriptLines(at: pendingDeleteOffsets)
+        self.pendingDeleteOffsets = nil
     }
 }
 
-// MARK: - Preview Fix
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: Scenario.self, CallerProfile.self, ScriptLine.self, configurations: config
+        for: Scenario.self,
+        CallerProfile.self,
+        ScriptLine.self,
+        AudioClipMetadata.self,
+        configurations: config
     )
-    
+
     let sampleProfile = CallerProfile(name: "엄마")
     let sampleScenario = Scenario(title: "집에 오는 길 통화", callerProfile: sampleProfile)
-    
+
     let line1 = ScriptLine(text: "여보세요?", sortOrder: 0, isRecorded: true, scenario: sampleScenario)
     let line2 = ScriptLine(text: "아직 밖이야? 집에 오는 길 맞지?", sortOrder: 1, isRecorded: true, scenario: sampleScenario)
     let line3 = ScriptLine(text: "내가 맨날 잔소리한다고 하는데 뉴스 보면 별일이 다 있어서 그래.", sortOrder: 2, isRecorded: true, scenario: sampleScenario)
-    let line4 = ScriptLine(text: "오늘 뭐 입고 나갔더라? 아침에 정신없이 나가서 기억이 안 나네.", sortOrder: 3, scenario: sampleScenario)
-    let line5 = ScriptLine(text: "집 거의 다 오면 엄마한테 한 번만 더 전화하거나 문자 보내. 기다리고 있을게.", sortOrder: 4, scenario: sampleScenario)
-    
-    sampleScenario.scriptLines = [line1, line2, line3, line4, line5]
+
+    sampleScenario.scriptLines = [line1, line2, line3]
     container.mainContext.insert(sampleScenario)
-    
+
     return ScriptEditView(scenario: sampleScenario, modelContext: container.mainContext)
         .modelContainer(container)
 }

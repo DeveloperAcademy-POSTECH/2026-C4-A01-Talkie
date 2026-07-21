@@ -13,6 +13,11 @@ struct ScenarioCreateView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var viewModel = ScenarioCreateViewModel()
+    private let onComplete: (() -> Void)?
+
+    init(onComplete: (() -> Void)? = nil) {
+        self.onComplete = onComplete
+    }
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -122,7 +127,12 @@ struct ScenarioCreateView: View {
                     modelContext: modelContext
                 ) {
                     viewModel.shouldNavigateToScriptEdit = false
-                    dismiss()
+
+                    if let onComplete {
+                        onComplete()
+                    } else {
+                        dismiss()
+                    }
                 }
             }
         }
