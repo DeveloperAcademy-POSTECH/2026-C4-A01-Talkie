@@ -36,10 +36,10 @@ struct ScenarioCreateView: View {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
-                            .frame(width: 48, height: 48)
-                            .background(Color.white.opacity(0.08))
-                            .clipShape(Circle())
+                            .frame(width: 44, height: 44)
                     }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
                     Spacer()
                 }
                 .padding(0)
@@ -47,24 +47,24 @@ struct ScenarioCreateView: View {
                 
                 // 3. 메인 타이틀
                 Text("시나리오 제목과 발화자를 입력해주세요.")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.grey100)
                 
                 // 4. 시나리오 제목 입력 섹션
                 VStack(alignment: .leading, spacing: 9) {
                     Text("시나리오 제목")
                         .font(.custom("Pretendard", size: 14).weight(.medium))
-                        .foregroundColor(Constants.grey300)
+                        .foregroundColor(.grey300)
                     
                     TextField("", text: $viewModel.scenarioTitle, prompt:
                         Text("예: 엄마와의 통화")
-                            .foregroundColor(.white.opacity(0.16))
+                            .foregroundColor(.grey500)
                     )
                     .font(.custom("Pretendard", size: 16))
                     .foregroundColor(.white)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(Constants.grey700)
+                    .background(.grey700)
                     .cornerRadius(16)
                 }
                 
@@ -72,17 +72,17 @@ struct ScenarioCreateView: View {
                 VStack(alignment: .leading, spacing: 9) {
                     Text("발화자")
                         .font(.custom("Pretendard", size: 14).weight(.medium))
-                        .foregroundColor(Constants.grey300)
+                        .foregroundColor(.grey300)
                     
                     TextField("", text: $viewModel.callerName, prompt:
                         Text("엄마")
-                            .foregroundColor(.white.opacity(0.16))
+                            .foregroundColor(.grey500)
                     )
                     .font(.custom("Pretendard", size: 16))
                     .foregroundColor(.white)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(Constants.grey700)
+                    .background(.grey700)
                     .cornerRadius(16)
                 }
                 
@@ -95,12 +95,12 @@ struct ScenarioCreateView: View {
                     HStack(alignment: .center, spacing: 10) {
                         Text("다음으로")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.grey100)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .background(viewModel.isFormValid ? Constants.main500 : Constants.main500.opacity(0.24))
+                    .background(viewModel.isFormValid ? .main500 : .grey500)
                     .cornerRadius(16)
                 }
                 .disabled(!viewModel.isFormValid)
