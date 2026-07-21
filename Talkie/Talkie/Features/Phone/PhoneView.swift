@@ -15,6 +15,7 @@ struct PhoneView: View {
     private var isAutomaticRecordingEnabled = false
 
     @State private var isFakeCallPresented = false
+    @State private var isMyPagePresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
     @State private var sosManager = SOSManager()
     @State private var historySaveError: String?
@@ -66,6 +67,47 @@ struct PhoneView: View {
                     .disabled(currentScenario == nil)
 
                     Spacer()
+        ZStack {
+            Constants.grey800
+                .ignoresSafeArea()
+            
+            VStack(alignment: .leading, spacing: 28) {
+                HStack {
+                    Text("전화")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    Button {
+                        isMyPagePresented = true
+                    } label: {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.white)
+                    }
+                    .accessibilityLabel("마이페이지")
+                }
+                
+                PhoneCardView(
+                    scenario: currentScenario
+                )
+                
+                Button {
+                    fakeCallCoordinator.startIncomingCall()
+                    isFakeCallPresented = true
+                } label: {
+                    Text("Make a call")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 17)
+                        .background(
+                            currentScenario == nil
+                            ? Constants.main500.opacity(0.24)
+                            : Constants.main500
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 32)
@@ -133,6 +175,8 @@ struct PhoneView: View {
                     }
             }
             .accessibilityLabel("마이페이지")
+        .sheet(isPresented: $isMyPagePresented) {
+            MyPageView()
         }
     }
 

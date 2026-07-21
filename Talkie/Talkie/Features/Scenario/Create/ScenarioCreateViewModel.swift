@@ -27,8 +27,7 @@ final class ScenarioCreateViewModel {
             return
         }
         
-        let profile = CallerProfile(name: trimmedCallerName)
-        let scenario = Scenario(title: trimmedScenarioTitle, callerProfile: profile)
+        let scenario = Scenario(title: trimmedScenarioTitle, callerName: trimmedCallerName)
         
         let scriptLines = defaultScriptTexts.enumerated().map { index, text in
             ScriptLine(
@@ -61,11 +60,7 @@ final class ScenarioCreateViewModel {
     
     private var defaultScriptTexts: [String] {
         [
-            "여보세요?",
-            "아직 밖이야? 집에 오는 길 맞지?",
-            "내가 맨날 잔소리한다고 하는데 뉴스 보면 별일이 다 있어서 그래.",
-            "오늘 뭐 입고 나갔더라? 아침에 정신없이 나가서 기억이 안 나네.",
-            "집 거의 다 오면 엄마한테 한 번만 더 전화하거나 문자 보내. 기다리고 있을게."
+            "여보세요?"
         ]
     }
 }

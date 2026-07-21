@@ -16,7 +16,6 @@ struct TalkieApp: App {
         do {
             container = try ModelContainer(
                 for: Scenario.self,
-                CallerProfile.self,
                 ScriptLine.self,
                 AudioClipMetadata.self,
                 CallReservation.self,
@@ -39,7 +38,7 @@ struct TalkieApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            AppMainView()
         }
         .modelContainer(container)
     }

@@ -21,10 +21,9 @@ enum ScenarioSeedService {
         var needsSave = false
         
         for preset in ScenarioPreset.all where !savedPresetIDs.contains(preset.id) {
-            let callerProfile = CallerProfile(name: preset.callerName)
             let scenario = Scenario(
                 title: preset.title,
-                callerProfile: callerProfile,
+                callerName: preset.callerName,
                 presetID: preset.id
             )
             

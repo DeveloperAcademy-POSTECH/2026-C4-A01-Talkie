@@ -77,7 +77,7 @@ private extension PhoneCardView {
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                 
-                Text("발화자: \(scenario.callerProfile.name)")
+                Text("발화자: \(scenario.callerName)")
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(.white.opacity(0.56))
                     .lineLimit(1)

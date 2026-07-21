@@ -30,14 +30,14 @@ final class SOSManager {
     @ObservationIgnored
     private var pendingMessageRequest: SOSMessageRequest?
     
-    func shareLocationToContacts(emergencyContacts: [EmergencyContact]) {
+    func shareLocationToContacts(safetyContacts: [SafetyContact]) {
         guard !isLoading else {
             return
         }
         
         currentError = nil
         
-        let recipients = emergencyContacts
+        let recipients = safetyContacts
             .map(\.phoneNumber)
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         
