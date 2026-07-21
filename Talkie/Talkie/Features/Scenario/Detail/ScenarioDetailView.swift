@@ -114,7 +114,7 @@ struct ScenarioDetailView: View {
     private var scenarioHeader: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.scenario.title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.grey100)
@@ -175,7 +175,7 @@ struct ScenarioDetailView: View {
             } label: {
                 Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.grey100)
+                    .foregroundColor(viewModel.isPlaying(scriptLine) ? .main500 : .grey100)
                     .frame(width: 36, height: 36)
                     .background(.grey900)
                     .clipShape(Circle())
