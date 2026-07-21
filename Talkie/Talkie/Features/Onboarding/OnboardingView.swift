@@ -44,27 +44,33 @@ private extension OnboardingView {
                 selectedIndex: selectedIndex
             )
             
-            if selectedIndex == pages.count - 1 {
-                Button {
-                    onFinish()
-                } label: {
-                    Text("다음으로")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal)
-            } else {
-                HStack {
-                    Spacer()
-                    
-                    Button("건너뛰기") {
+           
+            ZStack {
+                
+                Color.clear
+                    .frame(height: 54)
+                
+                if selectedIndex == pages.count - 1 {
+                    Button {
                         onFinish()
+                    } label: {
+                        Text("다음으로")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
                     }
-                    .foregroundStyle(.white)
+                  
+                    .background(Color(red: 1.0, green: 0.357, blue: 0.106))
+                    .cornerRadius(12)
+                } else {
+                   
+                    EmptyView()
                 }
-                .padding(.horizontal)
             }
         }
+        .padding(.horizontal)
     }
 }
 

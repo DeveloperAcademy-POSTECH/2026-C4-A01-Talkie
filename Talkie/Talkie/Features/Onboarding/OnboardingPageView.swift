@@ -1,44 +1,47 @@
-//
-//  OnboardingPageView.swift
-//  Talkie
-//
-//  Created by DS on 7/20/26.
-//
-
 import SwiftUI
 
 struct OnboardingPageView: View {
     let data: OnboardingData
     
     var body: some View {
-        VStack(spacing: 24) {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.12))
-                .frame(height: 350)
-                .overlay {
-                    Text("Illustration Placeholder")
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-                // TODO: Designer Illustration
+        VStack(alignment: .leading) {
+            Spacer().frame(height: 70)
             
-            VStack(spacing: 12) {
+            
+            VStack(alignment: .leading, spacing: 3) {
                 Text(data.title)
                     .font(.title2)
                     .bold()
                     .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                
+                    .multilineTextAlignment(.leading)
+                 
                 Text(data.description)
                     .font(.body)
                     .foregroundStyle(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.leading)
             }
+            .frame(height: 90, alignment: .topLeading)
+            .padding(.horizontal, 16)
+            
+            
+            Spacer()
+            
+            if let imageName = data.imageName {
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 450)
+                    .frame(maxWidth: .infinity)
+            }
+            
+            Spacer()
         }
-        .padding()
     }
 }
 
 #Preview {
-    OnboardingPageView(data: OnboardingData.pages[0])
-        .background(Color.black)
+    ZStack {
+        Color.black.ignoresSafeArea()
+        OnboardingPageView(data: OnboardingData.pages[0])
+    }
 }
