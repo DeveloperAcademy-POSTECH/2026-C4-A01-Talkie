@@ -11,7 +11,7 @@ struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
     let isEditing: Bool
-    let onDrag: () -> NSItemProvider
+    let isReadOnly: Bool
     let onPlay: () -> Void
     let onRecordToggle: () -> Void
     let onTextChange: (String) -> Void
@@ -23,7 +23,6 @@ struct ScriptLineCardView: View {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.white.opacity(0.36))
-                    .onDrag(onDrag)
                     .accessibilityLabel("순서 변경")
             }
             
@@ -36,7 +35,7 @@ struct ScriptLineCardView: View {
                     
                     Spacer()
                     
-                    if isEditing {
+                    if isEditing && !isReadOnly {
                         Button(action: onDelete) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 18, weight: .medium))
@@ -46,7 +45,7 @@ struct ScriptLineCardView: View {
                     }
                 }
                 
-                if isEditing {
+                if isEditing && !isReadOnly {
                     TextField(
                         "대사를 입력하세요.",
                         text: Binding(
@@ -66,7 +65,7 @@ struct ScriptLineCardView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                if !isEditing {
+                if !isEditing && !isReadOnly {
                     HStack {
                         Spacer()
                         

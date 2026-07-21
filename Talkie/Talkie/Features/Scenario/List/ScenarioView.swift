@@ -49,10 +49,7 @@ struct ScenarioView: View {
                         LazyVStack(spacing: 16) {
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
-                                    ScriptEditView(
-                                        scenario: scenario,
-                                        modelContext: modelContext
-                                    )
+                                    ScenarioDetailView(scenario: scenario)
                                 } label: {
                                     ScenarioCardView(scenario: scenario)
                                 }
@@ -66,7 +63,9 @@ struct ScenarioView: View {
             }
             .preferredColorScheme(.dark)
             .navigationDestination(isPresented: $isShowingCreateView) {
-                ScenarioCreateView()
+                ScenarioCreateView {
+                    isShowingCreateView = false
+                }
             }
         }
     }
@@ -76,7 +75,6 @@ struct ScenarioView: View {
     ScenarioView()
         .modelContainer(for: [
             Scenario.self,
-            CallerProfile.self,
             ScriptLine.self,
             AudioClipMetadata.self
         ], inMemory: true)

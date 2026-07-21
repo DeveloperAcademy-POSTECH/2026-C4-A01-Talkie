@@ -16,11 +16,10 @@ struct TalkieApp: App {
         do {
             container = try ModelContainer(
                 for: Scenario.self,
-                CallerProfile.self,
                 ScriptLine.self,
                 AudioClipMetadata.self,
                 CallReservation.self,
-                EmergencyContact.self
+                SafetyContact.self
             )
         } catch {
             fatalError("ModelContainer 생성 실패: \(String(reflecting: error))")
@@ -37,7 +36,7 @@ struct TalkieApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            AppMainView()
         }
         .modelContainer(container)
     }

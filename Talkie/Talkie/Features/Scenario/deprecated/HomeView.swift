@@ -23,7 +23,7 @@ struct HomeView: View {
                             .font(.title)
                             .fontWeight(.bold)
                         
-                        Text(scenario.callerProfile.name)
+                        Text(scenario.callerName)
                             .font(.body)
                             .foregroundStyle(.secondary)
                     } else {
@@ -81,7 +81,7 @@ struct HomeView: View {
                                     Text(scenario.title)
                                         .font(.headline)
                                     
-                                    Text(scenario.callerProfile.name)
+                                    Text(scenario.callerName)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

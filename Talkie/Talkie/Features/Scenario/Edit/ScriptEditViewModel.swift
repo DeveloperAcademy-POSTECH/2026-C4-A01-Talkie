@@ -8,6 +8,7 @@ import Foundation
 @preconcurrency import AVFoundation
 import SwiftData
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -46,9 +47,22 @@ final class ScriptEditViewModel {
         scenario.scriptLines.count
     }
 
+    var isPresetScenario: Bool {
+        scenario.presetID != nil
+    }
+
+    var canEditScripts: Bool {
+        !isPresetScenario
+    }
+
     // MARK: - Recording
 
     func toggleRecording(for scriptLine: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 녹음 상태를 변경할 수 없습니다."
+            return
+        }
+
         if isRecording(scriptLine) {
             stopRecording(for: scriptLine)
         } else {
@@ -57,6 +71,11 @@ final class ScriptEditViewModel {
     }
 
     func startRecording(for scriptLine: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 녹음 상태를 변경할 수 없습니다."
+            return
+        }
+
         errorMessage = nil
         stopPlayback()
         
@@ -73,6 +92,11 @@ final class ScriptEditViewModel {
     }
 
     func stopRecording(for scriptLine: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 녹음 상태를 변경할 수 없습니다."
+            return
+        }
+
         guard isRecording(scriptLine) else {
             return
         }
@@ -104,11 +128,21 @@ final class ScriptEditViewModel {
     // MARK: - Script Editing
     
     func updateText(_ text: String, for scriptLine: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 수정할 수 없습니다."
+            return
+        }
+
         scriptLine.text = text
         saveChanges()
     }
     
     func addScriptLine() {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오에는 대사를 추가할 수 없습니다."
+            return
+        }
+
         let scriptLine = ScriptLine(
             text: "자유롭게 녹음해보세요.",
             sortOrder: scenario.scriptLines.count,
@@ -121,6 +155,11 @@ final class ScriptEditViewModel {
     }
     
     func deleteScriptLine(_ scriptLine: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 삭제할 수 없습니다."
+            return
+        }
+
         if isRecording(scriptLine) {
             cancelCurrentRecording()
         }
@@ -137,8 +176,28 @@ final class ScriptEditViewModel {
         reassignSortOrders()
         saveChanges()
     }
+
+    func deleteScriptLines(at offsets: IndexSet) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오는 삭제할 수 없습니다."
+            return
+        }
+
+        let linesToDelete = offsets.compactMap { index in
+            sortedScriptLines[safe: index]
+        }
+
+        linesToDelete.forEach { scriptLine in
+            deleteScriptLine(scriptLine)
+        }
+    }
     
     func moveScriptLine(_ source: ScriptLine, before destination: ScriptLine) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오의 순서는 변경할 수 없습니다."
+            return
+        }
+
         var lines = sortedScriptLines
         
         guard
@@ -152,6 +211,19 @@ final class ScriptEditViewModel {
         let movedLine = lines.remove(at: sourceIndex)
         let adjustedDestinationIndex = sourceIndex < destinationIndex ? destinationIndex - 1 : destinationIndex
         lines.insert(movedLine, at: adjustedDestinationIndex)
+        scenario.scriptLines = lines
+        reassignSortOrders()
+        saveChanges()
+    }
+
+    func moveScriptLines(from source: IndexSet, to destination: Int) {
+        guard canEditScripts else {
+            errorMessage = "기본 제공 시나리오의 순서는 변경할 수 없습니다."
+            return
+        }
+
+        var lines = sortedScriptLines
+        lines.move(fromOffsets: source, toOffset: destination)
         scenario.scriptLines = lines
         reassignSortOrders()
         saveChanges()
@@ -325,3 +397,9 @@ final class ScriptEditViewModel {
 }
 
 extension ScriptEditViewModel: @unchecked Sendable {}
+
+private extension Collection {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}

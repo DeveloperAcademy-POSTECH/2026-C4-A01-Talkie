@@ -13,22 +13,20 @@ final class Scenario {
     var createdAt: Date
     var presetID: String?
     var isCurrentSelection: Bool
-    
-    @Relationship(deleteRule: .cascade, inverse: \CallerProfile.scenario)
-    var callerProfile: CallerProfile
+    var callerName: String
     
     @Relationship(deleteRule: .cascade, inverse: \ScriptLine.scenario)
     var scriptLines: [ScriptLine] = []
     
     init(
         title: String,
-        callerProfile: CallerProfile,
+        callerName: String,
         createdAt: Date = Date(),
         presetID: String? = nil,
         isCurrentSelection: Bool = false
     ) {
         self.title = title
-        self.callerProfile = callerProfile
+        self.callerName = callerName
         self.createdAt = createdAt
         self.presetID = presetID
         self.isCurrentSelection = isCurrentSelection
