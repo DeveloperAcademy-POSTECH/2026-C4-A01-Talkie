@@ -15,6 +15,9 @@ struct ActiveFakeCallView: View {
     let onEndCall: () -> Void
     let onSkipLine: () -> Void
     let onSpeakerChange: (Bool) -> Void
+    let onShareLocation: () -> Void
+    let onEmergencySMS: () -> Void
+    let onEmergencyCall: () -> Void
 
     @State private var isMuted = false
 
@@ -79,7 +82,8 @@ struct ActiveFakeCallView: View {
             ActiveCallControlButton(
                 title: "스피커",
                 icon: .system("speaker.wave.3.fill"),
-                isSelected: isSpeakerEnabled
+                isSelected: isSpeakerEnabled,
+                reportsSelectionState: true
             ) {
                 onSpeakerChange(!isSpeakerEnabled)
             }
@@ -87,14 +91,16 @@ struct ActiveFakeCallView: View {
             ActiveCallControlButton(
                 title: "FaceTime",
                 icon: .faceTime,
-                isEnabled: false,
-                action: {}
+                accessibilityName: "112 문자 신고",
+                accessibilityHint: "현재 가상 통화를 종료하고 위치가 포함된 112 문자 작성 화면을 엽니다.",
+                action: onEmergencySMS
             )
 
             ActiveCallControlButton(
                 title: "소리 끔",
                 icon: .system(isMuted ? "mic.fill" : "mic.slash.fill"),
-                isSelected: isMuted
+                isSelected: isMuted,
+                reportsSelectionState: true
             ) {
                 isMuted.toggle()
             }
@@ -102,8 +108,9 @@ struct ActiveFakeCallView: View {
             ActiveCallControlButton(
                 title: "더 보기",
                 icon: .system("ellipsis"),
-                isEnabled: false,
-                action: {}
+                accessibilityName: "안전 연락망에 위치 공유",
+                accessibilityHint: "현재 가상 통화를 종료하고 저장된 안전 연락망에 위치 공유 문자를 준비합니다.",
+                action: onShareLocation
             )
 
             ActiveCallControlButton(
@@ -116,8 +123,9 @@ struct ActiveFakeCallView: View {
             ActiveCallControlButton(
                 title: "키패드",
                 icon: .system("circle.grid.3x3.fill"),
-                isEnabled: false,
-                action: {}
+                accessibilityName: "112 전화 신고",
+                accessibilityHint: "현재 가상 통화를 종료하고 112 전화 연결을 준비합니다.",
+                action: onEmergencyCall
             )
         }
     }
@@ -159,6 +167,9 @@ private struct ActiveCallControlButton: View {
     var isSelected = false
     var isEnabled = true
     var backgroundColor: Color?
+    var accessibilityName: String?
+    var accessibilityHint: String?
+    var reportsSelectionState = false
     let action: () -> Void
 
     var body: some View {
@@ -187,8 +198,11 @@ private struct ActiveCallControlButton: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(title)
-        .accessibilityValue(isSelected ? "켬" : "끔")
+        .accessibilityLabel(accessibilityName ?? title)
+        .accessibilityValue(
+            reportsSelectionState ? (isSelected ? "켬" : "끔") : ""
+        )
+        .accessibilityHint(accessibilityHint ?? "")
         .accessibilityAddTraits(.isButton)
     }
 
@@ -231,6 +245,9 @@ private struct ActiveCallControlButton: View {
         isSpeakerEnabled: false,
         onEndCall: {},
         onSkipLine: {},
-        onSpeakerChange: { _ in }
+        onSpeakerChange: { _ in },
+        onShareLocation: {},
+        onEmergencySMS: {},
+        onEmergencyCall: {}
     )
 }
