@@ -50,13 +50,10 @@ nonisolated final class VoiceActivityDetector: @unchecked Sendable {
 
     // AVAudioEngine의 tap, Speech 결과 Task, UI 요청이 서로 다른 실행 문맥에서 접근하므로
     // 아래 상태는 항상 stateLock 안에서 읽고 쓴다.
-    private let audioEngine = AVAudioEngine()
     private let stateLock = NSLock()
     private var gate = VoiceActivityGate()
 
     private var isRunning = false
-    private var isTapInstalled = false
-    private var isSpeakerEnabled = false
     private var smoothedInputLevel: Float?
     private var lastPublishedLevelAt: TimeInterval = 0
     // AVAudioEngine의 동기 callback과 SpeechAnalyzer의 비동기 입력을 이어 주는 브리지.
@@ -76,62 +73,20 @@ nonisolated final class VoiceActivityDetector: @unchecked Sendable {
         await AVAudioApplication.requestRecordPermission()
     }
 
-    func setSpeakerEnabled(_ enabled: Bool) {
-        stateLock.lock()
-        isSpeakerEnabled = enabled
-        stateLock.unlock()
-    }
-
-    func start() throws {
-        // 이전 턴의 tap/Task/continuation이 남아 있으면 하나의 마이크 버퍼가 중복 분석된다.
-        // 새 감지를 시작하기 전에 항상 이전 파이프라인을 완전히 정리한다.
+    func start(inputFormat: AVAudioFormat) throws {
+        // 새 사용자 턴이 시작될 때 이전 Speech Task와 gate 상태를 완전히 정리합니다.
+        // 실제 마이크 tap은 통화 전체 동안 CallAudioCaptureService가 계속 소유합니다.
         stop()
-
-        stateLock.lock()
-        let speakerEnabled = isSpeakerEnabled
-        stateLock.unlock()
-        try FakeCallAudioSession.activate(speakerEnabled: speakerEnabled)
-
-        let inputNode = audioEngine.inputNode
-        let inputFormat = inputNode.outputFormat(forBus: 0)
         guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
             throw DetectorError.audioInputUnavailable
         }
 
         resetDetectionState(isRunning: true)
-        // Speech asset 준비는 비동기일 수 있으므로 analyzer 준비와 마이크 tap 설치를 분리한다.
-        // converter가 준비되기 전의 버퍼는 dB 시각화에만 사용되고 발화 이벤트를 만들지 않는다.
+        // Speech asset 준비 중에도 CallAudioCaptureService는 입력과 녹음을 계속 유지합니다.
         startAppleSpeechDetection(inputFormat: inputFormat)
-        inputNode.installTap(
-            onBus: 0,
-            bufferSize: 1_024,
-            format: inputFormat
-        ) { [weak self] buffer, _ in
-            self?.process(buffer: buffer)
-        }
-        isTapInstalled = true
-
-        audioEngine.prepare()
-        do {
-            try audioEngine.start()
-        } catch {
-            inputNode.removeTap(onBus: 0)
-            isTapInstalled = false
-            stop()
-            throw error
-        }
     }
 
     func stop() {
-        // tap을 먼저 제거해 정리 도중 새로운 오디오 버퍼가 process(buffer:)로 들어오지 않게 한다.
-        if isTapInstalled {
-            audioEngine.inputNode.removeTap(onBus: 0)
-            isTapInstalled = false
-        }
-        if audioEngine.isRunning {
-            audioEngine.stop()
-        }
-
         stateLock.lock()
         let inputContinuation = analyzerInputContinuation
         let analyzerTask = analyzerTask
@@ -156,7 +111,9 @@ nonisolated final class VoiceActivityDetector: @unchecked Sendable {
         transcriberDrainTask?.cancel()
     }
 
-    private func process(buffer: AVAudioPCMBuffer) {
+    /// CallAudioCaptureService의 단일 input tap이 전달한 버퍼를 분석합니다.
+    /// 감지가 꺼진 상대방 재생 구간에는 즉시 반환하지만 녹음 writer는 같은 버퍼를 계속 기록합니다.
+    func process(buffer: AVAudioPCMBuffer) {
         // AVAudioEngine이 route 변경/중단 경계에서 frameLength 또는 byteSize가 0인 버퍼를
         // 전달할 수 있다. 빈 버퍼를 converter에 넣으면 AVAudioBuffer precondition 경고가 난다.
         guard Self.containsAudioData(buffer) else { return }
