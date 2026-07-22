@@ -186,13 +186,10 @@ struct PhoneView: View {
                 Image(systemName: "person.fill")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.white)
-                    .frame(width: 48, height: 48)
-                    .background(Color.white.opacity(0.08), in: Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(Color.white.opacity(0.24), lineWidth: 1)
-                    }
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
             .accessibilityLabel("마이페이지")
         }
     }

@@ -18,7 +18,6 @@ struct TalkieApp: App {
                 for: Scenario.self,
                 ScriptLine.self,
                 AudioClipMetadata.self,
-                CallReservation.self,
                 SafetyContact.self,
                 CallSession.self,
                 CallRecording.self

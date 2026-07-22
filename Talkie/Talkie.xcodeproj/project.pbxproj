@@ -445,14 +445,7 @@
 				DEVELOPMENT_TEAM = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleURLTypes = (
-					{
-						CFBundleURLName = com.Team01.Talkie;
-						CFBundleURLSchemes = (
-							myapp,
-						);
-					},
-				);
+				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -488,14 +481,7 @@
 				DEVELOPMENT_TEAM = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleURLTypes = (
-					{
-						CFBundleURLName = com.Team01.Talkie;
-						CFBundleURLSchemes = (
-							myapp,
-						);
-					},
-				);
+				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
