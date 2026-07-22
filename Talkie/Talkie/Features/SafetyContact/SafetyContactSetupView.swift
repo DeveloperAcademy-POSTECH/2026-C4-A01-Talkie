@@ -24,34 +24,34 @@ struct SafetyContactSetupView: View {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("안심 연락망을 입력해주세요.")
-                        .font(.title2)
-                        .bold()
-                        .foregroundStyle(.white)
+                        .font(Font.custom("Pretendard", size: 24).weight(.semibold))
+                        .foregroundColor(Constants.grey100)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                     
                     Text("설정에서 언제든지 변경할 수 있어요.")
-                        .foregroundStyle(.white.opacity(0.7))
+                        .font(Font.custom("Pretendard", size: 16))
+                        .foregroundColor(Constants.grey300)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
                 
                 VStack(spacing: 16) {
                     ForEach(viewModel.contactInputs.indices, id: \.self) { index in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("연락망 \(index + 1)")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.7))
-                            
-                            HStack {
-                                TextField("이름", text: $viewModel.contactInputs[index].name)
-                                TextField("전화번호", text: $viewModel.contactInputs[index].phoneNumber)
-                                    .keyboardType(.phonePad)
-                            }
-                            .textFieldStyle(.roundedBorder)
-                        }
+                        contactInputRow(
+                            index: index,
+                            name: $viewModel.contactInputs[index].name,
+                            phoneNumber: $viewModel.contactInputs[index].phoneNumber
+                        )
                     }
                 }
                 
-                Button("+ 연락망 추가하기") {
+                Button {
                     viewModel.addContactInput()
+                } label: {
+                    Text("+ 연락망 추가하기")
+                        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                        .foregroundColor(Constants.textSecondary)
                 }
+                .frame(maxWidth: .infinity)
                 
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
@@ -67,17 +67,68 @@ struct SafetyContactSetupView: View {
                     )
                 } label: {
                     Text("시작하기")
+                        .font(Font.custom("Pretendard", size: 16).weight(.medium))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 16)
                 }
-                .background(viewModel.canStart ? Color.orange : Color.gray.opacity(0.3))
-                .foregroundStyle(.primary)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(viewModel.canStart ? Constants.main500 : Constants.surfaceDisable)
+                .foregroundStyle(.black)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
                 .disabled(!viewModel.canStart)
             }
             .padding(24)
         }
         .preferredColorScheme(.dark)
+    }
+}
+
+private extension SafetyContactSetupView {
+    func contactInputRow(
+        index: Int,
+        name: Binding<String>,
+        phoneNumber: Binding<String>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text("연락망\(index + 1)")
+                .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                .foregroundColor(Constants.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+
+            HStack(alignment: .center, spacing: 8) {
+                contactTextField(
+                    placeholder: "이름",
+                    text: name
+                )
+                .frame(width: 100)
+
+                contactTextField(
+                    placeholder: "전화번호",
+                    text: phoneNumber,
+                    keyboardType: .phonePad
+                )
+            }
+        }
+    }
+
+    func contactTextField(
+        placeholder: String,
+        text: Binding<String>,
+        keyboardType: UIKeyboardType = .default
+    ) -> some View {
+        TextField(
+            "",
+            text: text,
+            prompt: Text(placeholder)
+                .foregroundColor(Constants.grey400)
+        )
+        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+        .foregroundColor(Constants.grey100)
+        .keyboardType(keyboardType)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(Constants.surfaceTextField)
+        .cornerRadius(12)
     }
 }
 

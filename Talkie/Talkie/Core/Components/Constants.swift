@@ -8,8 +8,13 @@
 import SwiftUI
 
 struct Constants {
-    static let grey800 = Color(red: 30/255, green: 30/255, blue: 30/255)
-    static let grey700 = Color(red: 0.14, green: 0.14, blue: 0.14)
-    static let grey300 = Color(red: 0.65, green: 0.65, blue: 0.65)
-    static let main500 = Color(red: 0.98, green: 0.38, blue: 0.12)
+    static let grey100 = Color("grey 100")
+    static let grey300 = Color("grey 300")
+    static let grey400 = Color("grey 400")
+    static let grey700 = Color("grey 700")
+    static let grey800 = Color("grey 800")
+    static let main500 = Color("main 500")
+    static let surfaceTextField = Color("grey 700")
+    static let surfaceDisable = Color("grey 400")
+    static let textSecondary = Color("grey 300")
 }
