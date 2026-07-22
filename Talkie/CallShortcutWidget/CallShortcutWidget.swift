@@ -101,8 +101,7 @@ struct CallShortcutWidgetEntryView: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
 
             Link(destination: CallShortcutWidgetConfiguration.deepLinkURL) {
                 VStack(alignment: .center, spacing: 10) {
@@ -150,6 +149,7 @@ struct CallShortcutWidget: Widget {
         .configurationDisplayName("Talkie 통화 바로가기")
         .description("선택된 시나리오로 가상 통화를 빠르게 시작합니다.")
         .supportedFamilies([.systemSmall])
+        .contentMarginsDisabled()
     }
 }
 
