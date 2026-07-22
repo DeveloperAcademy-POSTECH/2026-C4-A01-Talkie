@@ -54,10 +54,6 @@ struct PhoneView: View {
         availableScenarios.map(\.id)
     }
 
-    private var availableScenarioReferences: [ScenarioReference] {
-        availableScenarios.map(\.id)
-    }
-
     var body: some View {
         NavigationStack {
             ZStack {
