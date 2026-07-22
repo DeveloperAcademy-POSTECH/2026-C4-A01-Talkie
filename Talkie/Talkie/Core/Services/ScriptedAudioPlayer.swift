@@ -89,19 +89,26 @@ final class ScriptedAudioPlayer: NSObject, AVSpeechSynthesizerDelegate, AVAudioP
 
         self.completion = completion
 
-        if let audioFileURL,
-           let player = try? AVAudioPlayer(contentsOf: audioFileURL) {
+        if let audioFileURL {
+            guard let player = try? AVAudioPlayer(contentsOf: audioFileURL) else {
+                finishPlayback()
+                return
+            }
+
             filePlayer = player
             player.delegate = self
             player.prepareToPlay()
 
-            if player.play() {
+            guard player.play() else {
+                filePlayer = nil
+                finishPlayback()
                 return
             }
-
-            filePlayer = nil
+            return
         }
 
+        // 오디오가 애초에 없는 mock/사용자 문장에만 TTS를 fallback으로 사용합니다.
+        // 지정된 프리셋 파일이 손상됐을 때 다른 목소리로 바뀌는 일은 만들지 않습니다.
         speak(text)
     }
 

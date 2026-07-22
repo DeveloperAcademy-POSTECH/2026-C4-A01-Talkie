@@ -27,15 +27,7 @@ struct PhoneView: View {
     @State private var pendingSOSAction: ActiveCallSOSAction?
     @State private var queuedSOSAction: ActiveCallSOSAction?
     @State private var lastHandledWidgetCallRequestID = ""
-
-    @Query(
-        filter: #Predicate<Scenario> { scenario in
-            scenario.isCurrentSelection == true
-        },
-        sort: \Scenario.createdAt,
-        order: .reverse
-    )
-    private var currentScenarios: [Scenario]
+    @State private var selectedScenarioReference = ScenarioReference.defaultPreset
 
     @Query(sort: \Scenario.createdAt, order: .reverse)
     private var scenarios: [Scenario]
@@ -43,16 +35,23 @@ struct PhoneView: View {
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
 
-    private var currentScenario: Scenario? {
-        currentScenarios.first
+    private var availableScenarios: [ScenarioContent] {
+        ScenarioLibrary.all(customScenarios: scenarios)
+    }
+
+    private var currentScenario: ScenarioContent {
+        ScenarioLibrary.resolve(
+            selectedScenarioReference,
+            customScenarios: scenarios
+        ) ?? PresetScenarioCatalog.kevin.content
     }
 
     private var currentScenarioWidgetSnapshot: String {
-        guard let currentScenario else {
-            return ""
-        }
-
         return "\(currentScenario.title)|\(currentScenario.callerName)"
+    }
+
+    private var availableScenarioReferences: [ScenarioReference] {
+        availableScenarios.map(\.id)
     }
 
     var body: some View {
@@ -97,7 +96,29 @@ struct PhoneView: View {
                 isPresented: $isFakeCallPresented,
                 onDismiss: handleFakeCallDismissed
             ) {
-                fakeCallScreen
+                FakeCallPresentationView(
+                    coordinator: fakeCallCoordinator,
+                    onAccept: acceptFakeCall,
+                    onDecline: finishFakeCall,
+                    onEndCall: finishFakeCall,
+                    onShareLocation: { requestSOSAction(.locationShare) },
+                    onEmergencySMS: { requestSOSAction(.emergencySMS) },
+                    onEmergencyCall: { requestSOSAction(.emergencyCall) }
+                )
+                .alert(item: $pendingSOSAction) { action in
+                    Alert(
+                        title: Text(action.confirmationTitle),
+                        message: Text(action.confirmationMessage),
+                        primaryButton: action.isEmergency
+                            ? .destructive(Text(action.confirmButtonTitle)) {
+                                finishFakeCallAndQueue(action)
+                            }
+                            : .default(Text(action.confirmButtonTitle)) {
+                                finishFakeCallAndQueue(action)
+                            },
+                        secondaryButton: .cancel()
+                    )
+                }
             }
             .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
                 MessageComposerView(
@@ -110,7 +131,7 @@ struct PhoneView: View {
             }
             .sheet(isPresented: $isScenarioSelectionSheetPresented) {
                 ScenarioSelectionSheetView(
-                    scenarios: scenarios,
+                    scenarios: availableScenarios,
                     currentScenario: currentScenario,
                     onSelect: selectScenario
                 )
@@ -140,6 +161,7 @@ struct PhoneView: View {
                 Text(sosManager.currentError?.message ?? "")
             }
             .task {
+                restoreScenarioSelection()
                 syncCurrentScenarioToWidget()
                 handlePendingWidgetCallRequest()
                 await widgetStatusManager.checkWidgetStatus()
@@ -150,6 +172,9 @@ struct PhoneView: View {
             .onChange(of: currentScenarioWidgetSnapshot) { _, _ in
                 syncCurrentScenarioToWidget()
                 handlePendingWidgetCallRequest()
+            }
+            .onChange(of: availableScenarioReferences) { _, _ in
+                normalizeScenarioSelection()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else {
@@ -298,15 +323,15 @@ private extension PhoneView {
             repository: MockFakeCallScriptRepository(
                 displayName: currentScenario.callerName
             )
-        )
-        fakeCallCoordinator.startIncomingCall()
+                  fakeCallCoordinator.startIncomingCall(
+            repository: ScenarioFakeCallScriptRepository(content: currentScenario)
         isFakeCallPresented = true
     }
 
     func acceptFakeCall() {
         fakeCallCoordinator.acceptCall(
             recordsAudio: isAutomaticRecordingEnabled,
-            scenarioTitle: currentScenario?.title ?? "가상 통화"
+            scenarioTitle: currentScenario.title
         )
 
         guard let profile = fakeCallCoordinator.profile,
@@ -434,13 +459,89 @@ private extension PhoneView {
             return
         }
 
-        guard currentScenario != nil else {
-            return
-        }
-
         lastHandledWidgetCallRequestID = widgetCallRequestID
         widgetCallRequestID = ""
         startFakeCall()
+    }
+}
+
+/// The full-screen presentation owns an explicit observation boundary for the
+/// coordinator created at call start. `PhoneView` replaces that coordinator for
+/// every call, so reading its phase only in the cover builder can leave the
+/// presentation displaying the initial loading state.
+private struct FakeCallPresentationView: View {
+    @Bindable var coordinator: FakeCallCoordinator
+
+    let onAccept: () -> Void
+    let onDecline: () -> Void
+    let onEndCall: () -> Void
+    let onShareLocation: () -> Void
+    let onEmergencySMS: () -> Void
+    let onEmergencyCall: () -> Void
+
+    var body: some View {
+        Group {
+            if coordinator.phase == .incoming,
+               let profile = coordinator.profile {
+                IncomingFakeCallView(
+                    profile: profile,
+                    onAccept: onAccept,
+                    onDecline: onDecline
+                )
+            } else if coordinator.phase.isActiveCall,
+                      let profile = coordinator.profile,
+                      let callStartedAt = coordinator.callStartedAt {
+                ActiveFakeCallView(
+                    profile: profile,
+                    callStartedAt: callStartedAt,
+                    phase: coordinator.phase,
+                    currentInputLevel: coordinator.currentInputLevel,
+                    voiceMonitoringState: coordinator.voiceMonitoringState,
+                    isSpeakerEnabled: coordinator.isSpeakerEnabled,
+                    onEndCall: onEndCall,
+                    onSkipLine: coordinator.skipToNextLine,
+                    onSpeakerChange: coordinator.setSpeakerEnabled,
+                    onShareLocation: onShareLocation,
+                    onEmergencySMS: onEmergencySMS,
+                    onEmergencyCall: onEmergencyCall
+                )
+            } else if case let .failed(message) = coordinator.phase {
+                failedCall(message: message)
+            } else {
+                preparingCall
+            }
+        }
+    }
+
+    private var preparingCall: some View {
+        ZStack {
+            CallScreenBackground()
+                .ignoresSafeArea()
+
+            ProgressView()
+                .tint(.white)
+                .accessibilityLabel("가상 통화 준비 중")
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func failedCall(message: String) -> some View {
+        ZStack {
+            CallScreenBackground()
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Text(message)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+
+                Button("돌아가기", action: onEndCall)
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding(24)
+        }
+        .preferredColorScheme(.dark)
     }
 }
 

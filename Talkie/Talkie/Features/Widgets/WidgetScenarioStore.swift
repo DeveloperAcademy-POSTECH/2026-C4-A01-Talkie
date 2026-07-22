@@ -21,6 +21,13 @@ enum WidgetScenarioStore {
         )
     }
 
+    static func save(scenario: ScenarioContent) {
+        save(
+            scenarioTitle: scenario.title,
+            callerName: scenario.callerName
+        )
+    }
+
     static func save(
         scenarioTitle: String,
         callerName: String

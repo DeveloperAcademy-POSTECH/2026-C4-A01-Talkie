@@ -61,3 +61,7 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 .DS_Store
+
+# Original preset recordings are source material only. The app bundles the
+# converted AAC files under Talkie/Talkie/Resources/Presets instead.
+Voice/**/*.wav
