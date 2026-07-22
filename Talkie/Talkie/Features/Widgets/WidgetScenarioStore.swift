@@ -32,7 +32,9 @@ enum WidgetScenarioStore {
 
         sharedDefaults.set(scenarioTitle, forKey: scenarioTitleKey)
         sharedDefaults.set(callerName, forKey: callerNameKey)
+        sharedDefaults.synchronize()
 
+        print("위젯 시나리오 저장: \(scenarioTitle), 발화자: \(callerName)")
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

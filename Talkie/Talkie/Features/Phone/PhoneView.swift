@@ -15,6 +15,9 @@ struct PhoneView: View {
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
 
+    @AppStorage(TalkiePreferenceKey.widgetCallRequestID)
+    private var widgetCallRequestID = ""
+
     @State private var isFakeCallPresented = false
     @State private var isScenarioSelectionSheetPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
@@ -23,6 +26,7 @@ struct PhoneView: View {
     @State private var historySaveError: String?
     @State private var pendingSOSAction: ActiveCallSOSAction?
     @State private var queuedSOSAction: ActiveCallSOSAction?
+    @State private var lastHandledWidgetCallRequestID = ""
 
     @Query(
         filter: #Predicate<Scenario> { scenario in
@@ -41,6 +45,14 @@ struct PhoneView: View {
 
     private var currentScenario: Scenario? {
         currentScenarios.first
+    }
+
+    private var currentScenarioWidgetSnapshot: String {
+        guard let currentScenario else {
+            return ""
+        }
+
+        return "\(currentScenario.title)|\(currentScenario.callerName)"
     }
 
     var body: some View {
@@ -137,7 +149,15 @@ struct PhoneView: View {
             }
             .task {
                 syncCurrentScenarioToWidget()
+                handlePendingWidgetCallRequest()
                 await widgetStatusManager.checkWidgetStatus()
+            }
+            .onChange(of: widgetCallRequestID) { _, _ in
+                handlePendingWidgetCallRequest()
+            }
+            .onChange(of: currentScenarioWidgetSnapshot) { _, _ in
+                syncCurrentScenarioToWidget()
+                handlePendingWidgetCallRequest()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else {
@@ -145,6 +165,7 @@ struct PhoneView: View {
                 }
 
                 Task {
+                    syncCurrentScenarioToWidget()
                     await widgetStatusManager.checkWidgetStatus()
                 }
             }
@@ -362,6 +383,21 @@ struct PhoneView: View {
         }
 
         WidgetScenarioStore.save(scenario: currentScenario)
+    }
+
+    private func handlePendingWidgetCallRequest() {
+        guard !widgetCallRequestID.isEmpty,
+              widgetCallRequestID != lastHandledWidgetCallRequestID else {
+            return
+        }
+
+        guard currentScenario != nil else {
+            return
+        }
+
+        lastHandledWidgetCallRequestID = widgetCallRequestID
+        widgetCallRequestID = ""
+        startFakeCall()
     }
 }
 

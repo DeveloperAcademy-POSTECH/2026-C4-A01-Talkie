@@ -5,80 +5,148 @@
 //  Created by DS on 7/22/26.
 //
 
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
-struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
-    }
-
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
-        completion(entry)
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
-            entries.append(entry)
-        }
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
-        completion(timeline)
-    }
-
-//    func relevances() async -> WidgetRelevances<Void> {
-//        // Generate a list containing the contexts this widget is relevant in.
-//    }
+private enum CallShortcutWidgetConfiguration {
+    static let appGroupID = "group.com.Talkie.app"
+    static let scenarioTitleKey = "widget.currentScenario.title"
+    static let callerNameKey = "widget.currentScenario.callerName"
+    static let deepLinkURL = URL(string: "myapp://call")!
 }
 
-struct SimpleEntry: TimelineEntry {
+struct CallShortcutWidgetEntry: TimelineEntry {
     let date: Date
-    let emoji: String
+    let scenarioTitle: String
+    let callerName: String
 }
 
-struct CallShortcutWidgetEntryView : View {
-    var entry: Provider.Entry
+struct CallShortcutWidgetProvider: TimelineProvider {
+    func placeholder(in context: Context) -> CallShortcutWidgetEntry {
+        CallShortcutWidgetEntry(
+            date: Date(),
+            scenarioTitle: "시나리오 제목",
+            callerName: "엄마"
+        )
+    }
+
+    func getSnapshot(
+        in context: Context,
+        completion: @escaping (CallShortcutWidgetEntry) -> Void
+    ) {
+        completion(makeEntry())
+    }
+
+    func getTimeline(
+        in context: Context,
+        completion: @escaping (Timeline<CallShortcutWidgetEntry>) -> Void
+    ) {
+        let entry = makeEntry()
+        let nextRefreshDate = Calendar.current.date(
+            byAdding: .minute,
+            value: 30,
+            to: Date()
+        ) ?? Date().addingTimeInterval(1_800)
+
+        completion(
+            Timeline(
+                entries: [entry],
+                policy: .after(nextRefreshDate)
+            )
+        )
+    }
+
+    private func makeEntry() -> CallShortcutWidgetEntry {
+        let sharedDefaults = UserDefaults(
+            suiteName: CallShortcutWidgetConfiguration.appGroupID
+        )
+
+        let scenarioTitle = sharedDefaults?.string(
+            forKey: CallShortcutWidgetConfiguration.scenarioTitleKey
+        )
+
+        let callerName = sharedDefaults?.string(
+            forKey: CallShortcutWidgetConfiguration.callerNameKey
+        )
+
+        return CallShortcutWidgetEntry(
+            date: Date(),
+            scenarioTitle: scenarioTitle?.nilIfBlank ?? "시나리오 제목",
+            callerName: callerName?.nilIfBlank ?? "엄마"
+        )
+    }
+}
+
+struct CallShortcutWidgetEntryView: View {
+    let entry: CallShortcutWidgetEntry
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entry.scenarioTitle)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
 
-            Text("Emoji:")
-            Text(entry.emoji)
+                Text(entry.callerName)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.58))
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+
+            Link(destination: CallShortcutWidgetConfiguration.deepLinkURL) {
+                ZStack {
+                    Capsule()
+                        .fill(Color(red: 1.0, green: 0.34, blue: 0.12))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(Color(red: 0.11, green: 0.11, blue: 0.11))
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("선택한 시나리오로 가상 통화 시작")
+        }
+        .padding(18)
+        .containerBackground(for: .widget) {
+            Color(red: 0.11, green: 0.11, blue: 0.11)
         }
     }
 }
 
 struct CallShortcutWidget: Widget {
-    let kind: String = "CallShortcutWidget"
+    let kind = "CallShortcutWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            if #available(iOS 17.0, *) {
-                CallShortcutWidgetEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
-            } else {
-                CallShortcutWidgetEntryView(entry: entry)
-                    .padding()
-                    .background()
-            }
+        StaticConfiguration(
+            kind: kind,
+            provider: CallShortcutWidgetProvider()
+        ) { entry in
+            CallShortcutWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("My Widget")
-        .description("This is an example widget.")
+        .configurationDisplayName("Talkie 통화 바로가기")
+        .description("선택된 시나리오로 가상 통화를 빠르게 시작합니다.")
+        .supportedFamilies([.systemSmall])
+    }
+}
+
+private extension String {
+    var nilIfBlank: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 
 #Preview(as: .systemSmall) {
     CallShortcutWidget()
 } timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
+    CallShortcutWidgetEntry(
+        date: .now,
+        scenarioTitle: "시나리오 제목",
+        callerName: "엄마"
+    )
 }
