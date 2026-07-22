@@ -91,15 +91,12 @@ private struct MyPageHeader: View {
             HStack {
                 Button(action: onBack) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
-                        .background(Color.white.opacity(0.06), in: Circle())
-                        .overlay {
-                            Circle()
-                                .stroke(Color.white.opacity(0.20), lineWidth: 1)
-                        }
+                        .frame(width: 44, height: 44)
                 }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
                 .accessibilityLabel("뒤로")
 
                 Spacer()

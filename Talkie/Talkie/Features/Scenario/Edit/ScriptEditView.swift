@@ -43,23 +43,13 @@ struct ScriptEditView: View {
                 scriptLineList
                 bottomActionButton
             }
+
+            if isShowingDeleteConfirmation {
+                deleteConfirmationOverlay
+            }
         }
         .navigationBarBackButtonHidden(true)
         .preferredColorScheme(.dark)
-        .alert(
-            "정말로 삭제하시겠습니까?",
-            isPresented: $isShowingDeleteConfirmation
-        ) {
-            Button("취소", role: .cancel) {
-                pendingDeleteOffsets = nil
-            }
-
-            Button("삭제", role: .destructive) {
-                confirmPendingDeletion()
-            }
-        } message: {
-            Text("삭제한 대사는 되돌릴 수 없습니다.")
-        }
         .alert(
             "저장 실패",
             isPresented: Binding(
@@ -79,10 +69,10 @@ struct ScriptEditView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
-                    .frame(width: 48, height: 48)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(Circle())
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
 
             Spacer()
 
@@ -108,9 +98,9 @@ struct ScriptEditView: View {
             } label: {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(Constants.grey800)
-                        .frame(width: 56, height: 56)
+                        .frame(width: 44, height: 44)
                         .background(Constants.main500)
                         .clipShape(Circle())
                 } else {
@@ -142,7 +132,7 @@ struct ScriptEditView: View {
 
             HStack(spacing: 0) {
                 Text("\(viewModel.recordedCount)")
-                    .foregroundColor(Constants.main500)
+                    .foregroundColor(Constants.primaryNormal)
 
                 Text("/\(viewModel.totalCount)")
                     .foregroundColor(Constants.grey300)
@@ -170,9 +160,6 @@ struct ScriptEditView: View {
                     },
                     onTextChange: { text in
                         viewModel.updateText(text, for: scriptLine)
-                    },
-                    onDelete: {
-                        requestDelete(scriptLine)
                     }
                 )
                 .listRowBackground(Color.clear)
@@ -186,6 +173,10 @@ struct ScriptEditView: View {
             .onMove { source, destination in
                 guard isEditingScripts else { return }
                 viewModel.moveScriptLines(from: source, to: destination)
+            }
+            .onDelete { offsets in
+                guard isEditingScripts else { return }
+                requestDelete(offsets)
             }
 
             if viewModel.canEditScripts {
@@ -210,10 +201,10 @@ struct ScriptEditView: View {
             viewModel.addScriptLine()
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 24, weight: .medium))
-                .foregroundColor(.white.opacity(0.48))
+                .font(.system(size: 30, weight: .light))
+                .foregroundColor(Constants.textTertiary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 84)
+                .frame(height: 152)
                 .background(Constants.grey700)
                 .cornerRadius(16)
         }
@@ -236,24 +227,82 @@ struct ScriptEditView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Constants.main500)
+                .background(Constants.primaryNormal)
                 .cornerRadius(16)
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
     }
 
-    private func requestDelete(_ scriptLine: ScriptLine) {
-        guard let index = viewModel.sortedScriptLines.firstIndex(where: { $0 === scriptLine }) else {
-            return
-        }
+    private var deleteConfirmationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.62)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    cancelPendingDeletion()
+                }
 
-        requestDelete(IndexSet(integer: index))
+            VStack(alignment: .center, spacing: 20) {
+                VStack(alignment: .center, spacing: 6) {
+                    Text("대화 문장을 삭제하시겠습니까?")
+                        .font(Font.custom("Pretendard", size: 18).weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(Constants.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .top)
+
+                    Text("다시 복구할 수 없습니다.")
+                        .font(Font.custom("Pretendard", size: 14))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(Constants.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+
+                Image("Group 18")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 90, height: 83)
+
+                HStack(alignment: .center, spacing: 10) {
+                    Button(action: cancelPendingDeletion) {
+                        Text("취소")
+                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .foregroundColor(Constants.textInverse)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 44)
+                            .padding(.vertical, 10)
+                            .background(Constants.surfaceDisable)
+                            .cornerRadius(12)
+                    }
+
+                    Button(action: confirmPendingDeletion) {
+                        Text("삭제하기")
+                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .foregroundColor(Constants.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 44)
+                            .padding(.vertical, 10)
+                            .background(Constants.primaryNormal)
+                            .cornerRadius(12)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 32)
+            .padding(.bottom, 16)
+            .frame(width: 336, alignment: .top)
+            .background(Constants.bgRegular)
+            .cornerRadius(24)
+        }
     }
 
     private func requestDelete(_ offsets: IndexSet) {
         pendingDeleteOffsets = offsets
         isShowingDeleteConfirmation = true
+    }
+
+    private func cancelPendingDeletion() {
+        pendingDeleteOffsets = nil
+        isShowingDeleteConfirmation = false
     }
 
     private func confirmPendingDeletion() {
@@ -263,6 +312,7 @@ struct ScriptEditView: View {
 
         viewModel.deleteScriptLines(at: pendingDeleteOffsets)
         self.pendingDeleteOffsets = nil
+        isShowingDeleteConfirmation = false
     }
 }
 

@@ -12,11 +12,17 @@ struct ScenarioCardView: View {
     let scenario: ScenarioContent
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(scenario.title)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(Font.custom("Pretendard", size: 18).weight(.semibold))
+                    .foregroundColor(Constants.textPrimary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("발화자  \(scenario.callerName)")
+                    .font(Font.custom("Pretendard", size: 14))
+                    .foregroundColor(Constants.grey500)
                     .lineLimit(1)
             }
             
@@ -25,18 +31,19 @@ struct ScenarioCardView: View {
                 .frame(height: 1)
             
             Text(joinedScriptLines)
-                .font(.system(size: 14, weight: .regular))
-                .foregroundStyle(.white.opacity(0.72))
+                .font(Font.custom("Pretendard", size: 14))
+                .foregroundColor(Constants.textSecondary)
                 .lineLimit(2)
                 .lineSpacing(4)
                 .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, minHeight: 42, maxHeight: 42, alignment: .leading)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 18)
         .padding(.vertical, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color(red: 0.17, green: 0.17, blue: 0.17))
+                .fill(Constants.grey700)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(Color.white.opacity(0.12), lineWidth: 1)

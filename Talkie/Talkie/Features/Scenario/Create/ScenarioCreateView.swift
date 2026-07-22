@@ -35,7 +35,7 @@ struct ScenarioCreateView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.grey100)
+                            .foregroundColor(Constants.grey100)
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.glass)
@@ -43,47 +43,35 @@ struct ScenarioCreateView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
                 
                 // 3. 메인 타이틀
                 Text("시나리오 제목과 발화자를 입력해주세요.")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.grey100)
+                    .font(Font.custom("Pretendard", size: 20).weight(.semibold))
+                    .foregroundColor(Constants.grey100)
+                    .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
+                    .padding(.horizontal, 16)
                 
-                // 4. 시나리오 제목 입력 섹션
-                VStack(alignment: .leading, spacing: 9) {
-                    Text("시나리오 제목")
-                        .font(.custom("Pretendard", size: 14).weight(.medium))
-                        .foregroundColor(.grey300)
-                    
-                    TextField("", text: $viewModel.scenarioTitle, prompt:
-                        Text("예: 엄마와의 통화")
-                            .foregroundColor(.grey500)
+                VStack(alignment: .leading, spacing: 32) {
+                    // 4. 시나리오 제목 입력 섹션
+                    scenarioTextField(
+                        title: "시나리오 제목",
+                        placeholder: "예: 엄마와의 대화",
+                        text: $viewModel.scenarioTitle
                     )
-                    .font(.custom("Pretendard", size: 16))
-                    .foregroundColor(.grey100)
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(.grey700)
-                    .cornerRadius(16)
-                }
-                
-                // 5. 발화자 입력 섹션
-                VStack(alignment: .leading, spacing: 9) {
-                    Text("발화자")
-                        .font(.custom("Pretendard", size: 14).weight(.medium))
-                        .foregroundColor(.grey300)
-                    
-                    TextField("", text: $viewModel.callerName, prompt:
-                        Text("엄마")
-                            .foregroundColor(.grey500)
+
+                    // 5. 발화자 입력 섹션
+                    scenarioTextField(
+                        title: "발화자",
+                        placeholder: "엄마",
+                        text: $viewModel.callerName
                     )
-                    .font(.custom("Pretendard", size: 16))
-                    .foregroundColor(.grey100)
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(.grey700)
-                    .cornerRadius(16)
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 36)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .background(Constants.bgRegular)
                 
                 Spacer()
                 
@@ -94,17 +82,17 @@ struct ScenarioCreateView: View {
                     HStack(alignment: .center, spacing: 10) {
                         Text("다음으로")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.grey100)
+                            .foregroundColor(Constants.grey100)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .background(viewModel.isFormValid ? .main500 : .grey500)
+                    .background(viewModel.isFormValid ? Constants.main500 : Constants.grey500)
                     .cornerRadius(16)
                 }
                 .disabled(!viewModel.isFormValid)
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16) 
             .padding(.vertical, 32)
         }
         .navigationBarBackButtonHidden(true)
@@ -134,6 +122,34 @@ struct ScenarioCreateView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+private extension ScenarioCreateView {
+    func scenarioTextField(
+        title: String,
+        placeholder: String,
+        text: Binding<String>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(title)
+                .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                .foregroundColor(Constants.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+
+            TextField(
+                "",
+                text: text,
+                prompt: Text(placeholder)
+                    .foregroundColor(Constants.grey500)
+            )
+            .font(Font.custom("Pretendard", size: 16))
+            .foregroundColor(Constants.grey100)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .background(Constants.surfaceTextField)
+            .cornerRadius(16)
         }
     }
 }
