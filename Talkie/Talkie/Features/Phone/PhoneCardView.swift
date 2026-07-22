@@ -9,6 +9,15 @@ import SwiftUI
 
 struct PhoneCardView: View {
     let scenario: Scenario?
+    let onChangeScenario: () -> Void
+
+    init(
+        scenario: Scenario?,
+        onChangeScenario: @escaping () -> Void = {}
+    ) {
+        self.scenario = scenario
+        self.onChangeScenario = onChangeScenario
+    }
     
     var body: some View {
         VStack(spacing: 24) {
@@ -34,8 +43,7 @@ private extension PhoneCardView {
             
             Spacer()
             
-            // 이번 단계에서는 시나리오 변경 기능 없이 버튼 UI만 제공합니다.
-            Button { } label: {
+            Button(action: onChangeScenario) {
                 Text("변경")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(Constants.main500)

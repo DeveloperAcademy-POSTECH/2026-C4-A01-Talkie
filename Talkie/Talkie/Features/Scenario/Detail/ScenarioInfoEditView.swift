@@ -2,7 +2,7 @@
 //  ScenarioInfoEditView.swift
 //  Talkie
 //
-//  Created by Codex on 7/21/26.
+//  Created by DS on 7/21/26.
 //
 
 import SwiftUI

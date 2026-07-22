@@ -14,6 +14,9 @@ enum MainTab: Hashable {
 }
 struct MainTabView: View {
     @State private var selectedTab: MainTab = .phone
+
+    @AppStorage(TalkiePreferenceKey.widgetCallRequestID)
+    private var widgetCallRequestID = ""
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -33,6 +36,20 @@ struct MainTabView: View {
                     Label("SOS", systemImage: "light.beacon.max.fill")
                 }
         }
+        .task {
+            selectPhoneTabIfWidgetCallIsPending()
+        }
+        .onChange(of: widgetCallRequestID) { _, _ in
+            selectPhoneTabIfWidgetCallIsPending()
+        }
+    }
+
+    private func selectPhoneTabIfWidgetCallIsPending() {
+        guard !widgetCallRequestID.isEmpty else {
+            return
+        }
+
+        selectedTab = .phone
     }
 }
 

@@ -36,6 +36,17 @@ enum VoiceMonitoringState: Equatable {
     case unavailable
 }
 
+/// Coordinator가 오디오 엔진을 정리한 뒤 저장 계층으로 넘기는 통화 완료 값입니다.
+/// SwiftData 모델을 직접 소유하지 않아 오디오 상태 머신과 저장 컨텍스트를 분리합니다.
+struct CompletedFakeCallSession: Sendable {
+    let startedAt: Date
+    let endedAt: Date
+    let scenarioTitle: String
+    let callerName: String
+    let endReason: CallEndReason
+    let recording: CompletedCallRecording?
+}
+
 @MainActor
 @Observable
 /// 가상 통화 화면의 상태와 재생/VAD 수명주기를 한 곳에서 조정한다.
@@ -58,9 +69,11 @@ final class FakeCallCoordinator {
     private let repository: any FakeCallScriptRepository
     private let audioPlayer: ScriptedAudioPlayer
     private let voiceActivityDetector: VoiceActivityDetector
+    private let audioCaptureService: CallAudioCaptureService
     private let ringtonePlayer: any IncomingCallRingtonePlaying
 
     private var hasMicrophonePermission = false
+    private var activeScenarioTitle = "가상 통화"
     private var playbackPreparationTask: Task<Void, Never>?
     private var fallbackTask: Task<Void, Never>?
 
@@ -69,6 +82,9 @@ final class FakeCallCoordinator {
         self.repository = repository ?? MockFakeCallScriptRepository()
         audioPlayer = ScriptedAudioPlayer()
         self.voiceActivityDetector = voiceActivityDetector
+        audioCaptureService = CallAudioCaptureService(
+            voiceActivityDetector: voiceActivityDetector
+        )
         ringtonePlayer = IncomingCallRingtoneService.shared
         bindVoiceActivityEvents()
     }
@@ -82,6 +98,9 @@ final class FakeCallCoordinator {
         self.repository = repository
         self.audioPlayer = audioPlayer
         self.voiceActivityDetector = voiceActivityDetector
+        audioCaptureService = CallAudioCaptureService(
+            voiceActivityDetector: voiceActivityDetector
+        )
         self.ringtonePlayer = ringtonePlayer ?? IncomingCallRingtoneService.shared
         bindVoiceActivityEvents()
     }
@@ -117,30 +136,61 @@ final class FakeCallCoordinator {
         }
     }
 
-    func acceptCall() {
+    func acceptCall(recordsAudio: Bool, scenarioTitle: String) {
         guard phase == .incoming else { return }
 
         ringtonePlayer.stopRinging()
         callStartedAt = Date()
+        activeScenarioTitle = scenarioTitle
 
         Task {
             hasMicrophonePermission = await VoiceActivityDetector.requestPermission()
-            voiceMonitoringState = hasMicrophonePermission ? .inactive : .unavailable
+            if hasMicrophonePermission {
+                do {
+                    try audioCaptureService.start(
+                        speakerEnabled: isSpeakerEnabled,
+                        recordsAudio: recordsAudio
+                    )
+                    voiceMonitoringState = .inactive
+                } catch {
+                    hasMicrophonePermission = false
+                    voiceMonitoringState = .unavailable
+                }
+            } else {
+                voiceMonitoringState = .unavailable
+            }
             playCurrentLine()
         }
     }
 
     func declineCall() {
-        endCall()
+        _ = endCall()
     }
 
-    func endCall() {
+    @discardableResult
+    func endCall(reason requestedReason: CallEndReason = .userEnded) -> CompletedFakeCallSession? {
+        let startedAt = callStartedAt
+        let callerName = profile?.displayName
+        let scenarioTitle = activeScenarioTitle
+        let endReason: CallEndReason = phase == .completed ? .completed : requestedReason
+
         cancelPendingWork()
         audioPlayer.stop()
         stopVoiceMonitoring()
+        let recording = audioCaptureService.finish()
         FakeCallAudioSession.deactivate()
         resetRuntimeState()
         phase = .idle
+
+        guard let startedAt, let callerName else { return nil }
+        return CompletedFakeCallSession(
+            startedAt: startedAt,
+            endedAt: Date(),
+            scenarioTitle: scenarioTitle,
+            callerName: callerName,
+            endReason: endReason,
+            recording: recording
+        )
     }
 
     func skipToNextLine() {
@@ -151,7 +201,6 @@ final class FakeCallCoordinator {
     func setSpeakerEnabled(_ enabled: Bool) {
         do {
             try FakeCallAudioSession.setSpeakerEnabled(enabled)
-            voiceActivityDetector.setSpeakerEnabled(enabled)
             isSpeakerEnabled = enabled
         } catch {
             return
@@ -199,7 +248,7 @@ final class FakeCallCoordinator {
         if hasMicrophonePermission {
             do {
                 voiceMonitoringState = .listening
-                try voiceActivityDetector.start()
+                try audioCaptureService.startVoiceDetection()
             } catch {
                 hasMicrophonePermission = false
                 voiceMonitoringState = .unavailable
@@ -231,7 +280,7 @@ final class FakeCallCoordinator {
 
     private func handleDetectionUnavailable() {
         guard phase == .waitingForUser || phase == .userSpeaking else { return }
-        voiceActivityDetector.stop()
+        audioCaptureService.stopVoiceDetection()
         voiceMonitoringState = .unavailable
         currentInputLevel = -80
         phase = .waitingForUser
@@ -311,7 +360,7 @@ final class FakeCallCoordinator {
     }
 
     private func stopVoiceMonitoring() {
-        voiceActivityDetector.stop()
+        audioCaptureService.stopVoiceDetection()
         currentInputLevel = -80
         voiceMonitoringState = hasMicrophonePermission ? .inactive : .unavailable
     }
@@ -369,10 +418,10 @@ final class FakeCallCoordinator {
         currentLineIndex = 0
         callStartedAt = nil
         hasMicrophonePermission = false
+        activeScenarioTitle = "가상 통화"
         currentInputLevel = -80
         voiceMonitoringState = .inactive
         isSpeakerEnabled = false
-        voiceActivityDetector.setSpeakerEnabled(false)
         profile = nil
         scriptLines = []
     }
