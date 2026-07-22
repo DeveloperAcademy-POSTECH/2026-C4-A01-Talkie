@@ -56,30 +56,15 @@ struct PhoneView: View {
     }
 
     var body: some View {
-        ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-            
-            VStack(alignment: .leading, spacing: 28) {
-                HStack {
-                    Text("대화 선택")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(.white)
-                    
-                    Spacer()
-                    
-                    Button {
-                        isMyPagePresented = true
-                    } label: {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 28))
         NavigationStack {
             ZStack {
                 Constants.grey800
                     .ignoresSafeArea()
 
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 0) {
                     phoneHeader
+                        .padding(.horizontal, 20)
+                        .padding(.top, 32)
 
                     if !widgetStatusManager.isWidgetInstalled {
                         NavigationLink {
@@ -88,64 +73,24 @@ struct PhoneView: View {
                             WidgetInstallBannerView()
                         }
                         .buttonStyle(.plain)
+                        .padding(.top, 24)
                     }
 
-                    PhoneCardView(
-                        scenario: currentScenario,
-                        onChangeScenario: {
-                            isScenarioSelectionSheetPresented = true
-                        }
-                    )
+                    VStack(spacing: 20) {
+                        PhoneCardView(
+                            scenario: currentScenario,
+                            onChangeScenario: {
+                                isScenarioSelectionSheetPresented = true
+                            }
+                        )
 
-                    Button(action: startFakeCall) {
-                        Text("Make a call")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 17)
-                            .background(
-                                currentScenario == nil
-                                ? Constants.main500.opacity(0.24)
-                                : Constants.main500
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                        callButton
                     }
-                    .disabled(currentScenario == nil)
+                    .padding(.horizontal, 20)
+                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 84 : 40)
 
                     Spacer()
                 }
-                .padding(.bottom, 20)
-                
-                PhoneCardView(
-                    scenario: currentScenario
-                )
-                
-                Button {
-                    fakeCallCoordinator.startIncomingCall()
-                    isFakeCallPresented = true
-                } label: {
-                    HStack(spacing: 8){
-                        Image(systemName: "phone.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.green)
-                        Text("전화하기")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.green)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .background(
-                    currentScenario == nil
-                    ? Constants.grey700
-                    : Constants.main500
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 30))
-                .disabled(currentScenario == nil)
-                
-                Spacer()
-                .padding(.horizontal, 20)
-                .padding(.top, 32)
             }
             .toolbar(.hidden, for: .navigationBar)
             .fullScreenCover(
@@ -218,11 +163,13 @@ struct PhoneView: View {
             }
         }
     }
+}
 
-    private var phoneHeader: some View {
+private extension PhoneView {
+    var phoneHeader: some View {
         HStack {
-            Text("전화")
-                .font(.system(size: 34, weight: .bold))
+            Text("대화 선택")
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(.white)
 
             Spacer()
@@ -233,18 +180,37 @@ struct PhoneView: View {
                 Image(systemName: "person.fill")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.white)
-                    .frame(width: 48, height: 48)
-                    .background(Color.white.opacity(0.08), in: Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(Color.white.opacity(0.24), lineWidth: 1)
-                    }
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
             .accessibilityLabel("마이페이지")
         }
     }
 
-    private var fakeCallScreen: some View {
+    var callButton: some View {
+        Button(action: startFakeCall) {
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: "phone.fill")
+                    .font(.system(size: 16, weight: .bold))
+
+                Text("전화하기")
+                    .font(.system(size: 16, weight: .bold))
+            }
+            .foregroundStyle(Color.green)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .background(Constants.grey700)
+            .cornerRadius(100)
+            .opacity(currentScenario == nil ? 0.45 : 1)
+        }
+        .buttonStyle(.plain)
+        .disabled(currentScenario == nil)
+        .accessibilityLabel("가상 통화 시작")
+    }
+
+    var fakeCallScreen: some View {
         Group {
             if fakeCallCoordinator.phase == .incoming,
                let profile = fakeCallCoordinator.profile {
@@ -292,7 +258,7 @@ struct PhoneView: View {
         }
     }
 
-    private var preparingCall: some View {
+    var preparingCall: some View {
         ZStack {
             CallScreenBackground()
                 .ignoresSafeArea()
@@ -304,7 +270,7 @@ struct PhoneView: View {
         .preferredColorScheme(.dark)
     }
 
-    private func failedCall(message: String) -> some View {
+    func failedCall(message: String) -> some View {
         ZStack {
             CallScreenBackground()
                 .ignoresSafeArea()
@@ -323,7 +289,7 @@ struct PhoneView: View {
         .preferredColorScheme(.dark)
     }
 
-    private func startFakeCall() {
+    func startFakeCall() {
         guard let currentScenario else {
             return
         }
@@ -337,7 +303,7 @@ struct PhoneView: View {
         isFakeCallPresented = true
     }
 
-    private func acceptFakeCall() {
+    func acceptFakeCall() {
         fakeCallCoordinator.acceptCall(
             recordsAudio: isAutomaticRecordingEnabled,
             scenarioTitle: currentScenario?.title ?? "가상 통화"
@@ -356,28 +322,28 @@ struct PhoneView: View {
         }
     }
 
-    private func finishFakeCall() {
+    func finishFakeCall() {
         persist(fakeCallCoordinator.endCall())
         endLiveActivity()
         isFakeCallPresented = false
     }
 
-    private func stopFakeCallIfNeeded() {
+    func stopFakeCallIfNeeded() {
         guard fakeCallCoordinator.phase != .idle else { return }
         persist(fakeCallCoordinator.endCall(reason: .interrupted))
         endLiveActivity()
     }
 
-    private func handleFakeCallDismissed() {
+    func handleFakeCallDismissed() {
         stopFakeCallIfNeeded()
         performQueuedSOSActionIfNeeded()
     }
 
-    private func requestSOSAction(_ action: ActiveCallSOSAction) {
+    func requestSOSAction(_ action: ActiveCallSOSAction) {
         pendingSOSAction = action
     }
 
-    private func finishFakeCallAndQueue(_ action: ActiveCallSOSAction) {
+    func finishFakeCallAndQueue(_ action: ActiveCallSOSAction) {
         pendingSOSAction = nil
         persist(fakeCallCoordinator.endCall(reason: .sosTriggered))
         endLiveActivity()
@@ -385,15 +351,13 @@ struct PhoneView: View {
         isFakeCallPresented = false
     }
 
-    /// Every path that leaves an accepted call funnels through this helper so
-    /// the system UI never outlives the in-app call session.
-    private func endLiveActivity() {
+    func endLiveActivity() {
         Task {
             await FakeCallLiveActivityManager.shared.end()
         }
     }
 
-    private func performQueuedSOSActionIfNeeded() {
+    func performQueuedSOSActionIfNeeded() {
         guard let action = queuedSOSAction else { return }
         queuedSOSAction = nil
 
@@ -409,7 +373,7 @@ struct PhoneView: View {
         }
     }
 
-    private func persist(_ completedSession: CompletedFakeCallSession?) {
+    func persist(_ completedSession: CompletedFakeCallSession?) {
         guard let completedSession else { return }
 
         let recording = completedSession.recording.map {
@@ -442,7 +406,7 @@ struct PhoneView: View {
         }
     }
 
-    private func selectScenario(_ selectedScenario: Scenario) {
+    func selectScenario(_ selectedScenario: Scenario) {
         for scenario in scenarios {
             scenario.isCurrentSelection = scenario === selectedScenario
         }
@@ -456,7 +420,7 @@ struct PhoneView: View {
         }
     }
 
-    private func syncCurrentScenarioToWidget() {
+    func syncCurrentScenarioToWidget() {
         guard let currentScenario else {
             return
         }
@@ -464,7 +428,7 @@ struct PhoneView: View {
         WidgetScenarioStore.save(scenario: currentScenario)
     }
 
-    private func handlePendingWidgetCallRequest() {
+    func handlePendingWidgetCallRequest() {
         guard !widgetCallRequestID.isEmpty,
               widgetCallRequestID != lastHandledWidgetCallRequestID else {
             return

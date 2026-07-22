@@ -41,7 +41,6 @@
 		41092DC0301007C900F61DCF /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		41092DC2301007CA00F61DCF /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		41A2E0992FFFCF4000235021 /* Talkie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Talkie.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D1A300022FFFCF4000235021 /* TalkieLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TalkieLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -73,11 +72,6 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		D1A300062FFFCF4000235021 /* TalkieLiveActivity */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TalkieLiveActivity;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,13 +91,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D1A300072FFFCF4000235021 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -116,6 +103,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		41092FEB3010CF1400F61DCF /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				D1A300052FFFCF4000235021 /* Shared */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		41A2E0902FFFCF4000235021 = {
 			isa = PBXGroup;
 			children = (
@@ -123,6 +118,7 @@
 				41092DC4301007CA00F61DCF /* CallShortcutWidget */,
 				41092DBF301007C900F61DCF /* Frameworks */,
 				41A2E09A2FFFCF4000235021 /* Products */,
+				41092FEB3010CF1400F61DCF /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -185,29 +181,6 @@
 			productReference = 41A2E0992FFFCF4000235021 /* Talkie.app */;
 			productType = "com.apple.product-type.application";
 		};
-		D1A300102FFFCF4000235021 /* TalkieLiveActivity */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D1A300122FFFCF4000235021 /* Build configuration list for PBXNativeTarget "TalkieLiveActivity" */;
-			buildPhases = (
-				D1A300082FFFCF4000235021 /* Sources */,
-				D1A300072FFFCF4000235021 /* Frameworks */,
-				D1A300092FFFCF4000235021 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				D1A300052FFFCF4000235021 /* Shared */,
-				D1A300062FFFCF4000235021 /* TalkieLiveActivity */,
-			);
-			name = TalkieLiveActivity;
-			packageProductDependencies = (
-			);
-			productName = TalkieLiveActivity;
-			productReference = D1A300022FFFCF4000235021 /* TalkieLiveActivity.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -222,9 +195,6 @@
 						CreatedOnToolsVersion = 26.6;
 					};
 					41A2E0982FFFCF4000235021 = {
-						CreatedOnToolsVersion = 26.4.1;
-					};
-					D1A300102FFFCF4000235021 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -264,13 +234,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D1A300092FFFCF4000235021 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -282,13 +245,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		41A2E0952FFFCF4000235021 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D1A300082FFFCF4000235021 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -499,19 +455,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleURLTypes = (
-					{
-						CFBundleURLName = com.Team01.Talkie;
-						CFBundleURLSchemes = (
-							myapp,
-						);
-					},
-				);
+				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
@@ -529,6 +480,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Talkie_Development;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -545,19 +498,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleURLTypes = (
-					{
-						CFBundleURLName = com.Team01.Talkie;
-						CFBundleURLSchemes = (
-							myapp,
-						);
-					},
-				);
+				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
@@ -575,65 +523,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-		D1A300132FFFCF4000235021 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Configuration/TalkieLiveActivity-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie.LiveActivity;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		D1A300142FFFCF4000235021 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = F6NWQ49U3H;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Configuration/TalkieLiveActivity-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie.LiveActivity;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Talkie_Development;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -670,15 +561,6 @@
 			buildConfigurations = (
 				41A2E0A52FFFCF4300235021 /* Debug */,
 				41A2E0A62FFFCF4300235021 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D1A300122FFFCF4000235021 /* Build configuration list for PBXNativeTarget "TalkieLiveActivity" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D1A300132FFFCF4000235021 /* Debug */,
-				D1A300142FFFCF4000235021 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
