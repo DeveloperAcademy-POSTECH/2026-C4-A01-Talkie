@@ -33,7 +33,7 @@ struct PhoneView: View {
             
             VStack(alignment: .leading, spacing: 28) {
                 HStack {
-                    Text("전화")
+                    Text("대화 선택")
                         .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(.white)
                     
@@ -48,6 +48,7 @@ struct PhoneView: View {
                     }
                     .accessibilityLabel("마이페이지")
                 }
+                .padding(.bottom, 20)
                 
                 PhoneCardView(
                     scenario: currentScenario
@@ -57,18 +58,23 @@ struct PhoneView: View {
                     fakeCallCoordinator.startIncomingCall()
                     isFakeCallPresented = true
                 } label: {
-                    Text("Make a call")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(
-                            currentScenario == nil
-                            ? Constants.main500.opacity(0.24)
-                            : Constants.main500
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                    HStack(spacing: 8){
+                        Image(systemName: "phone.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.green)
+                        Text("전화하기")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.green)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+                .background(
+                    currentScenario == nil
+                    ? Constants.grey700
+                    : Constants.main500
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 30))
                 .disabled(currentScenario == nil)
                 
                 Spacer()
