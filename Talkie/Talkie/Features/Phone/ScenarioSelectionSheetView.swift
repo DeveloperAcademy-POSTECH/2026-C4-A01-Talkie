@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct ScenarioSelectionSheetView: View {
-    let scenarios: [Scenario]
-    let currentScenario: Scenario?
-    let onSelect: (Scenario) -> Void
+    let scenarios: [ScenarioContent]
+    let currentScenario: ScenarioContent
+    let onSelect: (ScenarioContent) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedScenario: Scenario?
+    @State private var selectedScenarioID: ScenarioReference
 
     init(
-        scenarios: [Scenario],
-        currentScenario: Scenario?,
-        onSelect: @escaping (Scenario) -> Void
+        scenarios: [ScenarioContent],
+        currentScenario: ScenarioContent,
+        onSelect: @escaping (ScenarioContent) -> Void
     ) {
         self.scenarios = scenarios
         self.currentScenario = currentScenario
         self.onSelect = onSelect
-        _selectedScenario = State(initialValue: currentScenario ?? scenarios.first)
+        _selectedScenarioID = State(initialValue: currentScenario.id)
     }
 
     var body: some View {
@@ -41,7 +41,9 @@ struct ScenarioSelectionSheetView: View {
                 scenarioList
 
                 Button {
-                    guard let selectedScenario else {
+                    guard let selectedScenario = scenarios.first(where: {
+                        $0.id == selectedScenarioID
+                    }) else {
                         return
                     }
 
@@ -53,10 +55,9 @@ struct ScenarioSelectionSheetView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
-                        .background(selectedScenario == nil ? Constants.main500.opacity(0.24) : Constants.main500)
+                        .background(Constants.main500)
                         .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
-                .disabled(selectedScenario == nil)
             }
             .padding(.horizontal, 18)
             .padding(.top, 14)
@@ -72,32 +73,21 @@ struct ScenarioSelectionSheetView: View {
             .padding(.top, 4)
     }
 
-    @ViewBuilder
     private var scenarioList: some View {
-        if scenarios.isEmpty {
-            ContentUnavailableView(
-                "저장된 시나리오가 없습니다",
-                systemImage: "phone.down",
-                description: Text("시나리오 탭에서 먼저 대화를 생성해 주세요.")
-            )
-            .foregroundStyle(.white.opacity(0.72))
-            .frame(maxWidth: .infinity, minHeight: 220)
-        } else {
-            ScrollView {
-                LazyVStack(spacing: 14) {
-                    ForEach(scenarios) { scenario in
-                        scenarioRow(scenario)
-                    }
+        ScrollView {
+            LazyVStack(spacing: 14) {
+                ForEach(scenarios) { scenario in
+                    scenarioRow(scenario)
                 }
-                .padding(.vertical, 2)
             }
-            .scrollIndicators(.hidden)
+            .padding(.vertical, 2)
         }
+        .scrollIndicators(.hidden)
     }
 
-    private func scenarioRow(_ scenario: Scenario) -> some View {
+    private func scenarioRow(_ scenario: ScenarioContent) -> some View {
         Button {
-            selectedScenario = scenario
+            selectedScenarioID = scenario.id
         } label: {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 7) {
@@ -114,7 +104,7 @@ struct ScenarioSelectionSheetView: View {
 
                 Spacer()
 
-                selectionIndicator(isSelected: selectedScenario === scenario)
+                selectionIndicator(isSelected: selectedScenarioID == scenario.id)
             }
             .padding(.horizontal, 18)
             .frame(maxWidth: .infinity)
@@ -124,31 +114,28 @@ struct ScenarioSelectionSheetView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(scenario.title), 발화자 \(scenario.callerName)")
+        .accessibilityValue(selectedScenarioID == scenario.id ? "선택됨" : "선택 안 됨")
     }
 
     private func selectionIndicator(isSelected: Bool) -> some View {
-        ZStack {
-            Circle()
-                .stroke(
-                    isSelected ? Constants.main500 : Color.white.opacity(0.10),
-                    lineWidth: isSelected ? 3 : 0
-                )
-                .background {
-                    Circle()
-                        .fill(isSelected ? Color.clear : Color.black.opacity(0.28))
-                }
-                .frame(width: 22, height: 22)
-        }
+        Circle()
+            .stroke(
+                isSelected ? Constants.main500 : Color.white.opacity(0.10),
+                lineWidth: isSelected ? 3 : 0
+            )
+            .background {
+                Circle()
+                    .fill(isSelected ? Color.clear : Color.black.opacity(0.28))
+            }
+            .frame(width: 22, height: 22)
     }
 }
 
 #Preview {
-    let scenario = Scenario(title: "기본 제공 시나리오 제목", callerName: "엄마")
-    let customScenario = Scenario(title: "생성한 시나리오", callerName: "엄마")
-
+    let scenarios = PresetScenarioCatalog.all.map(\.content)
     ScenarioSelectionSheetView(
-        scenarios: [scenario, customScenario],
-        currentScenario: scenario,
+        scenarios: scenarios,
+        currentScenario: PresetScenarioCatalog.kevin.content,
         onSelect: { _ in }
     )
 }

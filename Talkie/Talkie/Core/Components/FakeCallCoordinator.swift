@@ -66,7 +66,7 @@ final class FakeCallCoordinator {
     private(set) var voiceMonitoringState: VoiceMonitoringState = .inactive
     private(set) var isSpeakerEnabled = false
 
-    private let repository: any FakeCallScriptRepository
+    private var repository: any FakeCallScriptRepository
     private let audioPlayer: ScriptedAudioPlayer
     private let voiceActivityDetector: VoiceActivityDetector
     private let audioCaptureService: CallAudioCaptureService
@@ -134,6 +134,13 @@ final class FakeCallCoordinator {
                 phase = .failed("가상 통화를 준비하지 못했습니다.")
             }
         }
+    }
+
+    /// Keeps the coordinator identity stable for SwiftUI while replacing only
+    /// the scenario data source used by the next call session.
+    func startIncomingCall(repository: any FakeCallScriptRepository) {
+        self.repository = repository
+        startIncomingCall()
     }
 
     func acceptCall(recordsAudio: Bool, scenarioTitle: String) {
@@ -223,19 +230,24 @@ final class FakeCallCoordinator {
         playbackPreparationTask = Task { [weak self] in
             guard let self else { return }
 
-            let clip = try? await repository.voiceClip(for: line.id)
-            guard !Task.isCancelled,
-                  scriptLines.indices.contains(currentLineIndex),
-                  scriptLines[currentLineIndex].id == line.id else {
-                return
-            }
+            do {
+                let clip = try await repository.voiceClip(for: line.id)
+                guard !Task.isCancelled,
+                      scriptLines.indices.contains(currentLineIndex),
+                      scriptLines[currentLineIndex].id == line.id else {
+                    return
+                }
 
-            audioPlayer.play(
-                text: line.text,
-                audioFileURL: audioFileURL(for: clip),
-                speakerEnabled: isSpeakerEnabled
-            ) { [weak self] in
-                self?.waitForUserSpeech()
+                audioPlayer.play(
+                    text: line.text,
+                    audioFileURL: audioFileURL(for: clip),
+                    speakerEnabled: isSpeakerEnabled
+                ) { [weak self] in
+                    self?.waitForUserSpeech()
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                phase = .failed("시나리오 음원을 불러오지 못했습니다.")
             }
         }
     }

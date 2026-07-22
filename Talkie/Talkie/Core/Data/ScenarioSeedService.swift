@@ -9,45 +9,45 @@ import Foundation
 import SwiftData
 
 enum ScenarioSeedService {
-    static func insertDefaultScenariosIfNeeded(into modelContext: ModelContext) throws {
+    /// #54 이전 버전이 SwiftData에 복사한 프리셋을 제거하고 선택값만 새 저장소로 옮깁니다.
+    /// 새 프리셋은 PresetScenarioCatalog에서 직접 읽으므로 더 이상 seed하지 않습니다.
+    @MainActor
+    static func migrateLegacyPresetDataIfNeeded(into modelContext: ModelContext) throws {
         let descriptor = FetchDescriptor<Scenario>(
             sortBy: [
                 SortDescriptor(\Scenario.createdAt, order: .reverse)
             ]
         )
-        var savedScenarios = try modelContext.fetch(descriptor)
-        let savedPresetIDs = Set(savedScenarios.compactMap(\.presetID))
-        
+        let savedScenarios = try modelContext.fetch(descriptor)
         var needsSave = false
-        
-        for preset in ScenarioPreset.all where !savedPresetIDs.contains(preset.id) {
-            let scenario = Scenario(
-                title: preset.title,
-                callerName: preset.callerName,
-                presetID: preset.id
-            )
-            
-            let scriptLines = preset.scriptLines.enumerated().map { index, text in
-                ScriptLine(
-                    text: text,
-                    sortOrder: index,
-                    scenario: scenario
+
+        if !ScenarioSelectionStore.hasStoredSelection {
+            if let selectedCustomScenario = savedScenarios.first(where: {
+                $0.isCurrentSelection && $0.presetID == nil
+            }) {
+                ScenarioSelectionStore.save(
+                    ScenarioReference(
+                        source: .custom,
+                        scenarioID: selectedCustomScenario.id.uuidString
+                    )
                 )
+            } else {
+                ScenarioSelectionStore.resetToDefault()
             }
-            
-            scenario.scriptLines = scriptLines
-            modelContext.insert(scenario)
-            savedScenarios.append(scenario)
-            needsSave = true
         }
-        
-        if !savedScenarios.contains(where: \.isCurrentSelection),
-           let defaultScenario = savedScenarios.first {
-            // 아직 현재 선택된 시나리오가 없다면, 가장 최근 시나리오를 Phone 탭 기본 카드로 사용합니다.
-            defaultScenario.isCurrentSelection = true
-            needsSave = true
+
+        for scenario in savedScenarios {
+            if scenario.presetID != nil {
+                // 이전 seed 프리셋에는 사용자 녹음이 없으므로 SwiftData 객체만 제거합니다.
+                modelContext.delete(scenario)
+                needsSave = true
+            } else if scenario.isCurrentSelection {
+                // 선택의 단일 원본은 ScenarioSelectionStore이며 이 플래그는 더 이상 사용하지 않습니다.
+                scenario.isCurrentSelection = false
+                needsSave = true
+            }
         }
-        
+
         if needsSave {
             try modelContext.save()
         }

@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ScenarioCardView: View {
-    let scenario: Scenario
+    let scenario: ScenarioContent
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -52,17 +52,7 @@ struct ScenarioCardView: View {
     }
     
     private var joinedScriptLines: String {
-        let sortedLines = scenario.scriptLines.sorted {
-            $0.sortOrder < $1.sortOrder
-        }
-        
-        guard !sortedLines.isEmpty else {
-            return "등록된 시나리오 내용이 없습니다."
-        }
-        
-        return sortedLines
-            .map(\.text)
-            .joined(separator: " / ")
+        scenario.scriptPreview
     }
 }
 
@@ -86,7 +76,7 @@ struct ScenarioCardView: View {
     
     container.mainContext.insert(dummyScenario)
     
-    return ScenarioCardView(scenario: dummyScenario)
+    return ScenarioCardView(scenario: dummyScenario.content)
         .padding()
         .background(.black)
         .modelContainer(container)

@@ -50,11 +50,20 @@ struct ScenarioView: View {
 
                     ScrollView{
                         LazyVStack(spacing: 16) {
+                            ForEach(PresetScenarioCatalog.all) { preset in
+                                NavigationLink {
+                                    ScenarioDetailView(preset: preset)
+                                } label: {
+                                    ScenarioCardView(scenario: preset.content)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
                                     ScenarioDetailView(scenario: scenario)
                                 } label: {
-                                    ScenarioCardView(scenario: scenario)
+                                    ScenarioCardView(scenario: scenario.content)
                                 }
                                 .buttonStyle(.plain)
                             }

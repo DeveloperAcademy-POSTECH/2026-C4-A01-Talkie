@@ -67,6 +67,11 @@
 			path = Talkie;
 			sourceTree = "<group>";
 		};
+		D1A300052FFFCF4000235021 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +103,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		41092FEB3010CF1400F61DCF /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				D1A300052FFFCF4000235021 /* Shared */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		41A2E0902FFFCF4000235021 = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +118,7 @@
 				41092DC4301007CA00F61DCF /* CallShortcutWidget */,
 				41092DBF301007C900F61DCF /* Frameworks */,
 				41A2E09A2FFFCF4000235021 /* Products */,
+				41092FEB3010CF1400F61DCF /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -158,6 +172,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				41A2E09B2FFFCF4000235021 /* Talkie */,
+				D1A300052FFFCF4000235021 /* Shared */,
 			);
 			name = Talkie;
 			packageProductDependencies = (
@@ -440,19 +455,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = UFXU86865W;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -460,6 +480,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Talkie_Development;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -476,19 +498,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = UFXU86865W;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -496,6 +523,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Team01.Talkie;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Talkie_Development;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
