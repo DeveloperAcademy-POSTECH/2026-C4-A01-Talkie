@@ -27,15 +27,7 @@ struct PhoneView: View {
     @State private var pendingSOSAction: ActiveCallSOSAction?
     @State private var queuedSOSAction: ActiveCallSOSAction?
     @State private var lastHandledWidgetCallRequestID = ""
-
-    @Query(
-        filter: #Predicate<Scenario> { scenario in
-            scenario.isCurrentSelection == true
-        },
-        sort: \Scenario.createdAt,
-        order: .reverse
-    )
-    private var currentScenarios: [Scenario]
+    @State private var selectedScenarioReference = ScenarioReference.defaultPreset
 
     @Query(sort: \Scenario.createdAt, order: .reverse)
     private var scenarios: [Scenario]
@@ -43,21 +35,23 @@ struct PhoneView: View {
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
 
-    private var currentScenario: Scenario? {
-        currentScenarios.first
+    private var availableScenarios: [ScenarioContent] {
+        ScenarioLibrary.all(customScenarios: scenarios)
+    }
+
+    private var currentScenario: ScenarioContent {
+        ScenarioLibrary.resolve(
+            selectedScenarioReference,
+            customScenarios: scenarios
+        ) ?? PresetScenarioCatalog.kevin.content
     }
 
     private var currentScenarioWidgetSnapshot: String {
-<<<<<<< HEAD
-        guard let currentScenario else {
-            return ""
-        }
-=======
         "\(currentScenario.title)|\(currentScenario.callerName)"
     }
->>>>>>> 8d536f4 (refactor: phoneView 오류 수정 및 코드 리펙토링)
 
-        return "\(currentScenario.title)|\(currentScenario.callerName)"
+    private var availableScenarioReferences: [ScenarioReference] {
+        availableScenarios.map(\.id)
     }
 
     var body: some View {
@@ -102,7 +96,29 @@ struct PhoneView: View {
                 isPresented: $isFakeCallPresented,
                 onDismiss: handleFakeCallDismissed
             ) {
-                fakeCallScreen
+                FakeCallPresentationView(
+                    coordinator: fakeCallCoordinator,
+                    onAccept: acceptFakeCall,
+                    onDecline: finishFakeCall,
+                    onEndCall: finishFakeCall,
+                    onShareLocation: { requestSOSAction(.locationShare) },
+                    onEmergencySMS: { requestSOSAction(.emergencySMS) },
+                    onEmergencyCall: { requestSOSAction(.emergencyCall) }
+                )
+                .alert(item: $pendingSOSAction) { action in
+                    Alert(
+                        title: Text(action.confirmationTitle),
+                        message: Text(action.confirmationMessage),
+                        primaryButton: action.isEmergency
+                            ? .destructive(Text(action.confirmButtonTitle)) {
+                                finishFakeCallAndQueue(action)
+                            }
+                            : .default(Text(action.confirmButtonTitle)) {
+                                finishFakeCallAndQueue(action)
+                            },
+                        secondaryButton: .cancel()
+                    )
+                }
             }
             .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
                 MessageComposerView(
@@ -115,7 +131,7 @@ struct PhoneView: View {
             }
             .sheet(isPresented: $isScenarioSelectionSheetPresented) {
                 ScenarioSelectionSheetView(
-                    scenarios: scenarios,
+                    scenarios: availableScenarios,
                     currentScenario: currentScenario,
                     onSelect: selectScenario
                 )
@@ -145,6 +161,7 @@ struct PhoneView: View {
                 Text(sosManager.currentError?.message ?? "")
             }
             .task {
+                restoreScenarioSelection()
                 syncCurrentScenarioToWidget()
                 handlePendingWidgetCallRequest()
                 await widgetStatusManager.checkWidgetStatus()
@@ -155,6 +172,9 @@ struct PhoneView: View {
             .onChange(of: currentScenarioWidgetSnapshot) { _, _ in
                 syncCurrentScenarioToWidget()
                 handlePendingWidgetCallRequest()
+            }
+            .onChange(of: availableScenarioReferences) { _, _ in
+                normalizeScenarioSelection()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else {
@@ -214,29 +234,16 @@ private extension PhoneView {
     }
 
     func startFakeCall() {
-<<<<<<< HEAD
-        guard let currentScenario else {
-            return
-        }
-
-        fakeCallCoordinator = FakeCallCoordinator(
-            repository: MockFakeCallScriptRepository(
-                displayName: currentScenario.callerName
-            )
-        )
-        fakeCallCoordinator.startIncomingCall()
-=======
         fakeCallCoordinator.startIncomingCall(
             repository: ScenarioFakeCallScriptRepository(content: currentScenario)
         )
->>>>>>> 8d536f4 (refactor: phoneView 오류 수정 및 코드 리펙토링)
         isFakeCallPresented = true
     }
 
     func acceptFakeCall() {
         fakeCallCoordinator.acceptCall(
             recordsAudio: isAutomaticRecordingEnabled,
-            scenarioTitle: currentScenario?.title ?? "가상 통화"
+            scenarioTitle: currentScenario.title
         )
 
         guard let profile = fakeCallCoordinator.profile,
@@ -367,18 +374,12 @@ private extension PhoneView {
             return
         }
 
-        guard currentScenario != nil else {
-            return
-        }
-
         lastHandledWidgetCallRequestID = widgetCallRequestID
         widgetCallRequestID = ""
         startFakeCall()
     }
 }
 
-<<<<<<< HEAD
-=======
 private struct FakeCallPresentationView: View {
     @Bindable var coordinator: FakeCallCoordinator
 
@@ -455,7 +456,6 @@ private struct FakeCallPresentationView: View {
     }
 }
 
->>>>>>> 8d536f4 (refactor: phoneView 오류 수정 및 코드 리펙토링)
 private enum ActiveCallSOSAction: String, Identifiable {
     case locationShare
     case emergencySMS
