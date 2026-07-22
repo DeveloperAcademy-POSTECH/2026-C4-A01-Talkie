@@ -56,6 +56,23 @@ struct PhoneView: View {
     }
 
     var body: some View {
+        ZStack {
+            Constants.grey800
+                .ignoresSafeArea()
+            
+            VStack(alignment: .leading, spacing: 28) {
+                HStack {
+                    Text("대화 선택")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    Button {
+                        isMyPagePresented = true
+                    } label: {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 28))
         NavigationStack {
             ZStack {
                 Constants.grey800
@@ -97,6 +114,36 @@ struct PhoneView: View {
 
                     Spacer()
                 }
+                .padding(.bottom, 20)
+                
+                PhoneCardView(
+                    scenario: currentScenario
+                )
+                
+                Button {
+                    fakeCallCoordinator.startIncomingCall()
+                    isFakeCallPresented = true
+                } label: {
+                    HStack(spacing: 8){
+                        Image(systemName: "phone.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.green)
+                        Text("전화하기")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.green)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+                .background(
+                    currentScenario == nil
+                    ? Constants.grey700
+                    : Constants.main500
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 30))
+                .disabled(currentScenario == nil)
+                
+                Spacer()
                 .padding(.horizontal, 20)
                 .padding(.top, 32)
             }
