@@ -10,54 +10,84 @@ import SwiftData
 
 struct SOSView: View {
     @State private var sosManager = SOSManager()
+    @State private var selectedAction: SOSAction?
     
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            Text("SOS")
-                .font(.largeTitle)
-                .bold()
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("지금 위험하신가요?")
-                    .font(.title2)
-                    .bold()
-                
-                Text("아래 버튼을 눌러 현재 위치 공유 또는 신고를 선택할 수 있어요.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        ZStack {
+            Constants.bgRegular
+                .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("SOS")
+                    .font(Font.custom("Pretendard", size: 34).weight(.semibold))
+                    .foregroundColor(Constants.textPrimary)
+                    .padding(.top, 72)
+
+                VStack(alignment: .leading, spacing: 28) {
+                    dangerTitle
+
+                    Text("아래 버튼을 눌러 현재 위치 공유 또는 신고를 선택할 수 있어요.")
+                        .font(Font.custom("Pretendard", size: 14))
+                        .foregroundColor(Constants.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 32)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                VStack(spacing: 20) {
+                    Button {
+                        selectedAction = .shareLocation
+                        sosManager.shareLocationToContacts(
+                            safetyContacts: safetyContacts
+                        )
+                    } label: {
+                        actionRow(
+                            title: sosManager.isLoading ? "위치 확인 중..." : "안전 연락망에 위치 공유",
+                            systemImage: "person.crop.circle.fill",
+                            isHighlighted: selectedAction == .shareLocation
+                        )
+                    }
+                    .disabled(sosManager.isLoading)
+                    .buttonStyle(.plain)
+
+                    Button {
+                        selectedAction = .sms112
+                        sosManager.sendEmergencySMS112()
+                    } label: {
+                        actionRow(
+                            title: "112 문자 신고",
+                            systemImage: "envelope.fill",
+                            isHighlighted: selectedAction == .sms112
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        selectedAction = .call112
+                        sosManager.callEmergencyServices()
+                    } label: {
+                        actionRow(
+                            title: "112 전화 신고",
+                            systemImage: "phone.fill",
+                            isHighlighted: selectedAction == .call112
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+
+                warningText
+                    .padding(.bottom, 104)
             }
-            
-            statusSection
-            
-            VStack(spacing: 12) {
-                Button {
-                    sosManager.shareLocationToContacts(
-                        safetyContacts: safetyContacts
-                    )
-                } label: {
-                    actionRowTitle("안전 연락망에 위치 공유")
-                }
-                .disabled(sosManager.isLoading || !sosManager.hasEmergencyContacts)
-                
-                Button {
-                    sosManager.sendEmergencySMS112()
-                } label: {
-                    actionRowTitle("112 문자 신고")
-                }
-                
-                Button {
-                    sosManager.callEmergencyServices()
-                } label: {
-                    actionRowTitle("112 전화 신고")
-                }
-            }
-            
-            Spacer()
+            .padding(.horizontal, 24)
         }
-        .padding(24)
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
             MessageComposerView(
                 mode: sosManager.messageComposeMode,
@@ -85,50 +115,78 @@ struct SOSView: View {
     }
 }
 
+private enum SOSAction {
+    case shareLocation
+    case sms112
+    case call112
+}
+
 private extension SOSView {
-    var statusSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("와이어프레임 상태")
-                .font(.headline)
-            
-            Text("isLoading: \(sosManager.isLoading.description)")
-            Text("hasEmergencyContacts: \(sosManager.hasEmergencyContacts.description)")
-            
-            if let currentError = sosManager.currentError {
-                Text("currentError: \(currentError.message)")
-                    .foregroundStyle(.red)
-            } else {
-                Text("currentError: nil")
-                    .foregroundStyle(.secondary)
-            }
-            
-            if sosManager.isLoading {
-                ProgressView("위치 공유 준비 중...")
-            }
+    var dangerTitle: some View {
+        HStack(spacing: 0) {
+            Text("지금 ")
+                .foregroundColor(Constants.textPrimary)
+
+            Text("위험하신가요?")
+                .foregroundColor(Constants.primaryNormal)
         }
-        .font(.footnote)
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.gray.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .font(Font.custom("Pretendard", size: 28).weight(.semibold))
     }
-    
-    func actionRowTitle(_ title: String) -> some View {
-        HStack {
+
+    func actionRow(
+        title: String,
+        systemImage: String,
+        isHighlighted: Bool
+    ) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Image(systemName: systemImage)
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
+                .frame(width: 36, height: 36)
+
             Text(title)
-                .font(.headline)
-            
+                .font(Font.custom("Pretendard", size: 20).weight(.semibold))
+                .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textPrimary)
+
             Spacer()
-            
+
             Image(systemName: "chevron.right")
+                .font(.system(size: 22, weight: .medium))
+                .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color.gray.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 20)
+        .padding(.vertical, 32)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(isHighlighted ? Constants.bgRegular : Constants.grey700)
+        .cornerRadius(24)
+        .overlay {
+            if isHighlighted {
+                RoundedRectangle(cornerRadius: 24)
+                    .inset(by: 0.5)
+                    .stroke(Constants.primaryNormal, lineWidth: 1)
+            }
+        }
+    }
+
+    var warningText: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 16))
+                .foregroundColor(Constants.textTertiary)
+                .padding(.top, 2)
+
+            Text("허위 신고 시 형법 제137조(위계에 의한 공무집행방해) 및 112신고의 운영 및 처리에 관한 법률 제18조(500만원 이하 과태료)에 따라 처벌 받을 수 있습니다.")
+                .font(Font.custom("Pretendard", size: 12))
+                .foregroundColor(Constants.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .lineSpacing(4)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
 #Preview {
     SOSView()
+        .modelContainer(for: SafetyContact.self, inMemory: true)
 }

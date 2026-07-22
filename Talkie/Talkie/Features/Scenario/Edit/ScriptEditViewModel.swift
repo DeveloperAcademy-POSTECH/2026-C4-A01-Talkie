@@ -144,7 +144,7 @@ final class ScriptEditViewModel {
         }
 
         let scriptLine = ScriptLine(
-            text: "자유롭게 녹음해보세요.",
+            text: "",
             sortOrder: scenario.scriptLines.count,
             scenario: scenario
         )

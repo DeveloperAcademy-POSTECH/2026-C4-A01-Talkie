@@ -18,7 +18,6 @@ struct TalkieApp: App {
                 for: Scenario.self,
                 ScriptLine.self,
                 AudioClipMetadata.self,
-                CallReservation.self,
                 SafetyContact.self,
                 CallSession.self,
                 CallRecording.self
@@ -28,11 +27,11 @@ struct TalkieApp: App {
         }
         
         do {
-            try ScenarioSeedService.insertDefaultScenariosIfNeeded(
+            try ScenarioSeedService.migrateLegacyPresetDataIfNeeded(
                 into: ModelContext(container)
             )
         } catch {
-            fatalError("기본 시나리오 seed 실패: \(String(reflecting: error))")
+            fatalError("기존 프리셋 데이터 마이그레이션 실패: \(String(reflecting: error))")
         }
     }
     

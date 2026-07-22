@@ -54,6 +54,10 @@ struct PhoneView: View {
         availableScenarios.map(\.id)
     }
 
+    private var availableScenarioReferences: [ScenarioReference] {
+        availableScenarios.map(\.id)
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -380,6 +384,10 @@ private extension PhoneView {
     }
 }
 
+/// The full-screen presentation owns an explicit observation boundary for the
+/// coordinator created at call start. `PhoneView` replaces that coordinator for
+/// every call, so reading its phase only in the cover builder can leave the
+/// presentation displaying the initial loading state.
 private struct FakeCallPresentationView: View {
     @Bindable var coordinator: FakeCallCoordinator
 

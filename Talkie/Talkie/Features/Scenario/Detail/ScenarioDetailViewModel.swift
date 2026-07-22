@@ -13,35 +13,40 @@ import SwiftData
 @MainActor
 @Observable
 final class ScenarioDetailViewModel {
-    var scenario: Scenario
+    /// 사용자 시나리오일 때만 원본 SwiftData 객체를 보유합니다.
+    /// nil이면 Bundle 프리셋이므로 편집·삭제 경로를 열지 않습니다.
+    private(set) var customScenario: Scenario?
+    private(set) var content: ScenarioContent
     private(set) var isPlayingAll = false
-    private(set) var playingScriptLine: ScriptLine?
+    private(set) var playingLineID: String?
     private(set) var errorMessage: String?
 
     private var audioPlayer: AVAudioPlayer?
     private var playbackTask: Task<Void, Never>?
-    private var playbackQueue: [ScriptLine] = []
+    private var playbackQueue: [ScenarioLineContent] = []
 
     init(scenario: Scenario) {
-        self.scenario = scenario
+        customScenario = scenario
+        content = scenario.content
     }
 
-    var isPresetScenario: Bool {
-        scenario.presetID != nil
+    init(preset: PresetScenario) {
+        customScenario = nil
+        content = preset.content
     }
 
     var canManageScenario: Bool {
-        !isPresetScenario
+        customScenario != nil
     }
 
-    var sortedScriptLines: [ScriptLine] {
-        scenario.scriptLines.sorted {
-            $0.sortOrder < $1.sortOrder
-        }
+    var sortedScriptLines: [ScenarioLineContent] {
+        content.scriptLines.sorted { $0.sortOrder < $1.sortOrder }
     }
 
-    var callerName: String {
-        scenario.callerName
+    /// 편집 화면에서 돌아왔을 때 사용자 모델의 최신 값을 표시용 스냅숏에 반영합니다.
+    func refreshContent() {
+        guard let customScenario else { return }
+        content = customScenario.content
     }
 
     func togglePlayAll() {
@@ -52,24 +57,29 @@ final class ScenarioDetailViewModel {
         }
     }
 
-    func playSingleLine(_ scriptLine: ScriptLine) {
-        guard !isPlaying(scriptLine) else {
+    func playSingleLine(_ line: ScenarioLineContent) {
+        guard !isPlaying(line) else {
             stopPlayback()
             return
         }
 
         stopPlayback()
-        play(scriptLine, shouldContinueQueue: false)
+        play(line, shouldContinueQueue: false)
     }
 
-    func isPlaying(_ scriptLine: ScriptLine) -> Bool {
-        playingScriptLine === scriptLine
+    func isPlaying(_ line: ScenarioLineContent) -> Bool {
+        playingLineID == line.id
     }
 
     func deleteScenario(using modelContext: ModelContext) -> Bool {
+        guard let customScenario else {
+            errorMessage = "기본 프리셋은 삭제할 수 없습니다."
+            return false
+        }
+
         stopPlayback()
 
-        for scriptLine in scenario.scriptLines {
+        for scriptLine in customScenario.scriptLines {
             do {
                 try AudioFileManager.deleteIfNeeded(fileName: scriptLine.audioFileName)
             } catch {
@@ -79,7 +89,7 @@ final class ScenarioDetailViewModel {
             }
         }
 
-        modelContext.delete(scenario)
+        modelContext.delete(customScenario)
 
         do {
             try modelContext.save()
@@ -95,25 +105,31 @@ final class ScenarioDetailViewModel {
         errorMessage = nil
     }
 
-    private func startPlayAll() {
-        let recordedLines = sortedScriptLines.filter {
-            $0.isRecorded && $0.audioFileName != nil
-        }
+    func stopPlayback() {
+        playbackTask?.cancel()
+        playbackTask = nil
+        audioPlayer?.stop()
+        audioPlayer = nil
+        playingLineID = nil
+        playbackQueue = []
+        isPlayingAll = false
+    }
 
-        guard !recordedLines.isEmpty else {
+    private func startPlayAll() {
+        let playableLines = sortedScriptLines.filter { $0.audioSource != nil }
+
+        guard !playableLines.isEmpty else {
             errorMessage = "재생할 녹음 파일이 없습니다."
             return
         }
 
-        playbackQueue = recordedLines
+        playbackQueue = playableLines
         isPlayingAll = true
         playNextLine()
     }
 
     private func playNextLine() {
-        guard isPlayingAll else {
-            return
-        }
+        guard isPlayingAll else { return }
 
         guard !playbackQueue.isEmpty else {
             stopPlayback()
@@ -124,37 +140,27 @@ final class ScenarioDetailViewModel {
         play(nextLine, shouldContinueQueue: true)
     }
 
-    private func play(_ scriptLine: ScriptLine, shouldContinueQueue: Bool) {
-        guard scriptLine.isRecorded else {
+    private func play(_ line: ScenarioLineContent, shouldContinueQueue: Bool) {
+        guard let audioSource = line.audioSource else {
             errorMessage = "아직 녹음된 대사가 없습니다."
-            isPlayingAll = false
-            return
-        }
-
-        guard let audioFileName = scriptLine.audioFileName else {
-            errorMessage = "녹음 파일 이름이 저장되어 있지 않습니다."
-            isPlayingAll = false
+            stopPlayback()
             return
         }
 
         do {
-            guard try AudioFileManager.fileExists(fileName: audioFileName) else {
-                errorMessage = "녹음 파일을 찾을 수 없습니다."
-                isPlayingAll = false
-                return
-            }
-
-            let audioURL = try AudioFileManager.url(for: audioFileName)
+            let audioURL = try ScenarioAudioResolver.url(for: audioSource)
             try configureAudioSessionForPlayback()
 
             audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
             audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-            playingScriptLine = scriptLine
+            guard audioPlayer?.play() == true else {
+                throw ScenarioAudioResolverError.playbackFailed(audioURL.lastPathComponent)
+            }
+            playingLineID = line.id
 
             schedulePlaybackCompletion(shouldContinueQueue: shouldContinueQueue)
         } catch {
-            errorMessage = "녹음 파일을 재생하지 못했습니다."
+            errorMessage = error.localizedDescription
             print("상세 화면 오디오 재생 실패: \(error.localizedDescription)")
             stopPlayback()
         }
@@ -163,17 +169,13 @@ final class ScenarioDetailViewModel {
     private func schedulePlaybackCompletion(shouldContinueQueue: Bool) {
         playbackTask?.cancel()
 
-        guard let duration = audioPlayer?.duration else {
-            return
-        }
+        guard let duration = audioPlayer?.duration else { return }
 
         playbackTask = Task {
             let nanoseconds = UInt64(max(duration, 0.1) * 1_000_000_000)
             try? await Task.sleep(nanoseconds: nanoseconds)
 
-            guard !Task.isCancelled else {
-                return
-            }
+            guard !Task.isCancelled else { return }
 
             await MainActor.run {
                 if shouldContinueQueue {
@@ -183,16 +185,6 @@ final class ScenarioDetailViewModel {
                 }
             }
         }
-    }
-
-    private func stopPlayback() {
-        playbackTask?.cancel()
-        playbackTask = nil
-        audioPlayer?.stop()
-        audioPlayer = nil
-        playingScriptLine = nil
-        playbackQueue = []
-        isPlayingAll = false
     }
 
     private func configureAudioSessionForPlayback() throws {

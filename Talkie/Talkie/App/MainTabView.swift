@@ -42,6 +42,7 @@ struct MainTabView: View {
         .onChange(of: widgetCallRequestID) { _, _ in
             selectPhoneTabIfWidgetCallIsPending()
         }
+        .tint(Constants.primaryNormal)
     }
 
     private func selectPhoneTabIfWidgetCallIsPending() {

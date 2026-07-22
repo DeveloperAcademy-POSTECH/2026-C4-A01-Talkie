@@ -89,10 +89,10 @@ struct ScenarioInfoEditView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
-                    .frame(width: 48, height: 48)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(Circle())
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
 
             Spacer()
         }

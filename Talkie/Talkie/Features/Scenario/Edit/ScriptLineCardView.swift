@@ -15,18 +15,10 @@ struct ScriptLineCardView: View {
     let onPlay: () -> Void
     let onRecordToggle: () -> Void
     let onTextChange: (String) -> Void
-    let onDelete: () -> Void
     
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
-            if isEditing {
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.white.opacity(0.36))
-                    .accessibilityLabel("순서 변경")
-            }
-            
-            VStack(alignment: .leading, spacing: 16) {
+        ZStack(alignment: .trailing) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     RecordingStateBadgeView(
                         isRecording: isRecording,
@@ -34,80 +26,102 @@ struct ScriptLineCardView: View {
                     )
                     
                     Spacer()
-                    
-                    if isEditing && !isReadOnly {
-                        Button(action: onDelete) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(.white.opacity(0.44))
-                        }
-                        .accessibilityLabel("대사 삭제")
-                    }
                 }
                 
                 if isEditing && !isReadOnly {
                     TextField(
-                        "대사를 입력하세요.",
-                        text: Binding(
-                            get: { scriptLine.text },
-                            set: { onTextChange($0) }
-                        ),
+                        "",
+                        text: scriptTextBinding,
+                        prompt: placeholderText,
                         axis: .vertical
                     )
                     .font(.custom("Pretendard", size: 16))
-                    .foregroundColor(textColor)
+                    .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
                 } else {
-                    Text(scriptLine.text)
-                        .font(.custom("Pretendard", size: 16))
-                        .foregroundColor(textColor)
-                        .lineSpacing(4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                
-                if !isEditing && !isReadOnly {
-                    HStack {
-                        Spacer()
-                        
-                        HStack(spacing: 12) {
-                            if scriptLine.isRecorded && !isRecording {
-                                playButton
-                            }
-                            
-                            recordButton
-                        }
+                    if scriptLine.text.isEmpty {
+                        placeholderText
+                    } else {
+                        Text(scriptLine.text)
+                            .font(.custom("Pretendard", size: 16))
+                            .foregroundColor(textColor)
+                            .lineSpacing(4)
+                            .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .topLeading)
                     }
                 }
             }
+            .padding(.trailing, showsTrailingControls ? 52 : 0)
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            if showsTrailingControls {
+                HStack(spacing: 12) {
+                    if scriptLine.isRecorded && !isRecording {
+                        playButton
+                    }
+
+                    recordButton
+                }
+            }
         }
-        .padding(20)
+        .padding(16)
+        .frame(minHeight: 124, alignment: .center)
         .background(cardBackground)
         .shadow(
-            color: isRecording ? Constants.main500.opacity(0.18) : .clear,
+            color: isRecording ? Constants.primaryNormal.opacity(0.18) : .clear,
             radius: 18,
             x: 0,
             y: 8
         )
     }
+
+    private var showsTrailingControls: Bool {
+        !isEditing && !isReadOnly
+    }
     
     private var textColor: Color {
         if isRecording {
-            return .white
+            return Constants.textPrimary
         }
         
-        return .white.opacity(scriptLine.isRecorded ? 1 : 0.72)
+        return scriptLine.isRecorded ? Constants.textPrimary : Constants.textSecondary
     }
     
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 16)
-            .fill(isRecording ? Constants.main500.opacity(0.22) : Constants.grey700)
+            .fill(Constants.grey700)
+            .overlay(alignment: .bottom) {
+                if isRecording {
+                    LinearGradient(
+                        stops: [
+                            Gradient.Stop(color: Constants.main500A0, location: 0),
+                            Gradient.Stop(color: Constants.main500A32, location: 1),
+                        ],
+                        startPoint: UnitPoint(x: 0.5, y: 0),
+                        endPoint: UnitPoint(x: 0.5, y: 1)
+                    )
+                    .frame(height: 50)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay {
                 if isRecording {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Constants.main500.opacity(0.9), lineWidth: 1)
+                        .stroke(Constants.primaryNormal.opacity(0.9), lineWidth: 1)
                 }
             }
+    }
+
+    private var scriptTextBinding: Binding<String> {
+        Binding(
+            get: { scriptLine.text },
+            set: { onTextChange($0) }
+        )
+    }
+
+    private var placeholderText: Text {
+        Text("대화 내용을 입력하고 녹음해보세요.")
+            .font(Font.custom("Pretendard", size: 16))
+            .foregroundColor(Constants.textTertiary)
     }
     
     private var playButton: some View {
@@ -115,10 +129,12 @@ struct ScriptLineCardView: View {
             Image(systemName: "play.fill")
                 .font(.system(size: 16))
                 .foregroundColor(.white)
-                .frame(width: 40, height: 40)
-                .background(Color.white.opacity(0.1))
+                .frame(width: 36, height: 36)
+                .background(Constants.surfaceButton)
                 .clipShape(Circle())
         }
+        .buttonStyle(.plain)
+        .contentShape(Circle())
         .accessibilityLabel("녹음 재생")
     }
     
@@ -126,11 +142,13 @@ struct ScriptLineCardView: View {
         Button(action: onRecordToggle) {
             Image(systemName: isRecording ? "square.fill" : "mic.fill")
                 .font(.system(size: 16))
-                .foregroundColor(.white)
-                .frame(width: 40, height: 40)
-                .background(Constants.main500)
+                .foregroundColor(Constants.primaryNormal)
+                .frame(width: 36, height: 36)
+                .background(Constants.surfaceButton)
                 .clipShape(Circle())
         }
+        .buttonStyle(.plain)
+        .contentShape(Circle())
         .accessibilityLabel(isRecording ? "녹음 정지" : "녹음 시작")
     }
 }

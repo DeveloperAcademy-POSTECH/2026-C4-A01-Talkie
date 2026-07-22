@@ -15,32 +15,33 @@ struct RecordingStateBadgeView: View {
         if isRecording {
             Text("녹음 중")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundColor(Constants.main500)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Constants.main500.opacity(0.16))
-                .cornerRadius(10)
+                .foregroundColor(Constants.primaryNormal)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(Constants.primaryNormal.opacity(0.16))
+                .cornerRadius(12)
         } else if isRecorded {
             HStack(spacing: 4) {
                 Text("녹음 완료")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Font.custom("Pretendard", size: 12).weight(.semibold))
                 
                 Image(systemName: "checkmark")
                     .font(.system(size: 10, weight: .bold))
             }
-            .foregroundColor(Constants.grey800)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.84))
-            .cornerRadius(10)
+            .foregroundColor(Constants.textInverse)
+            .padding(.leading, 8)
+            .padding(.trailing, 2)
+            .padding(.vertical, 2)
+            .background(Constants.surfaceRecordingCompleted)
+            .cornerRadius(12)
         } else {
             Text("녹음 전")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Constants.grey300)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.white.opacity(0.08))
-                .cornerRadius(10)
+                .foregroundColor(Constants.textSecondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(Constants.surfaceRecordingNotYet)
+                .cornerRadius(12)
         }
     }
 }
