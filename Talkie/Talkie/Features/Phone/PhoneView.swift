@@ -47,7 +47,11 @@ struct PhoneView: View {
     }
 
     private var currentScenarioWidgetSnapshot: String {
-        return "\(currentScenario.title)|\(currentScenario.callerName)"
+        "\(currentScenario.title)|\(currentScenario.callerName)"
+    }
+
+    private var availableScenarioReferences: [ScenarioReference] {
+        availableScenarios.map(\.id)
     }
 
     private var availableScenarioReferences: [ScenarioReference] {
@@ -228,102 +232,15 @@ private extension PhoneView {
             .frame(maxWidth: .infinity, alignment: .center)
             .background(Constants.grey700)
             .cornerRadius(100)
-            .opacity(currentScenario == nil ? 0.45 : 1)
         }
         .buttonStyle(.plain)
-        .disabled(currentScenario == nil)
         .accessibilityLabel("가상 통화 시작")
     }
 
-    var fakeCallScreen: some View {
-        Group {
-            if fakeCallCoordinator.phase == .incoming,
-               let profile = fakeCallCoordinator.profile {
-                IncomingFakeCallView(
-                    profile: profile,
-                    onAccept: acceptFakeCall,
-                    onDecline: finishFakeCall
-                )
-            } else if fakeCallCoordinator.phase.isActiveCall,
-                      let profile = fakeCallCoordinator.profile,
-                      let callStartedAt = fakeCallCoordinator.callStartedAt {
-                ActiveFakeCallView(
-                    profile: profile,
-                    callStartedAt: callStartedAt,
-                    phase: fakeCallCoordinator.phase,
-                    currentInputLevel: fakeCallCoordinator.currentInputLevel,
-                    voiceMonitoringState: fakeCallCoordinator.voiceMonitoringState,
-                    isSpeakerEnabled: fakeCallCoordinator.isSpeakerEnabled,
-                    onEndCall: finishFakeCall,
-                    onSkipLine: fakeCallCoordinator.skipToNextLine,
-                    onSpeakerChange: fakeCallCoordinator.setSpeakerEnabled,
-                    onShareLocation: { requestSOSAction(.locationShare) },
-                    onEmergencySMS: { requestSOSAction(.emergencySMS) },
-                    onEmergencyCall: { requestSOSAction(.emergencyCall) }
-                )
-            } else if case let .failed(message) = fakeCallCoordinator.phase {
-                failedCall(message: message)
-            } else {
-                preparingCall
-            }
-        }
-        .alert(item: $pendingSOSAction) { action in
-            Alert(
-                title: Text(action.confirmationTitle),
-                message: Text(action.confirmationMessage),
-                primaryButton: action.isEmergency
-                    ? .destructive(Text(action.confirmButtonTitle)) {
-                        finishFakeCallAndQueue(action)
-                    }
-                    : .default(Text(action.confirmButtonTitle)) {
-                        finishFakeCallAndQueue(action)
-                    },
-                secondaryButton: .cancel()
-            )
-        }
-    }
-
-    var preparingCall: some View {
-        ZStack {
-            CallScreenBackground()
-                .ignoresSafeArea()
-
-            ProgressView()
-                .tint(.white)
-                .accessibilityLabel("가상 통화 준비 중")
-        }
-        .preferredColorScheme(.dark)
-    }
-
-    func failedCall(message: String) -> some View {
-        ZStack {
-            CallScreenBackground()
-                .ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                Text(message)
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-
-                Button("돌아가기", action: finishFakeCall)
-                    .buttonStyle(.borderedProminent)
-            }
-            .padding(24)
-        }
-        .preferredColorScheme(.dark)
-    }
-
     func startFakeCall() {
-        guard let currentScenario else {
-            return
-        }
-
-        let repository = ScenarioFakeCallScriptRepository(content: currentScenario)
-        
-        fakeCallCoordinator = FakeCallCoordinator(repository: repository)
-        fakeCallCoordinator.startIncomingCall(repository: repository)
-        
+        fakeCallCoordinator.startIncomingCall(
+            repository: ScenarioFakeCallScriptRepository(content: currentScenario)
+        )
         isFakeCallPresented = true
     }
 
@@ -430,26 +347,29 @@ private extension PhoneView {
         }
     }
 
-    func selectScenario(_ selectedScenario: Scenario) {
-        for scenario in scenarios {
-            scenario.isCurrentSelection = scenario === selectedScenario
-        }
-
-        do {
-            try modelContext.save()
-            WidgetScenarioStore.save(scenario: selectedScenario)
-        } catch {
-            modelContext.rollback()
-            print("시나리오 선택 저장 실패: \(error.localizedDescription)")
-        }
+    func selectScenario(_ selectedScenario: ScenarioContent) {
+        selectedScenarioReference = selectedScenario.id
+        ScenarioSelectionStore.save(selectedScenario.id)
+        WidgetScenarioStore.save(scenario: selectedScenario)
     }
 
     func syncCurrentScenarioToWidget() {
-        guard let currentScenario else {
-            return
-        }
-
         WidgetScenarioStore.save(scenario: currentScenario)
+    }
+
+    func restoreScenarioSelection() {
+        selectedScenarioReference = ScenarioSelectionStore.load()
+        normalizeScenarioSelection()
+    }
+
+    func normalizeScenarioSelection() {
+        guard ScenarioLibrary.resolve(
+            selectedScenarioReference,
+            customScenarios: scenarios
+        ) == nil else { return }
+
+        selectedScenarioReference = .defaultPreset
+        ScenarioSelectionStore.resetToDefault()
     }
 
     func handlePendingWidgetCallRequest() {
