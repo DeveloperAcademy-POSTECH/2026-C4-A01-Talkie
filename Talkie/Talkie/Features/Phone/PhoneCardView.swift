@@ -20,19 +20,21 @@ struct PhoneCardView: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            
+        VStack(spacing: 0) {
             cardHeader
-            
+
+            Spacer(minLength: 0)
+
             scenarioInfo
-                .padding(.bottom, 16)
-            
+                .padding(.bottom, 52)
+
             profilePlaceholder
-                .padding(.bottom, 60)
-            
+
+            Spacer(minLength: 0)
         }
         .padding(24)
         .frame(maxWidth: .infinity)
+        .frame(height: 440)
         .background(cardBackground)
     }
 }
@@ -46,12 +48,13 @@ private extension PhoneCardView {
             Button(action: onChangeScenario) {
                 Text("변경")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(Constants.main500)
+                    .foregroundStyle(.white.opacity(0.86))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.2))
+                    .background(Constants.grey800.opacity(0.72))
                     .clipShape(Capsule())
             }
+            .buttonStyle(.plain)
         }
     }
     
@@ -77,7 +80,7 @@ private extension PhoneCardView {
         if let scenario {
             VStack(spacing: 8) {
                 Text(scenario.title)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
@@ -89,7 +92,7 @@ private extension PhoneCardView {
             }
         } else {
             VStack(spacing: 8){
-                Text("엄마와의 통화")
+                Text("선택된 대화가 없습니다")
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
@@ -104,7 +107,7 @@ private extension PhoneCardView {
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 1, height: 14)
                     
-                    Text("엄마")
+                    Text("대화를 선택해주세요")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white.opacity(0.4))
                         .lineLimit(1)
@@ -118,7 +121,7 @@ private extension PhoneCardView {
         RoundedRectangle(cornerRadius: 28)
             .fill(Constants.grey700)
             .overlay {
-                RoundedRectangle(cornerRadius: 32)
+                RoundedRectangle(cornerRadius: 28)
                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
             }
     }

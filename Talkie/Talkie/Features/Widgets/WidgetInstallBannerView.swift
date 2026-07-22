@@ -9,32 +9,32 @@ import SwiftUI
 
 struct WidgetInstallBannerView: View {
     var body: some View {
-        HStack(spacing: 22) {
+        HStack(spacing: 12) {
             icon
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("위젯으로 간편하게 가상통화를 시작하세요!")
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.78))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(0.82)
 
                 HStack(spacing: 6) {
                     Text("설치방법 보러가기")
 
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 19, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                 }
-                .font(.system(size: 18, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.white.opacity(0.30))
             }
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
-        .frame(height: 96)
-        .background(Color(red: 0.17, green: 0.17, blue: 0.17))
+        .frame(height: 92)
+        .background(Constants.grey700)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("위젯 설치 안내, 설치방법 보러가기")
@@ -44,14 +44,14 @@ struct WidgetInstallBannerView: View {
         ZStack {
             Circle()
                 .fill(Color.white.opacity(0.07))
-                .frame(width: 72, height: 72)
+                .frame(width: 48, height: 48)
 
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(red: 0.12, green: 0.12, blue: 0.12))
-                .frame(width: 44, height: 44)
+                .frame(width: 32, height: 32)
 
             Image(systemName: "phone.fill")
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(Constants.main500)
         }
     }
