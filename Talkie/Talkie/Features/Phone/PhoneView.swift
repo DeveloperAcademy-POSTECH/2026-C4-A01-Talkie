@@ -319,12 +319,11 @@ private extension PhoneView {
             return
         }
 
-        fakeCallCoordinator = FakeCallCoordinator(
-            repository: MockFakeCallScriptRepository(
-                displayName: currentScenario.callerName
-            )
-                  fakeCallCoordinator.startIncomingCall(
-            repository: ScenarioFakeCallScriptRepository(content: currentScenario)
+        let repository = ScenarioFakeCallScriptRepository(content: currentScenario)
+        
+        fakeCallCoordinator = FakeCallCoordinator(repository: repository)
+        fakeCallCoordinator.startIncomingCall(repository: repository)
+        
         isFakeCallPresented = true
     }
 
