@@ -89,7 +89,7 @@ struct ActiveFakeCallView: View {
             }
 
             ActiveCallControlButton(
-                title: "FaceTime",
+                title: "메세지 신고",
                 icon: .faceTime,
                 accessibilityName: "112 문자 신고",
                 accessibilityHint: "현재 가상 통화를 종료하고 위치가 포함된 112 문자 작성 화면을 엽니다.",
@@ -106,7 +106,7 @@ struct ActiveFakeCallView: View {
             }
 
             ActiveCallControlButton(
-                title: "더 보기",
+                title: "위치 공유",
                 icon: .system("ellipsis"),
                 accessibilityName: "안전 연락망에 위치 공유",
                 accessibilityHint: "현재 가상 통화를 종료하고 저장된 안전 연락망에 위치 공유 문자를 준비합니다.",
@@ -121,7 +121,7 @@ struct ActiveFakeCallView: View {
             )
 
             ActiveCallControlButton(
-                title: "키패드",
+                title: "전화 신고",
                 icon: .system("circle.grid.3x3.fill"),
                 accessibilityName: "112 전화 신고",
                 accessibilityHint: "현재 가상 통화를 종료하고 112 전화 연결을 준비합니다.",

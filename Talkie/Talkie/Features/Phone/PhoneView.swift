@@ -295,16 +295,30 @@ struct PhoneView: View {
             recordsAudio: isAutomaticRecordingEnabled,
             scenarioTitle: currentScenario?.title ?? "가상 통화"
         )
+
+        guard let profile = fakeCallCoordinator.profile,
+              let startedAt = fakeCallCoordinator.callStartedAt else {
+            return
+        }
+
+        Task {
+            await FakeCallLiveActivityManager.shared.start(
+                callerName: profile.displayName,
+                startedAt: startedAt
+            )
+        }
     }
 
     private func finishFakeCall() {
         persist(fakeCallCoordinator.endCall())
+        endLiveActivity()
         isFakeCallPresented = false
     }
 
     private func stopFakeCallIfNeeded() {
         guard fakeCallCoordinator.phase != .idle else { return }
         persist(fakeCallCoordinator.endCall(reason: .interrupted))
+        endLiveActivity()
     }
 
     private func handleFakeCallDismissed() {
@@ -319,8 +333,17 @@ struct PhoneView: View {
     private func finishFakeCallAndQueue(_ action: ActiveCallSOSAction) {
         pendingSOSAction = nil
         persist(fakeCallCoordinator.endCall(reason: .sosTriggered))
+        endLiveActivity()
         queuedSOSAction = action
         isFakeCallPresented = false
+    }
+
+    /// Every path that leaves an accepted call funnels through this helper so
+    /// the system UI never outlives the in-app call session.
+    private func endLiveActivity() {
+        Task {
+            await FakeCallLiveActivityManager.shared.end()
+        }
     }
 
     private func performQueuedSOSActionIfNeeded() {
