@@ -21,6 +21,10 @@ struct ScenarioDetailView: View {
         _viewModel = State(initialValue: ScenarioDetailViewModel(scenario: scenario))
     }
 
+    init(preset: PresetScenario) {
+        _viewModel = State(initialValue: ScenarioDetailViewModel(preset: preset))
+    }
+
     var body: some View {
         ZStack {
             Constants.grey800
@@ -35,15 +39,19 @@ struct ScenarioDetailView: View {
         .navigationBarBackButtonHidden(true)
         .preferredColorScheme(.dark)
         .navigationDestination(isPresented: $isShowingInfoEditView) {
-            ScenarioInfoEditView(scenario: viewModel.scenario)
+            if let scenario = viewModel.customScenario {
+                ScenarioInfoEditView(scenario: scenario)
+            }
         }
         .navigationDestination(isPresented: $isShowingScriptEditView) {
-            ScriptEditView(
-                scenario: viewModel.scenario,
-                modelContext: modelContext,
-                actionButtonTitle: "수정하기"
-            ) {
-                isShowingScriptEditView = false
+            if let scenario = viewModel.customScenario {
+                ScriptEditView(
+                    scenario: scenario,
+                    modelContext: modelContext,
+                    actionButtonTitle: "수정하기"
+                ) {
+                    isShowingScriptEditView = false
+                }
             }
         }
         .alert(
@@ -68,6 +76,12 @@ struct ScenarioDetailView: View {
             Button("확인", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+        .onAppear {
+            viewModel.refreshContent()
+        }
+        .onDisappear {
+            viewModel.stopPlayback()
         }
     }
 
@@ -115,11 +129,11 @@ struct ScenarioDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(viewModel.scenario.title)
+                    Text(viewModel.content.title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.grey100)
 
-                    Text("발화자 | \(viewModel.callerName)")
+                    Text("발화자 | \(viewModel.content.callerName)")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.grey300)
                 }
@@ -162,7 +176,7 @@ struct ScenarioDetailView: View {
         }
     }
 
-    private func scriptLineRow(_ scriptLine: ScriptLine) -> some View {
+    private func scriptLineRow(_ scriptLine: ScenarioLineContent) -> some View {
         HStack(alignment: .center, spacing: 14) {
             Text(scriptLine.text)
                 .font(.custom("Pretendard", size: 16))
@@ -180,9 +194,10 @@ struct ScenarioDetailView: View {
                     .background(.grey900)
                     .clipShape(Circle())
             }
-            .disabled(!scriptLine.isRecorded)
-            .opacity(scriptLine.isRecorded ? 1 : 0.36)
-            .accessibilityLabel("대사 재생")
+            .disabled(scriptLine.audioSource == nil)
+            .opacity(scriptLine.audioSource == nil ? 0.36 : 1)
+            .accessibilityLabel("\(scriptLine.text) 재생")
+            .accessibilityValue(viewModel.isPlaying(scriptLine) ? "재생 중" : "정지됨")
         }
         .padding(20)
         .background(

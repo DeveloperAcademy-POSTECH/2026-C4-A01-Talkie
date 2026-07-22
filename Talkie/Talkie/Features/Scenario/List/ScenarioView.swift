@@ -39,19 +39,26 @@ struct ScenarioView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 20)
-//                    scenarioCount
-                    Text("총 \(scenarios.count)개")
+                    Text("총 \(PresetScenarioCatalog.all.count + scenarios.count)개")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
-//                    scenarioList
                     ScrollView{
                         LazyVStack(spacing: 16) {
+                            ForEach(PresetScenarioCatalog.all) { preset in
+                                NavigationLink {
+                                    ScenarioDetailView(preset: preset)
+                                } label: {
+                                    ScenarioCardView(scenario: preset.content)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
                                     ScenarioDetailView(scenario: scenario)
                                 } label: {
-                                    ScenarioCardView(scenario: scenario)
+                                    ScenarioCardView(scenario: scenario.content)
                                 }
                                 .buttonStyle(.plain)
                             }

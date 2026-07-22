@@ -10,6 +10,8 @@ import SwiftData
 
 @Model
 final class ScriptLine {
+    /// 사용자 시나리오 문장을 화면·통화 스냅숏에서 안정적으로 식별합니다.
+    var id: UUID = UUID()
     var text: String
     var sortOrder: Int
     var isRecorded: Bool
@@ -20,6 +22,7 @@ final class ScriptLine {
     var audioMetadata: AudioClipMetadata?
     
     init(
+        id: UUID = UUID(),
         text: String,
         sortOrder: Int,
         isRecorded: Bool = false,
@@ -27,6 +30,7 @@ final class ScriptLine {
         scenario: Scenario?,
         audioMetadata: AudioClipMetadata? = nil
     ) {
+        self.id = id
         self.text = text
         self.sortOrder = sortOrder
         self.isRecorded = isRecorded

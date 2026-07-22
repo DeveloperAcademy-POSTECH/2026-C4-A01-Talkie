@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct PhoneCardView: View {
-    let scenario: Scenario?
+    let scenario: ScenarioContent?
     let onChangeScenario: () -> Void
 
     init(
-        scenario: Scenario?,
+        scenario: ScenarioContent?,
         onChangeScenario: @escaping () -> Void = {}
     ) {
         self.scenario = scenario

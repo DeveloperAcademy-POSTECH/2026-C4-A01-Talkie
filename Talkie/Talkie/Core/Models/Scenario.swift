@@ -9,9 +9,14 @@ import SwiftData
 
 @Model
 final class Scenario {
+    /// 사용자 생성 시나리오를 선택 저장소에서 안정적으로 다시 찾기 위한 ID입니다.
+    var id: UUID = UUID()
     var title: String
     var createdAt: Date
+    /// #54 이전 seed 데이터를 한 번 정리하기 위한 임시 호환 필드입니다.
+    /// 새 프리셋은 이 모델에 저장하지 않습니다.
     var presetID: String?
+    /// #54 이전 선택값을 새 ScenarioSelectionStore로 옮기기 위한 임시 호환 필드입니다.
     var isCurrentSelection: Bool
     var callerName: String
     
@@ -19,12 +24,14 @@ final class Scenario {
     var scriptLines: [ScriptLine] = []
     
     init(
+        id: UUID = UUID(),
         title: String,
         callerName: String,
         createdAt: Date = Date(),
         presetID: String? = nil,
         isCurrentSelection: Bool = false
     ) {
+        self.id = id
         self.title = title
         self.callerName = callerName
         self.createdAt = createdAt
