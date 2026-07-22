@@ -10,16 +10,23 @@ import SwiftUI
 
 struct PhoneView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
 
+    @AppStorage(TalkiePreferenceKey.widgetCallRequestID)
+    private var widgetCallRequestID = ""
+
     @State private var isFakeCallPresented = false
+    @State private var isScenarioSelectionSheetPresented = false
     @State private var fakeCallCoordinator = FakeCallCoordinator()
     @State private var sosManager = SOSManager()
+    @State private var widgetStatusManager = WidgetStatusManager()
     @State private var historySaveError: String?
     @State private var pendingSOSAction: ActiveCallSOSAction?
     @State private var queuedSOSAction: ActiveCallSOSAction?
+    @State private var lastHandledWidgetCallRequestID = ""
 
     @Query(
         filter: #Predicate<Scenario> { scenario in
@@ -30,11 +37,22 @@ struct PhoneView: View {
     )
     private var currentScenarios: [Scenario]
 
+    @Query(sort: \Scenario.createdAt, order: .reverse)
+    private var scenarios: [Scenario]
+
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
 
     private var currentScenario: Scenario? {
         currentScenarios.first
+    }
+
+    private var currentScenarioWidgetSnapshot: String {
+        guard let currentScenario else {
+            return ""
+        }
+
+        return "\(currentScenario.title)|\(currentScenario.callerName)"
     }
 
     var body: some View {
@@ -46,8 +64,20 @@ struct PhoneView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     phoneHeader
 
+                    if !widgetStatusManager.isWidgetInstalled {
+                        NavigationLink {
+                            WidgetInstallUI()
+                        } label: {
+                            WidgetInstallBannerView()
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     PhoneCardView(
-                        scenario: currentScenario
+                        scenario: currentScenario,
+                        onChangeScenario: {
+                            isScenarioSelectionSheetPresented = true
+                        }
                     )
 
                     Button(action: startFakeCall) {
@@ -86,6 +116,15 @@ struct PhoneView: View {
                     sosManager.shouldShowMessageCompose = false
                 }
             }
+            .sheet(isPresented: $isScenarioSelectionSheetPresented) {
+                ScenarioSelectionSheetView(
+                    scenarios: scenarios,
+                    currentScenario: currentScenario,
+                    onSelect: selectScenario
+                )
+                .presentationDetents([.height(520), .large])
+                .presentationDragIndicator(.hidden)
+            }
             .alert(
                 "통화내역 저장 실패",
                 isPresented: Binding(
@@ -107,6 +146,28 @@ struct PhoneView: View {
                 Button("확인", role: .cancel) { }
             } message: {
                 Text(sosManager.currentError?.message ?? "")
+            }
+            .task {
+                syncCurrentScenarioToWidget()
+                handlePendingWidgetCallRequest()
+                await widgetStatusManager.checkWidgetStatus()
+            }
+            .onChange(of: widgetCallRequestID) { _, _ in
+                handlePendingWidgetCallRequest()
+            }
+            .onChange(of: currentScenarioWidgetSnapshot) { _, _ in
+                syncCurrentScenarioToWidget()
+                handlePendingWidgetCallRequest()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active else {
+                    return
+                }
+
+                Task {
+                    syncCurrentScenarioToWidget()
+                    await widgetStatusManager.checkWidgetStatus()
+                }
             }
         }
     }
@@ -216,6 +277,15 @@ struct PhoneView: View {
     }
 
     private func startFakeCall() {
+        guard let currentScenario else {
+            return
+        }
+
+        fakeCallCoordinator = FakeCallCoordinator(
+            repository: MockFakeCallScriptRepository(
+                displayName: currentScenario.callerName
+            )
+        )
         fakeCallCoordinator.startIncomingCall()
         isFakeCallPresented = true
     }
@@ -323,6 +393,43 @@ struct PhoneView: View {
             modelContext.rollback()
             historySaveError = "통화내역을 저장하지 못했습니다."
         }
+    }
+
+    private func selectScenario(_ selectedScenario: Scenario) {
+        for scenario in scenarios {
+            scenario.isCurrentSelection = scenario === selectedScenario
+        }
+
+        do {
+            try modelContext.save()
+            WidgetScenarioStore.save(scenario: selectedScenario)
+        } catch {
+            modelContext.rollback()
+            print("시나리오 선택 저장 실패: \(error.localizedDescription)")
+        }
+    }
+
+    private func syncCurrentScenarioToWidget() {
+        guard let currentScenario else {
+            return
+        }
+
+        WidgetScenarioStore.save(scenario: currentScenario)
+    }
+
+    private func handlePendingWidgetCallRequest() {
+        guard !widgetCallRequestID.isEmpty,
+              widgetCallRequestID != lastHandledWidgetCallRequestID else {
+            return
+        }
+
+        guard currentScenario != nil else {
+            return
+        }
+
+        lastHandledWidgetCallRequestID = widgetCallRequestID
+        widgetCallRequestID = ""
+        startFakeCall()
     }
 }
 

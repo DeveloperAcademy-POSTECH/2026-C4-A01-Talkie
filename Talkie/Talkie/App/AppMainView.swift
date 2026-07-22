@@ -20,6 +20,9 @@ struct AppMainView: View {
     
     @AppStorage("hasCompletedSafetyContactSetup")
     private var hasCompletedSafetyContactSetup = false
+
+    @AppStorage(TalkiePreferenceKey.widgetCallRequestID)
+    private var widgetCallRequestID = ""
     
     @State private var launchState: AppLaunchState = .splash
     
@@ -44,6 +47,9 @@ struct AppMainView: View {
             }
         }
         .animation(.easeInOut, value: launchState)
+        .onOpenURL { url in
+            handleDeepLink(url)
+        }
     }
     
     private func finishSplash() async {
@@ -72,6 +78,24 @@ struct AppMainView: View {
         isFirstLaunch = false
         hasCompletedSafetyContactSetup = true
         
+        withAnimation {
+            launchState = .main
+        }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "myapp",
+              url.host == "call" else {
+            return
+        }
+
+        widgetCallRequestID = UUID().uuidString
+
+        guard !isFirstLaunch,
+              hasCompletedSafetyContactSetup else {
+            return
+        }
+
         withAnimation {
             launchState = .main
         }

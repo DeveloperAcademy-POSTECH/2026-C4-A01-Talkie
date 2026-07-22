@@ -9,4 +9,5 @@ import Foundation
 enum TalkiePreferenceKey {
     static let automaticCallRecordingEnabled = "automaticCallRecordingEnabled"
     static let iCloudSyncEnabled = "iCloudSyncEnabled"
+    static let widgetCallRequestID = "widgetCallRequestID"
 }
