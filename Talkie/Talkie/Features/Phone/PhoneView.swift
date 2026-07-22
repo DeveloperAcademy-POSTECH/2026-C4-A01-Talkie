@@ -277,6 +277,15 @@ struct PhoneView: View {
     }
 
     private func startFakeCall() {
+        guard let currentScenario else {
+            return
+        }
+
+        fakeCallCoordinator = FakeCallCoordinator(
+            repository: MockFakeCallScriptRepository(
+                displayName: currentScenario.callerName
+            )
+        )
         fakeCallCoordinator.startIncomingCall()
         isFakeCallPresented = true
     }
