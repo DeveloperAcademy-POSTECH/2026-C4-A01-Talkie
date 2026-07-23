@@ -36,8 +36,6 @@ struct ScenarioView: View {
                         .buttonBorderShape(.circle)
                         .accessibilityLabel("시나리오 추가")
                     }
-                    .padding(.top, 32)
-
 
                     Text("총 \(totalScenarioCount)개")
                         .font(Font.pretendard(.semiBold, size: 16))

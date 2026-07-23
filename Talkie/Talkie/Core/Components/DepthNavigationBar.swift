@@ -12,10 +12,10 @@ struct DepthNavigationBar<TrailingContent: View>: View {
     let onBack: () -> Void
     @ViewBuilder let trailingContent: () -> TrailingContent
 
-    private let horizontalPadding: CGFloat = 8
+    private let horizontalPadding: CGFloat = 16
     private let topPadding: CGFloat = 12
     private let dividerTopSpacing: CGFloat = 12
-    private let buttonSize: CGFloat = 40
+    private let buttonSize: CGFloat = 36
 
     init(
         title: String? = nil,

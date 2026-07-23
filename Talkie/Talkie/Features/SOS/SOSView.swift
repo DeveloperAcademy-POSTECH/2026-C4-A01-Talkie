@@ -20,8 +20,7 @@ struct SOSView: View {
         DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
                 MainTabHeader(title: "SOS")
-                    .padding(.top, 32)
-
+                
                 VStack(alignment: .leading, spacing: 28) {
                     dangerTitle
 

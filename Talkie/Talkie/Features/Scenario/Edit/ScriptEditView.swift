@@ -200,11 +200,11 @@ struct ScriptEditView: View {
         Button {
             viewModel.addScriptLine()
         } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 30, weight: .light))
+            Image(systemName: "plus.circle.fill")
+                .font(.system(size: 36, weight: .light))
                 .foregroundColor(Constants.textTertiary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 152)
+                .frame(height: 64)
                 .background(Constants.grey700)
                 .cornerRadius(16)
         }

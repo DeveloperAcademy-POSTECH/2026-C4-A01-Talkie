@@ -19,11 +19,11 @@ extension OnboardingData {
     static let pages: [OnboardingData] = [
         OnboardingData(
             title: "혼자 걷는 밤길도, 혼자가 아니도록",
-            description: "전화할 사람이 없을 때 가상 전화를 시작해보세요",
+            description: "전화할 사람이 없을 때 가상 전화를 시작해보세요.",
             imageName: "Onboarding_image1"
         ),
         OnboardingData(
-            title: "한 번의 터치로 바로 통화하세요",
+            title: "한 번의 터치로 바로 통화하세요.",
             description: "위젯을 누르면 간편하게 가상 통화를 시작할 수 있어요.",
             imageName: "Onboarding_image2"
         ),

@@ -32,7 +32,6 @@ struct PhoneHomeContentView: View {
                     .buttonBorderShape(.circle)
                     .accessibilityLabel("마이페이지")
                 }
-                .padding(.top, 32)
 
                 if !isWidgetInstalled {
                     NavigationLink {

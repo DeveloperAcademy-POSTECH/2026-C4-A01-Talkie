@@ -23,12 +23,12 @@ struct PhoneCardView: View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 Spacer()
-                    .frame(height: 112)
+                    .frame(height: 96)
 
                 scenarioInfo
 
                 Spacer()
-                    .frame(height: 62)
+                    .frame(height: 40)
 
                 profilePlaceholder
 
@@ -41,7 +41,7 @@ struct PhoneCardView: View {
                 .padding(.trailing, 32)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 411)
+        .frame(height: 434)
         .background(cardBackground)
     }
 }

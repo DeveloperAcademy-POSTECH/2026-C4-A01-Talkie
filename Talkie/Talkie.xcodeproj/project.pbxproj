@@ -92,9 +92,6 @@
 		};
 		D1A300062FFFCF4000235021 /* TalkieLiveActivity */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D1A300152FFFCF4000235021 /* Exceptions for "TalkieLiveActivity" folder in "CallShortcutWidgetExtension" target */,
-			);
 			path = TalkieLiveActivity;
 			sourceTree = "<group>";
 		};

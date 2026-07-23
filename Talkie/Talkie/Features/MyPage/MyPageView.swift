@@ -67,7 +67,7 @@ struct MyPageView: View {
                             .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 16)
                     .padding(.top, 36)
                     .padding(.bottom, 40)
                 }

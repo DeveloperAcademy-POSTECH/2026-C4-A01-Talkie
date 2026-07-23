@@ -45,7 +45,7 @@ struct SafetyContactDetailView: View {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 20, weight: .medium))
                                 .foregroundColor(Constants.grey800)
-                                .frame(width:36, height:36)
+                                .frame(width:48, height:48)
                                 .background(Constants.main500)
                                 .clipShape(Circle())
                         }
@@ -81,7 +81,7 @@ struct SafetyContactDetailView: View {
                         }
 
                         Toggle(isOn: $shouldShareLocation) {
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("위치 공유 문자 보내기")
                                     .font(Font.pretendard(.medium, size: 16))
                                     .foregroundColor(Constants.grey100)
@@ -90,6 +90,7 @@ struct SafetyContactDetailView: View {
                                     .font(Font.pretendard(.regular, size: 13))
                                     .foregroundColor(Constants.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(1)
                             }
                         }
                         .toggleStyle(.switch)
@@ -193,68 +194,11 @@ private extension SafetyContactDetailView {
     }
 
     var deleteConfirmationOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.62)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    cancelDeleteContact()
-                }
-
-            VStack(alignment: .center, spacing: 20) {
-                VStack(alignment: .center, spacing: 6) {
-                    Text("연락망을 삭제하시겠습니까?")
-                        .font(Font.pretendard(.semiBold, size: 18))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Constants.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .top)
-
-                    Text("다시 복구할 수 없습니다.")
-                        .font(Font.pretendard(.regular, size: 14))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Constants.textTertiary)
-                        .frame(maxWidth: .infinity, alignment: .top)
-                }
-
-                Image("Group 18")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 90, height: 83)
-                    .padding(.top, 20)
-                    .padding(.bottom, 32)
-
-                HStack(alignment: .center, spacing: 10) {
-                    Button(action: cancelDeleteContact) {
-                        Text("취소")
-                            .font(Font.pretendard(.semiBold, size: 16))
-                            .foregroundColor(Constants.textInverse)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 44)
-                            .padding(.vertical, 12)
-                            .background(Constants.surfaceDisable)
-                            .cornerRadius(12)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button(action: confirmDeleteContact) {
-                        Text("삭제하기")
-                            .font(Font.pretendard(.semiBold, size: 16))
-                            .foregroundColor(Constants.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 44)
-                            .padding(.vertical, 12)
-                            .background(Constants.primaryNormal)
-                            .cornerRadius(12)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 32)
-            .padding(.bottom, 16)
-            .frame(width: 336, alignment: .top)
-            .background(Constants.bgRegular)
-            .cornerRadius(24)
-        }
+        DeleteConfirmationOverlay(
+            title: "연락망을 삭제하시겠습니까?",
+            onCancel: cancelDeleteContact,
+            onConfirm: confirmDeleteContact
+        )
     }
 
     var formattedPhoneNumber: Binding<String> {
