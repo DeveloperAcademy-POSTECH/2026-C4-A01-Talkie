@@ -15,10 +15,7 @@ struct SafetyContactListView: View {
     private var safetyContacts: [SafetyContact]
 
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-
+        DarkScreen {
             VStack(alignment: .leading, spacing: 20) {
                  Text("안전 연락망")
                      .font(.title2)
@@ -66,7 +63,8 @@ struct SafetyContactListView: View {
                 Button {
                     isShowingAddContact = true
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: "plus.circle.fill")
+                        .frame(width:36, height:36)
                 }
             }
         }
@@ -75,7 +73,6 @@ struct SafetyContactListView: View {
                 SafetyContactDetailView(contact: nil)
             }
         }
-        .preferredColorScheme(.dark)
     }
 }
 

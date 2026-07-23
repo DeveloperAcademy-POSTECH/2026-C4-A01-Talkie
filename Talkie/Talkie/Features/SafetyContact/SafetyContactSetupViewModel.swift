@@ -15,7 +15,7 @@ struct SafetyContactInput: Identifiable {
     var phoneNumber: String = ""
     
     var isComplete: Bool {
-        !trimmedName.isEmpty && !trimmedPhoneNumber.isEmpty
+        !trimmedName.isEmpty && PhoneNumberFormatter.isValid(phoneNumber)
     }
     
     var trimmedName: String {
@@ -23,7 +23,7 @@ struct SafetyContactInput: Identifiable {
     }
     
     var trimmedPhoneNumber: String {
-        phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        PhoneNumberFormatter.format(phoneNumber)
     }
 }
 

@@ -2,7 +2,7 @@
 //  DepthNavigationBar.swift
 //  Talkie
 //
-//  Created by Codex on 7/23/26.
+//  Created by DS on 7/23/26.
 //
 
 import SwiftUI

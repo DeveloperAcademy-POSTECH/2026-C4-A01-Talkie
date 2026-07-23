@@ -24,8 +24,6 @@ struct CallHistoryView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Constants.grey800
-                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 24) {
                 CallHistoryHeader(

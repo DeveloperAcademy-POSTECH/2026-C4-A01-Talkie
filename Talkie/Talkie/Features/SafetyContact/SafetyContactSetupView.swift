@@ -17,10 +17,7 @@ struct SafetyContactSetupView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-            
+        DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("안심 연락망을 입력해주세요.")
@@ -39,7 +36,7 @@ struct SafetyContactSetupView: View {
                         contactInputRow(
                             index: index,
                             name: $viewModel.contactInputs[index].name,
-                            phoneNumber: $viewModel.contactInputs[index].phoneNumber
+                            phoneNumber: phoneNumberBinding(for: index)
                         )
                     }
                 }
@@ -84,11 +81,21 @@ struct SafetyContactSetupView: View {
             .padding(.top, 120)
             .padding(.bottom, 32)
         }
-        .preferredColorScheme(.dark)
     }
 }
 
 private extension SafetyContactSetupView {
+    func phoneNumberBinding(for index: Int) -> Binding<String> {
+        Binding(
+            get: {
+                viewModel.contactInputs[index].phoneNumber
+            },
+            set: { newValue in
+                viewModel.contactInputs[index].phoneNumber = PhoneNumberFormatter.format(newValue)
+            }
+        )
+    }
+
     func contactInputRow(
         index: Int,
         name: Binding<String>,

@@ -9,10 +9,10 @@ import SwiftUI
 
 struct WidgetInstallBannerView: View {
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             icon
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("위젯으로 간편하게 가상통화를 시작하세요!")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.78))
@@ -31,9 +31,9 @@ struct WidgetInstallBannerView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
-        .frame(height: 92)
         .background(Constants.grey700)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
@@ -44,14 +44,14 @@ struct WidgetInstallBannerView: View {
         ZStack {
             Circle()
                 .fill(Color.white.opacity(0.07))
-                .frame(width: 48, height: 48)
+                .frame(width: 36, height: 36)
 
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(red: 0.12, green: 0.12, blue: 0.12))
-                .frame(width: 32, height: 32)
+                .frame(width: 28, height: 28)
 
             Image(systemName: "phone.fill")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Constants.main500)
         }
     }
@@ -60,6 +60,5 @@ struct WidgetInstallBannerView: View {
 #Preview {
     WidgetInstallBannerView()
         .padding()
-        .background(Constants.grey800)
         .preferredColorScheme(.dark)
 }

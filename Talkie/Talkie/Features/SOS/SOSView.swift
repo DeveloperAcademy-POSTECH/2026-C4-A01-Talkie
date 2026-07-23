@@ -16,10 +16,7 @@ struct SOSView: View {
     private var safetyContacts: [SafetyContact]
 
     var body: some View {
-        ZStack {
-            Constants.bgRegular
-                .ignoresSafeArea()
-
+        DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
                 sosHeader
                     .padding(.top, 32)

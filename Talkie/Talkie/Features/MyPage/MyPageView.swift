@@ -26,9 +26,6 @@ struct MyPageView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(spacing: 0) {
                 DepthNavigationBar(title: "마이페이지") {
                     dismiss()

@@ -27,23 +27,25 @@ struct AppMainView: View {
     @State private var launchState: AppLaunchState = .splash
     
     var body: some View {
-        Group {
-            switch launchState {
-            case .splash:
-                SplashView()
-                    .task {
-                        await finishSplash()
+        DarkScreen {
+            Group {
+                switch launchState {
+                case .splash:
+                    SplashView()
+                        .task {
+                            await finishSplash()
+                        }
+                case .onboarding:
+                    OnboardingView {
+                        finishOnboarding()
                     }
-            case .onboarding:
-                OnboardingView {
-                    finishOnboarding()
+                case .safetyContactSetup:
+                    SafetyContactSetupView {
+                        finishSafetyContactSetup()
+                    }
+                case .main:
+                    MainTabView()
                 }
-            case .safetyContactSetup:
-                SafetyContactSetupView {
-                    finishSafetyContactSetup()
-                }
-            case .main:
-                MainTabView()
             }
         }
         .animation(.easeInOut, value: launchState)

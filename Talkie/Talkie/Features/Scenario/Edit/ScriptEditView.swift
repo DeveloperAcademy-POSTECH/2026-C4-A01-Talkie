@@ -34,9 +34,6 @@ struct ScriptEditView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 0) {
                 navigationBar
                 recordingProgressHeader
@@ -82,7 +79,6 @@ struct ScriptEditView: View {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(Constants.grey800)
                         .frame(width: 36, height: 36)
                         .background(Constants.main500)
                         .clipShape(Circle())

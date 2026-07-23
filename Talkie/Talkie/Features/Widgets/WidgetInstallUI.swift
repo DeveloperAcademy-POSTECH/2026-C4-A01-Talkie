@@ -70,9 +70,9 @@ struct WidgetInstallUI: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 24, weight: .medium))
+                        .font(.system(size: 20, weight: .medium))
                         .foregroundStyle(.white)
-                        .frame(width: 44, height: 44)
+                        .frame(width:40, height:40)
                         .background {
                             Circle()
                                 .fill(.white.opacity(0.04))
@@ -91,7 +91,7 @@ struct WidgetInstallUI: View {
                 Spacer()
 
                 Color.clear
-                    .frame(width: 44, height: 44)
+                    .frame(width:40, height:40)
             }
             .padding(.horizontal, 16)
             .padding(.top, topInset + 26)

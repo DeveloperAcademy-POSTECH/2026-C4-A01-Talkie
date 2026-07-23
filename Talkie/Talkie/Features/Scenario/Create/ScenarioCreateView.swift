@@ -23,9 +23,6 @@ struct ScenarioCreateView: View {
         @Bindable var viewModel = viewModel
         
         ZStack {
-            // 1. 피그마 전체 배경 톤 반영
-            Constants.grey800
-                .ignoresSafeArea()
             VStack(alignment: .leading) {
                 
                 // 2. 커스텀 상단 뒤로가기 바 영역

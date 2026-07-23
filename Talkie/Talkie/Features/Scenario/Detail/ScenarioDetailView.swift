@@ -27,9 +27,6 @@ struct ScenarioDetailView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 0) {
                 navigationBar
                 scenarioHeader
@@ -104,9 +101,9 @@ struct ScenarioDetailView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 24, weight: .medium))
                         .foregroundColor(.grey100)
-                        .frame(width: 44, height: 44)
+                        .frame(width:40, height:40)
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)

@@ -56,10 +56,7 @@ struct PhoneView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Constants.grey800
-                    .ignoresSafeArea()
-
+            DarkScreen {
                 VStack(alignment: .leading, spacing: 0) {
                     phoneHeader
                         .padding(.top, 32)
@@ -71,7 +68,7 @@ struct PhoneView: View {
                             WidgetInstallBannerView()
                         }
                         .buttonStyle(.plain)
-                        .padding(.top, 24)
+                        .padding(.top, 12)
                     }
 
                     VStack(spacing: 20) {
@@ -84,8 +81,8 @@ struct PhoneView: View {
 
                         callButton
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 84 : 40)
+                    .padding(.horizontal, 24)
+                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 72 : 32)
 
                     Spacer()
                 }
@@ -205,7 +202,7 @@ private extension PhoneView {
                     .font(Font.custom("SF Pro", size: 24).weight(.semibold))
                     .foregroundStyle(Constants.textPrimary)
                     .multilineTextAlignment(.center)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 40, height: 40)
             }
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
@@ -213,8 +210,7 @@ private extension PhoneView {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
-        .background(Constants.bgRegular)
+        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .center)
     }
 
 

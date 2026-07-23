@@ -16,18 +16,22 @@ struct SafetyContactDetailView: View {
 
     @State private var name: String
     @State private var phoneNumber: String
+    @State private var shouldShareLocation: Bool
 
     init(contact: SafetyContact?) {
         self.contact = contact
         _name = State(initialValue: contact?.name ?? "")
-        _phoneNumber = State(initialValue: contact?.phoneNumber ?? "")
+        _phoneNumber = State(initialValue: PhoneNumberFormatter.format(contact?.phoneNumber ?? ""))
+        _shouldShareLocation = State(initialValue: contact?.shouldShareLocation ?? true)
+    }
+
+    private var isFormValid: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        PhoneNumberFormatter.isValid(phoneNumber)
     }
 
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-
+        DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
                 // 상단 네비게이션 바
                 DepthNavigationBar {
@@ -37,14 +41,13 @@ struct SafetyContactDetailView: View {
                         saveContact()
                     } label: {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(Constants.grey800)
-                            .frame(width: 44, height: 44)
+                            .frame(width:40, height:40)
                             .background(Constants.main500)
                             .clipShape(Circle())
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                              phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(!isFormValid)
                     .accessibilityLabel("연락망 저장")
                 }
 
@@ -70,10 +73,28 @@ struct SafetyContactDetailView: View {
 
                         contactTextField(
                             placeholder: "전화번호를 입력해주세요",
-                            text: $phoneNumber,
+                            text: formattedPhoneNumber,
                             keyboardType: .phonePad
                         )
                     }
+
+                    Toggle(isOn: $shouldShareLocation) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("위치 공유 문자 보내기")
+                                .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                                .foregroundColor(Constants.grey100)
+
+                            Text("SOS 탭에서 위치 공유를 실행하면 이 연락처로 문자가 전송됩니다.")
+                                .font(Font.custom("Pretendard", size: 13))
+                                .foregroundColor(Constants.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .toggleStyle(.switch)
+                    .tint(Constants.main500)
+                    .padding(16)
+                    .background(Constants.surfaceTextField)
+                    .cornerRadius(16)
 
                     Spacer()
                 }
@@ -83,20 +104,25 @@ struct SafetyContactDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .preferredColorScheme(.dark)
     }
 
     private func saveContact() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedPhoneNumber = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPhoneNumber = PhoneNumberFormatter.format(phoneNumber)
+
+        guard isFormValid else {
+            return
+        }
 
         if let contact {
             contact.name = trimmedName
             contact.phoneNumber = trimmedPhoneNumber
+            contact.shouldShareLocation = shouldShareLocation
         } else {
             let contact = SafetyContact(
                 name: trimmedName,
-                phoneNumber: trimmedPhoneNumber
+                phoneNumber: trimmedPhoneNumber,
+                shouldShareLocation: shouldShareLocation
             )
             modelContext.insert(contact)
         }
@@ -112,6 +138,17 @@ struct SafetyContactDetailView: View {
 
 // MARK: - Helper Views
 private extension SafetyContactDetailView {
+    var formattedPhoneNumber: Binding<String> {
+        Binding(
+            get: {
+                phoneNumber
+            },
+            set: { newValue in
+                phoneNumber = PhoneNumberFormatter.format(newValue)
+            }
+        )
+    }
+
     func contactTextField(
         placeholder: String,
         text: Binding<String>,

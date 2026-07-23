@@ -16,10 +16,7 @@ struct ScenarioView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.black
-                    .ignoresSafeArea()
-
+            DarkScreen {
                 VStack(spacing: 0) {
                     HStack(alignment: .center) {
                         Text("시나리오")
@@ -32,10 +29,10 @@ struct ScenarioView: View {
                             isShowingCreateView = true
                         } label : {
                             Image(systemName: "plus")
-                                .font(Font.custom("SF Pro", size: 24).weight(.semibold))
+                                .font(Font.custom("SF Pro", size: 20).weight(.medium))
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Constants.textPrimary)
-                                .frame(width: 44, height: 44)
+                                .frame(width: 40, height: 40)
                         }
                         .buttonStyle(.glass)
                         .buttonBorderShape(.circle)
@@ -80,7 +77,6 @@ struct ScenarioView: View {
                     Spacer()
                 }
             }
-            .preferredColorScheme(.dark)
             .navigationDestination(isPresented: $isShowingCreateView) {
                 ScenarioCreateView {
                     isShowingCreateView = false
@@ -89,4 +85,3 @@ struct ScenarioView: View {
         }
     }
 }
-

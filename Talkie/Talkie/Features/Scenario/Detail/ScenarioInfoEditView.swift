@@ -30,9 +30,6 @@ struct ScenarioInfoEditView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 28) {
                 navigationBar
 

@@ -53,5 +53,4 @@ struct RecordingStateBadgeView: View {
         RecordingStateBadgeView(isRecording: false, isRecorded: true)
     }
     .padding()
-    .background(Constants.grey800)
 }
