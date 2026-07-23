@@ -15,10 +15,7 @@ struct OnboardingView: View {
     private let pages = OnboardingData.pages
     
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-            
+        DarkScreen {
             VStack(spacing: 0) {
                 TabView(selection: $selectedIndex) {
                     ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
@@ -32,7 +29,6 @@ struct OnboardingView: View {
             }
             .padding(.bottom, 24)
         }
-        .preferredColorScheme(.dark)
     }
 }
 

@@ -30,9 +30,6 @@ struct ScenarioInfoEditView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 28) {
                 navigationBar
 
@@ -49,6 +46,7 @@ struct ScenarioInfoEditView: View {
                         text: $callerName
                     )
                 }
+                .padding(.horizontal, 16)
 
                 Spacer()
 
@@ -64,11 +62,12 @@ struct ScenarioInfoEditView: View {
                         .cornerRadius(16)
                 }
                 .disabled(!isFormValid)
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 32)
+            .padding(.bottom, 32)
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .alert(
             "저장 실패",
@@ -84,17 +83,8 @@ struct ScenarioInfoEditView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
+        DepthNavigationBar {
+            dismiss()
         }
     }
 
@@ -105,8 +95,8 @@ struct ScenarioInfoEditView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(.custom("Pretendard", size: 14).weight(.medium))
-                .foregroundColor(Constants.grey300)
+                .font(.custom("Pretendard", size: 16))
+                .foregroundColor(Constants.grey500)
 
             TextField("", text: text, prompt: Text(placeholder).foregroundColor(.white.opacity(0.16)))
                 .font(.custom("Pretendard", size: 16))

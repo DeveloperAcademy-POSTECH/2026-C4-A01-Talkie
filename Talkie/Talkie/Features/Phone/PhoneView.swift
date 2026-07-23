@@ -56,13 +56,9 @@ struct PhoneView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Constants.grey800
-                    .ignoresSafeArea()
-
+            DarkScreen {
                 VStack(alignment: .leading, spacing: 0) {
                     phoneHeader
-                        .padding(.horizontal, 20)
                         .padding(.top, 32)
 
                     if !widgetStatusManager.isWidgetInstalled {
@@ -72,7 +68,7 @@ struct PhoneView: View {
                             WidgetInstallBannerView()
                         }
                         .buttonStyle(.plain)
-                        .padding(.top, 24)
+                        .padding(.top, 12)
                     }
 
                     VStack(spacing: 20) {
@@ -85,8 +81,8 @@ struct PhoneView: View {
 
                         callButton
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 84 : 40)
+                    .padding(.horizontal, 24)
+                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 72 : 32)
 
                     Spacer()
                 }
@@ -192,10 +188,10 @@ struct PhoneView: View {
 
 private extension PhoneView {
     var phoneHeader: some View {
-        HStack {
+        HStack(alignment: .center) {
             Text("대화 선택")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(.white)
+                .font(Font.custom("Pretendard", size: 24).weight(.semibold))
+                .foregroundStyle(Constants.textPrimary)
 
             Spacer()
 
@@ -203,15 +199,21 @@ private extension PhoneView {
                 MyPageView()
             } label: {
                 Image(systemName: "person.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
+                    .font(Font.custom("SF Pro", size: 24).weight(.semibold))
+                    .foregroundStyle(Constants.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 40, height: 40)
             }
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
             .accessibilityLabel("마이페이지")
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .center)
     }
+
+
 
     var callButton: some View {
         Button(action: startFakeCall) {

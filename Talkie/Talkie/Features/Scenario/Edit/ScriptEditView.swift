@@ -22,7 +22,7 @@ struct ScriptEditView: View {
     init(
         scenario: Scenario,
         modelContext: ModelContext,
-        actionButtonTitle: String = "대화 생성",
+        actionButtonTitle: String = "시나리오 생성",
         onComplete: (() -> Void)? = nil
     ) {
         _viewModel = State(
@@ -34,21 +34,22 @@ struct ScriptEditView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 0) {
                 navigationBar
                 recordingProgressHeader
                 scriptLineList
-                bottomActionButton
             }
+            .disabled(isShowingDeleteConfirmation)
 
             if isShowingDeleteConfirmation {
                 deleteConfirmationOverlay
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            bottomActionButton
+        }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .alert(
             "저장 실패",
@@ -64,28 +65,11 @@ struct ScriptEditView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
-
-            Text(viewModel.scenario.title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.white)
-
-            Spacer()
-
+        DepthNavigationBar(title: viewModel.scenario.title) {
+            dismiss()
+        } trailingContent: {
             trailingNavigationControl
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
     }
 
     @ViewBuilder
@@ -100,7 +84,7 @@ struct ScriptEditView: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(Constants.grey800)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 36, height: 36)
                         .background(Constants.main500)
                         .clipShape(Circle())
                 } else {
@@ -113,6 +97,7 @@ struct ScriptEditView: View {
                         .cornerRadius(40)
                 }
             }
+            .buttonStyle(.plain)
         } else {
             Text("읽기 전용")
                 .font(.system(size: 14, weight: .medium))
@@ -165,7 +150,7 @@ struct ScriptEditView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .listRowInsets(
-                    EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                    EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
                 )
                 .deleteDisabled(!isEditingScripts || !viewModel.canEditScripts)
                 .moveDisabled(!isEditingScripts || !viewModel.canEditScripts)
@@ -179,12 +164,12 @@ struct ScriptEditView: View {
                 requestDelete(offsets)
             }
 
-            if viewModel.canEditScripts {
+            if viewModel.canEditScripts && !isEditingScripts {
                 addScriptLineButton
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(
-                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                        EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
                     )
             }
         }
@@ -231,7 +216,9 @@ struct ScriptEditView: View {
                 .cornerRadius(16)
         }
         .padding(.horizontal, 16)
+        .padding(.top, 12)
         .padding(.bottom, 16)
+        .background(Color.black)
     }
 
     private var deleteConfirmationOverlay: some View {
@@ -273,6 +260,7 @@ struct ScriptEditView: View {
                             .background(Constants.surfaceDisable)
                             .cornerRadius(12)
                     }
+                    .buttonStyle(.plain)
 
                     Button(action: confirmPendingDeletion) {
                         Text("삭제하기")
@@ -284,6 +272,7 @@ struct ScriptEditView: View {
                             .background(Constants.primaryNormal)
                             .cornerRadius(12)
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 16)

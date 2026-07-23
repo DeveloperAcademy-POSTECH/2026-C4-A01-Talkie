@@ -13,13 +13,17 @@ struct RecordingStateBadgeView: View {
     
     var body: some View {
         if isRecording {
-            Text("녹음 중")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(Constants.primaryNormal)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(Constants.primaryNormal.opacity(0.16))
-                .cornerRadius(12)
+            HStack(spacing: 3) {
+                Text("녹음 중")
+                    .font(.system(size: 12, weight: .bold))
+
+                RecordingWaveView()
+            }
+            .foregroundColor(Constants.primaryNormal)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Constants.primaryNormal.opacity(0.16))
+            .cornerRadius(12)
         } else if isRecorded {
             HStack(spacing: 4) {
                 Text("녹음 완료")
@@ -35,13 +39,42 @@ struct RecordingStateBadgeView: View {
             .background(Constants.surfaceRecordingCompleted)
             .cornerRadius(12)
         } else {
-            Text("녹음 전")
+            Text("녹음 준비")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Constants.textSecondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
                 .background(Constants.surfaceRecordingNotYet)
                 .cornerRadius(12)
+        }
+    }
+}
+
+private struct RecordingWaveView: View {
+    @State private var isAnimating = false
+
+    private let barHeights: [CGFloat] = [5, 9, 6]
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 2) {
+            ForEach(barHeights.indices, id: \.self) { index in
+                Capsule()
+                    .fill(Constants.primaryNormal)
+                    .frame(width: 2, height: isAnimating ? barHeights[index] : 4)
+                    .animation(
+                        .easeInOut(duration: 0.42)
+                            .repeatForever(autoreverses: true)
+                            .delay(Double(index) * 0.12),
+                        value: isAnimating
+                    )
+            }
+        }
+        .frame(height: 10)
+        .onAppear {
+            isAnimating = true
+        }
+        .onDisappear {
+            isAnimating = false
         }
     }
 }
@@ -53,5 +86,4 @@ struct RecordingStateBadgeView: View {
         RecordingStateBadgeView(isRecording: false, isRecorded: true)
     }
     .padding()
-    .background(Constants.grey800)
 }

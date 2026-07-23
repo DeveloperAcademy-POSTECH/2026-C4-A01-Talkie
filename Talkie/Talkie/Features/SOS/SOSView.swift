@@ -11,20 +11,15 @@ import SwiftData
 struct SOSView: View {
     @State private var sosManager = SOSManager()
     @State private var selectedAction: SOSAction?
-    
+
     @Query(sort: \SafetyContact.name)
     private var safetyContacts: [SafetyContact]
-    
-    var body: some View {
-        ZStack {
-            Constants.bgRegular
-                .ignoresSafeArea()
 
+    var body: some View {
+        DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
-                Text("SOS")
-                    .font(Font.custom("Pretendard", size: 34).weight(.semibold))
-                    .foregroundColor(Constants.textPrimary)
-                    .padding(.top, 72)
+                sosHeader
+                    .padding(.top, 32)
 
                 VStack(alignment: .leading, spacing: 28) {
                     dangerTitle
@@ -38,6 +33,7 @@ struct SOSView: View {
                 }
                 .padding(.vertical, 32)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(.horizontal, 16)
 
                 VStack(spacing: 20) {
                     Button {
@@ -47,7 +43,7 @@ struct SOSView: View {
                         )
                     } label: {
                         actionRow(
-                            title: sosManager.isLoading ? "위치 확인 중..." : "안전 연락망에 위치 공유",
+                            title: "안전 연락망에 위치 공유",
                             systemImage: "person.crop.circle.fill",
                             isHighlighted: selectedAction == .shareLocation
                         )
@@ -79,13 +75,14 @@ struct SOSView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .padding(.horizontal, 16)
 
                 Spacer()
 
                 warningText
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 104)
             }
-            .padding(.horizontal, 24)
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
@@ -122,6 +119,19 @@ private enum SOSAction {
 }
 
 private extension SOSView {
+    var sosHeader: some View {
+        HStack(alignment: .center) {
+            Text("SOS")
+                .font(Font.custom("Pretendard", size: 24).weight(.semibold))
+                .foregroundColor(Constants.textPrimary)
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
+    }
+
     var dangerTitle: some View {
         HStack(spacing: 0) {
             Text("지금 ")
@@ -138,9 +148,9 @@ private extension SOSView {
         systemImage: String,
         isHighlighted: Bool
     ) -> some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center) {
             Image(systemName: systemImage)
-                .font(.system(size: 30, weight: .semibold))
+                .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
                 .frame(width: 36, height: 36)
 
