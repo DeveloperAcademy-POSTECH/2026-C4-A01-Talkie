@@ -67,10 +67,7 @@ struct DepthNavigationBar<TrailingContent: View>: View {
     }
 
     private var depthDivider: some View {
-        Rectangle()
-            .fill(Constants.grey700)
-            .frame(height: 1)
-            .frame(maxWidth: .infinity)
+        TalkieDivider()
     }
 }
 

@@ -219,6 +219,8 @@ private extension SafetyContactDetailView {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 90, height: 83)
+                    .padding(.top, 20)
+                    .padding(.bottom, 32)
 
                 HStack(alignment: .center, spacing: 10) {
                     Button(action: cancelDeleteContact) {
@@ -227,7 +229,7 @@ private extension SafetyContactDetailView {
                             .foregroundColor(Constants.textInverse)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 12)
                             .background(Constants.surfaceDisable)
                             .cornerRadius(12)
                     }
@@ -239,7 +241,7 @@ private extension SafetyContactDetailView {
                             .foregroundColor(Constants.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 12)
                             .background(Constants.primaryNormal)
                             .cornerRadius(12)
                     }

@@ -18,6 +18,7 @@ struct WidgetInstallBannerView: View {
                     .foregroundStyle(.white.opacity(0.78))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
+                    .padding(.bottom, 2)
 
                 HStack(spacing: 6) {
                     Text("설치방법 보러가기")
@@ -32,7 +33,7 @@ struct WidgetInstallBannerView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
         .frame(maxWidth: .infinity)
         .background(Constants.grey700)
         .contentShape(Rectangle())

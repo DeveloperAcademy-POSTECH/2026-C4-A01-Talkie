@@ -58,6 +58,8 @@ private extension PhoneCardView {
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
+        .padding(.horizontal, -12)
+        .padding(.vertical, -12)
     }
     
     var profilePlaceholder: some View {
