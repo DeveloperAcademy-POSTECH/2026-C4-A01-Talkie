@@ -99,6 +99,7 @@ final class FakeCallCoordinator {
     private let voiceActivityDetector: VoiceActivityDetector
     private let audioCaptureService: CallAudioCaptureService
     private let ringtonePlayer: any IncomingCallRingtonePlaying
+    private let proximityMonitor: CallProximityMonitor
 
     private var hasMicrophonePermission = false
     private var activeScenarioTitle = "가상 통화"
@@ -116,6 +117,7 @@ final class FakeCallCoordinator {
             voiceActivityDetector: voiceActivityDetector
         )
         ringtonePlayer = IncomingCallRingtoneService.shared
+        proximityMonitor = CallProximityMonitor()
         bindVoiceActivityEvents()
         observeAudioSessionInterruption()
     }
@@ -124,7 +126,8 @@ final class FakeCallCoordinator {
         repository: any FakeCallScriptRepository,
         audioPlayer: ScriptedAudioPlayer,
         voiceActivityDetector: VoiceActivityDetector,
-        ringtonePlayer: (any IncomingCallRingtonePlaying)? = nil
+        ringtonePlayer: (any IncomingCallRingtonePlaying)? = nil,
+        proximityMonitor: CallProximityMonitor? = nil
     ) {
         self.repository = repository
         self.audioPlayer = audioPlayer
@@ -133,6 +136,7 @@ final class FakeCallCoordinator {
             voiceActivityDetector: voiceActivityDetector
         )
         self.ringtonePlayer = ringtonePlayer ?? IncomingCallRingtoneService.shared
+        self.proximityMonitor = proximityMonitor ?? CallProximityMonitor()
         bindVoiceActivityEvents()
         observeAudioSessionInterruption()
     }
@@ -181,6 +185,10 @@ final class FakeCallCoordinator {
         ringtonePlayer.stopRinging()
         callStartedAt = Date()
         activeScenarioTitle = scenarioTitle
+        proximityMonitor.update(
+            isCallActive: true,
+            isSpeakerEnabled: isSpeakerEnabled
+        )
 
         Task {
             hasMicrophonePermission = await VoiceActivityDetector.requestPermission()
@@ -241,6 +249,10 @@ final class FakeCallCoordinator {
         do {
             try FakeCallAudioSession.setSpeakerEnabled(enabled)
             isSpeakerEnabled = enabled
+            proximityMonitor.update(
+                isCallActive: phase.isActiveCall,
+                isSpeakerEnabled: enabled
+            )
         } catch {
             return
         }
@@ -472,6 +484,7 @@ final class FakeCallCoordinator {
     private func resetRuntimeState() {
         cancelPendingWork()
         ringtonePlayer.stopRinging()
+        proximityMonitor.stop()
         currentLineIndex = 0
         callStartedAt = nil
         hasMicrophonePermission = false
