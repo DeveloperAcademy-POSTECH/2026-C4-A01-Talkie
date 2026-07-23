@@ -38,6 +38,9 @@ final class SOSManager {
         currentError = nil
         
         let recipients = safetyContacts
+            .filter { contact in
+                contact.shouldShareLocation
+            }
             .map(\.phoneNumber)
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         

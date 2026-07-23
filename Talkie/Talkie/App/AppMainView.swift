@@ -28,20 +28,25 @@ struct AppMainView: View {
     @State private var hasPreparedLaunch = false
     
     var body: some View {
-        Group {
-            switch launchState {
-            case .splash:
-                SplashView()
-            case .onboarding:
-                OnboardingView {
-                    finishOnboarding()
+        DarkScreen {
+            Group {
+                switch launchState {
+                case .splash:
+                    SplashView()
+                        .task {
+                            await finishSplash()
+                        }
+                case .onboarding:
+                    OnboardingView {
+                        finishOnboarding()
+                    }
+                case .safetyContactSetup:
+                    SafetyContactSetupView {
+                        finishSafetyContactSetup()
+                    }
+                case .main:
+                    MainTabView()
                 }
-            case .safetyContactSetup:
-                SafetyContactSetupView {
-                    finishSafetyContactSetup()
-                }
-            case .main:
-                MainTabView()
             }
         }
         .animation(.easeInOut, value: launchState)

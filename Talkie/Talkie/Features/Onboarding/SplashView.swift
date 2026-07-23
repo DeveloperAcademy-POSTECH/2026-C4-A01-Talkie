@@ -9,17 +9,12 @@ import SwiftUI
 
 struct SplashView: View {
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-            
-            
+        DarkScreen {
             Image("Talkie_logo")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 120, height: 120)
         }
-        .preferredColorScheme(.dark)
     }
 }
 

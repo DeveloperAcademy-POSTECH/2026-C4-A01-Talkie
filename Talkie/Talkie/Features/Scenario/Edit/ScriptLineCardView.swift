@@ -64,7 +64,7 @@ struct ScriptLineCardView: View {
             }
         }
         .padding(16)
-        .frame(minHeight: 124, alignment: .center)
+        .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
         .background(cardBackground)
         .shadow(
             color: isRecording ? Constants.primaryNormal.opacity(0.18) : .clear,
@@ -87,7 +87,7 @@ struct ScriptLineCardView: View {
     }
     
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
+        RoundedRectangle(cornerRadius: 20)
             .fill(Constants.grey700)
             .overlay(alignment: .bottom) {
                 if isRecording {
@@ -102,10 +102,10 @@ struct ScriptLineCardView: View {
                     .frame(height: 50)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay {
                 if isRecording {
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 20)
                         .stroke(Constants.primaryNormal.opacity(0.9), lineWidth: 1)
                 }
             }
@@ -127,11 +127,11 @@ struct ScriptLineCardView: View {
     private var playButton: some View {
         Button(action: onPlay) {
             Image(systemName: "play.fill")
-                .font(.system(size: 16))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)
-                .clipShape(Circle())
+                .clipShape(RoundedRectangle(cornerRadius: 70))
         }
         .buttonStyle(.plain)
         .contentShape(Circle())
@@ -141,11 +141,11 @@ struct ScriptLineCardView: View {
     private var recordButton: some View {
         Button(action: onRecordToggle) {
             Image(systemName: isRecording ? "square.fill" : "mic.fill")
-                .font(.system(size: 16))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(Constants.primaryNormal)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)
-                .clipShape(Circle())
+                .clipShape(RoundedRectangle(cornerRadius: 70))
         }
         .buttonStyle(.plain)
         .contentShape(Circle())

@@ -40,8 +40,7 @@ struct OnboardingPageView: View {
 }
 
 #Preview {
-    ZStack {
-        Color.black.ignoresSafeArea()
+    DarkScreen {
         OnboardingPageView(data: OnboardingData.pages[0])
     }
 }

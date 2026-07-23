@@ -24,8 +24,6 @@ struct CallHistoryView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Constants.grey800
-                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 24) {
                 CallHistoryHeader(
@@ -37,10 +35,10 @@ struct CallHistoryView: View {
                 Text("통화 내역")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
 
                 historyContent
             }
-            .padding(.horizontal, 24)
 
             if isSelecting {
                 deleteButton
@@ -102,6 +100,7 @@ struct CallHistoryView: View {
                         )
                     }
                 }
+                .padding(.horizontal, 16)
                 .padding(.bottom, isSelecting ? 104 : 24)
             }
             .scrollIndicators(.hidden)
@@ -191,29 +190,18 @@ private struct CallHistoryHeader: View {
     let onToggleSelection: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel("뒤로")
-
-            Spacer()
-
+        DepthNavigationBar {
+            onBack()
+        } trailingContent: {
             Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(minWidth: 64, minHeight: 44)
+                .frame(minWidth: 64, minHeight: 36)
                 .background(Color.white.opacity(0.06), in: Capsule())
                 .overlay {
                     Capsule().stroke(Color.white.opacity(0.20), lineWidth: 1)
                 }
         }
-        .padding(.top, 10)
     }
 }
 
