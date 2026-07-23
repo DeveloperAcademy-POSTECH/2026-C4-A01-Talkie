@@ -27,10 +27,10 @@ struct ScenarioView: View {
                             isShowingCreateView = true
                         } label: {
                             Image(systemName: "plus")
-                                .font(Font.custom("SF Pro", size: 20).weight(.medium))
+                                .font(.system(size: 24, weight: .medium))
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Constants.textPrimary)
-                                .frame(width: 40, height: 40)
+                                .frame(width: 36, height: 36)
                         }
                         .buttonStyle(.glass)
                         .buttonBorderShape(.circle)
@@ -49,20 +49,20 @@ struct ScenarioView: View {
 
                     ScrollView{
                         LazyVStack(spacing: 16) {
-                            ForEach(PresetScenarioCatalog.all) { preset in
-                                NavigationLink {
-                                    ScenarioDetailView(preset: preset)
-                                } label: {
-                                    ScenarioCardView(scenario: preset.content)
-                                }
-                                .buttonStyle(.plain)
-                            }
-
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
                                     ScenarioDetailView(scenario: scenario)
                                 } label: {
                                     ScenarioCardView(scenario: scenario.content)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            ForEach(PresetScenarioCatalog.all) { preset in
+                                NavigationLink {
+                                    ScenarioDetailView(preset: preset)
+                                } label: {
+                                    ScenarioCardView(scenario: preset.content)
                                 }
                                 .buttonStyle(.plain)
                             }

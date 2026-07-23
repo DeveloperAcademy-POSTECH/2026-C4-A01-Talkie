@@ -23,7 +23,7 @@ struct PhoneHomeContentView: View {
                         MyPageView()
                     } label: {
                         Image(systemName: "person.fill")
-                            .font(Font.custom("SF Pro", size: 24).weight(.semibold))
+                            .font(.system(size: 24, weight: .semibold))
                             .foregroundStyle(Constants.textPrimary)
                             .multilineTextAlignment(.center)
                             .frame(width: 40, height: 40)
@@ -32,7 +32,7 @@ struct PhoneHomeContentView: View {
                     .buttonBorderShape(.circle)
                     .accessibilityLabel("마이페이지")
                 }
-                    .padding(.top, 32)
+                .padding(.top, 32)
 
                 if !isWidgetInstalled {
                     NavigationLink {
