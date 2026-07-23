@@ -316,16 +316,29 @@ private extension PhoneView {
     }
 
     func handleScenePhaseChange(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
-        guard newPhase == .active else { return }
+        switch newPhase {
+        case .background:
+            // UI가 정지해도 오디오 session과 마이크 엔진은 통화 수명주기를 계속 따릅니다.
+            fakeCallCoordinator.resumeAudioIfNeeded()
 
-        Task {
-            // 백그라운드에 있는 동안에는 진행 중 통화를 유지합니다. 다시 active가 됐을 때
-            // 실제 통화 상태가 없다면 크래시나 비정상 presentation 종료로 남은 Activity를 정리합니다.
-            if !fakeCallCoordinator.phase.isActiveCall {
-                await FakeCallLiveActivityManager.shared.end()
+        case .active:
+            Task {
+                if fakeCallCoordinator.phase.isActiveCall {
+                    fakeCallCoordinator.resumeAudioIfNeeded()
+                } else {
+                    // 실제 통화 상태가 없다면 크래시나 비정상 presentation 종료로 남은
+                    // Live Activity를 foreground 복귀 시 정리합니다.
+                    await FakeCallLiveActivityManager.shared.end()
+                }
+                syncCurrentScenarioToWidget()
+                await widgetStatusManager.checkWidgetStatus()
             }
-            syncCurrentScenarioToWidget()
-            await widgetStatusManager.checkWidgetStatus()
+
+        case .inactive:
+            break
+
+        @unknown default:
+            break
         }
     }
 }
