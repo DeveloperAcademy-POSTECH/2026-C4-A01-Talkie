@@ -8,6 +8,8 @@
 import SwiftData
 import SwiftUI
 
+/// 통화 탭의 데이터와 presentation을 연결하는 화면 조정자입니다.
+/// 통화 상태 머신, SOS 실행, 저장 세부 구현은 각각 전담 객체에 위임합니다.
 struct PhoneView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -17,6 +19,14 @@ struct PhoneView: View {
 
     @AppStorage(TalkiePreferenceKey.widgetCallRequestID)
     private var widgetCallRequestID = ""
+
+    @Query(sort: \Scenario.createdAt, order: .reverse)
+    private var scenarios: [Scenario]
+
+    @Query(sort: \SafetyContact.name)
+    private var safetyContacts: [SafetyContact]
+
+    private let callSessionStore = CallSessionStore()
 
     @State private var isFakeCallPresented = false
     @State private var isScenarioSelectionSheetPresented = false
@@ -28,12 +38,6 @@ struct PhoneView: View {
     @State private var queuedSOSAction: ActiveCallSOSAction?
     @State private var lastHandledWidgetCallRequestID = ""
     @State private var selectedScenarioReference = ScenarioReference.defaultPreset
-
-    @Query(sort: \Scenario.createdAt, order: .reverse)
-    private var scenarios: [Scenario]
-
-    @Query(sort: \SafetyContact.name)
-    private var safetyContacts: [SafetyContact]
 
     private var availableScenarios: [ScenarioContent] {
         ScenarioLibrary.all(customScenarios: scenarios)
@@ -54,43 +58,28 @@ struct PhoneView: View {
         availableScenarios.map(\.id)
     }
 
+    private var isHistorySaveErrorPresented: Binding<Bool> {
+        Binding(
+            get: { historySaveError != nil },
+            set: { if !$0 { historySaveError = nil } }
+        )
+    }
+
+    private var isSOSErrorPresented: Binding<Bool> {
+        Binding(
+            get: { sosManager.currentError != nil },
+            set: { if !$0 { sosManager.currentError = nil } }
+        )
+    }
+
     var body: some View {
         NavigationStack {
-            ZStack {
-                Constants.grey800
-                    .ignoresSafeArea()
-
-                VStack(alignment: .leading, spacing: 0) {
-                    phoneHeader
-                        .padding(.horizontal, 20)
-                        .padding(.top, 32)
-
-                    if !widgetStatusManager.isWidgetInstalled {
-                        NavigationLink {
-                            WidgetInstallUI()
-                        } label: {
-                            WidgetInstallBannerView()
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, 24)
-                    }
-
-                    VStack(spacing: 20) {
-                        PhoneCardView(
-                            scenario: currentScenario,
-                            onChangeScenario: {
-                                isScenarioSelectionSheetPresented = true
-                            }
-                        )
-
-                        callButton
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, widgetStatusManager.isWidgetInstalled ? 84 : 40)
-
-                    Spacer()
-                }
-            }
+            PhoneHomeContentView(
+                scenario: currentScenario,
+                isWidgetInstalled: widgetStatusManager.isWidgetInstalled,
+                onChangeScenario: presentScenarioSelection,
+                onStartCall: startFakeCall
+            )
             .toolbar(.hidden, for: .navigationBar)
             .fullScreenCover(
                 isPresented: $isFakeCallPresented,
@@ -106,28 +95,16 @@ struct PhoneView: View {
                     onEmergencyCall: { requestSOSAction(.emergencyCall) }
                 )
                 .alert(item: $pendingSOSAction) { action in
-                    Alert(
-                        title: Text(action.confirmationTitle),
-                        message: Text(action.confirmationMessage),
-                        primaryButton: action.isEmergency
-                            ? .destructive(Text(action.confirmButtonTitle)) {
-                                finishFakeCallAndQueue(action)
-                            }
-                            : .default(Text(action.confirmButtonTitle)) {
-                                finishFakeCallAndQueue(action)
-                            },
-                        secondaryButton: .cancel()
-                    )
+                    makeSOSConfirmationAlert(for: action)
                 }
             }
             .sheet(isPresented: $sosManager.shouldShowMessageCompose) {
                 MessageComposerView(
                     mode: sosManager.messageComposeMode,
                     recipients: sosManager.messageRecipients,
-                    body: sosManager.messageBody
-                ) {
-                    sosManager.shouldShowMessageCompose = false
-                }
+                    body: sosManager.messageBody,
+                    onFinish: dismissMessageComposer
+                )
             }
             .sheet(isPresented: $isScenarioSelectionSheetPresented) {
                 ScenarioSelectionSheetView(
@@ -138,101 +115,57 @@ struct PhoneView: View {
                 .presentationDetents([.height(520), .large])
                 .presentationDragIndicator(.hidden)
             }
-            .alert(
-                "통화내역 저장 실패",
-                isPresented: Binding(
-                    get: { historySaveError != nil },
-                    set: { if !$0 { historySaveError = nil } }
-                )
-            ) {
+            .alert("통화내역 저장 실패", isPresented: isHistorySaveErrorPresented) {
                 Button("확인", role: .cancel) { }
             } message: {
                 Text(historySaveError ?? "")
             }
-            .alert(
-                "SOS 실행 실패",
-                isPresented: Binding(
-                    get: { sosManager.currentError != nil },
-                    set: { if !$0 { sosManager.currentError = nil } }
-                )
-            ) {
+            .alert("SOS 실행 실패", isPresented: isSOSErrorPresented) {
                 Button("확인", role: .cancel) { }
             } message: {
                 Text(sosManager.currentError?.message ?? "")
             }
             .task {
-                restoreScenarioSelection()
-                syncCurrentScenarioToWidget()
-                handlePendingWidgetCallRequest()
-                await widgetStatusManager.checkWidgetStatus()
+                await preparePhoneScreen()
             }
-            .onChange(of: widgetCallRequestID) { _, _ in
-                handlePendingWidgetCallRequest()
-            }
-            .onChange(of: currentScenarioWidgetSnapshot) { _, _ in
-                syncCurrentScenarioToWidget()
-                handlePendingWidgetCallRequest()
-            }
-            .onChange(of: availableScenarioReferences) { _, _ in
-                normalizeScenarioSelection()
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active else {
-                    return
-                }
-
-                Task {
-                    syncCurrentScenarioToWidget()
-                    await widgetStatusManager.checkWidgetStatus()
-                }
-            }
+            .onChange(of: widgetCallRequestID, handleWidgetCallRequestChange)
+            .onChange(of: currentScenarioWidgetSnapshot, handleCurrentScenarioChange)
+            .onChange(of: availableScenarioReferences, handleScenarioListChange)
+            .onChange(of: scenePhase, handleScenePhaseChange)
         }
     }
 }
 
+// MARK: - Presentation
+
 private extension PhoneView {
-    var phoneHeader: some View {
-        HStack {
-            Text("대화 선택")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(.white)
-
-            Spacer()
-
-            NavigationLink {
-                MyPageView()
-            } label: {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel("마이페이지")
-        }
+    func presentScenarioSelection() {
+        isScenarioSelectionSheetPresented = true
     }
 
-    var callButton: some View {
-        Button(action: startFakeCall) {
-            HStack(alignment: .center, spacing: 8) {
-                Image(systemName: "phone.fill")
-                    .font(.system(size: 16, weight: .bold))
-
-                Text("전화하기")
-                    .font(.system(size: 16, weight: .bold))
-            }
-            .foregroundStyle(Color.green)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 20)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .background(Constants.grey700)
-            .cornerRadius(100)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("가상 통화 시작")
+    func dismissMessageComposer() {
+        sosManager.shouldShowMessageCompose = false
     }
 
+    func makeSOSConfirmationAlert(for action: ActiveCallSOSAction) -> Alert {
+        Alert(
+            title: Text(action.confirmationTitle),
+            message: Text(action.confirmationMessage),
+            primaryButton: action.isEmergency
+                ? .destructive(Text(action.confirmButtonTitle)) {
+                    finishFakeCallAndQueue(action)
+                }
+                : .default(Text(action.confirmButtonTitle)) {
+                    finishFakeCallAndQueue(action)
+                },
+            secondaryButton: .cancel()
+        )
+    }
+}
+
+// MARK: - Call lifecycle
+
+private extension PhoneView {
     func startFakeCall() {
         fakeCallCoordinator.startIncomingCall(
             repository: ScenarioFakeCallScriptRepository(content: currentScenario)
@@ -276,6 +209,26 @@ private extension PhoneView {
         performQueuedSOSActionIfNeeded()
     }
 
+    func endLiveActivity() {
+        Task {
+            await FakeCallLiveActivityManager.shared.end()
+        }
+    }
+
+    func persist(_ completedSession: CompletedFakeCallSession?) {
+        guard let completedSession else { return }
+
+        do {
+            try callSessionStore.save(completedSession, in: modelContext)
+        } catch {
+            historySaveError = "통화내역을 저장하지 못했습니다."
+        }
+    }
+}
+
+// MARK: - SOS flow
+
+private extension PhoneView {
     func requestSOSAction(_ action: ActiveCallSOSAction) {
         pendingSOSAction = action
     }
@@ -288,59 +241,29 @@ private extension PhoneView {
         isFakeCallPresented = false
     }
 
-    func endLiveActivity() {
-        Task {
-            await FakeCallLiveActivityManager.shared.end()
-        }
-    }
-
     func performQueuedSOSActionIfNeeded() {
         guard let action = queuedSOSAction else { return }
         queuedSOSAction = nil
 
         switch action {
         case .locationShare:
-            sosManager.shareLocationToContacts(
-                safetyContacts: safetyContacts
-            )
+            sosManager.shareLocationToContacts(safetyContacts: safetyContacts)
         case .emergencySMS:
             sosManager.sendEmergencySMS112()
         case .emergencyCall:
             sosManager.callEmergencyServices()
         }
     }
+}
 
-    func persist(_ completedSession: CompletedFakeCallSession?) {
-        guard let completedSession else { return }
+// MARK: - Scenario and widget synchronization
 
-        let recording = completedSession.recording.map {
-            CallRecording(
-                fileName: $0.fileName,
-                duration: $0.duration,
-                fileSize: $0.fileSize,
-                createdAt: $0.createdAt
-            )
-        }
-        let session = CallSession(
-            startedAt: completedSession.startedAt,
-            endedAt: completedSession.endedAt,
-            scenarioTitle: completedSession.scenarioTitle,
-            callerName: completedSession.callerName,
-            endReason: completedSession.endReason,
-            recording: recording
-        )
-        recording?.session = session
-        modelContext.insert(session)
-
-        do {
-            try modelContext.save()
-        } catch {
-            if let recording {
-                try? CallRecordingFileStore().delete(fileName: recording.fileName)
-            }
-            modelContext.rollback()
-            historySaveError = "통화내역을 저장하지 못했습니다."
-        }
+private extension PhoneView {
+    func preparePhoneScreen() async {
+        restoreScenarioSelection()
+        syncCurrentScenarioToWidget()
+        handlePendingWidgetCallRequest()
+        await widgetStatusManager.checkWidgetStatus()
     }
 
     func selectScenario(_ selectedScenario: ScenarioContent) {
@@ -378,130 +301,27 @@ private extension PhoneView {
         widgetCallRequestID = ""
         startFakeCall()
     }
-}
 
-/// The full-screen presentation owns an explicit observation boundary for the
-/// coordinator created at call start. `PhoneView` replaces that coordinator for
-/// every call, so reading its phase only in the cover builder can leave the
-/// presentation displaying the initial loading state.
-private struct FakeCallPresentationView: View {
-    @Bindable var coordinator: FakeCallCoordinator
-
-    let onAccept: () -> Void
-    let onDecline: () -> Void
-    let onEndCall: () -> Void
-    let onShareLocation: () -> Void
-    let onEmergencySMS: () -> Void
-    let onEmergencyCall: () -> Void
-
-    var body: some View {
-        Group {
-            if coordinator.phase == .incoming,
-               let profile = coordinator.profile {
-                IncomingFakeCallView(
-                    profile: profile,
-                    onAccept: onAccept,
-                    onDecline: onDecline
-                )
-            } else if coordinator.phase.isActiveCall,
-                      let profile = coordinator.profile,
-                      let callStartedAt = coordinator.callStartedAt {
-                ActiveFakeCallView(
-                    profile: profile,
-                    callStartedAt: callStartedAt,
-                    phase: coordinator.phase,
-                    currentInputLevel: coordinator.currentInputLevel,
-                    voiceMonitoringState: coordinator.voiceMonitoringState,
-                    isSpeakerEnabled: coordinator.isSpeakerEnabled,
-                    onEndCall: onEndCall,
-                    onSkipLine: coordinator.skipToNextLine,
-                    onSpeakerChange: coordinator.setSpeakerEnabled,
-                    onShareLocation: onShareLocation,
-                    onEmergencySMS: onEmergencySMS,
-                    onEmergencyCall: onEmergencyCall
-                )
-            } else if case let .failed(message) = coordinator.phase {
-                failedCall(message: message)
-            } else {
-                preparingCall
-            }
-        }
+    func handleWidgetCallRequestChange(_: String, _: String) {
+        handlePendingWidgetCallRequest()
     }
 
-    private var preparingCall: some View {
-        ZStack {
-            CallScreenBackground()
-                .ignoresSafeArea()
-
-            ProgressView()
-                .tint(.white)
-                .accessibilityLabel("가상 통화 준비 중")
-        }
-        .preferredColorScheme(.dark)
+    func handleCurrentScenarioChange(_: String, _: String) {
+        syncCurrentScenarioToWidget()
+        handlePendingWidgetCallRequest()
     }
 
-    private func failedCall(message: String) -> some View {
-        ZStack {
-            CallScreenBackground()
-                .ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                Text(message)
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-
-                Button("돌아가기", action: onEndCall)
-                    .buttonStyle(.borderedProminent)
-            }
-            .padding(24)
-        }
-        .preferredColorScheme(.dark)
-    }
-}
-
-private enum ActiveCallSOSAction: String, Identifiable {
-    case locationShare
-    case emergencySMS
-    case emergencyCall
-
-    var id: String { rawValue }
-
-    var confirmationTitle: String {
-        switch self {
-        case .locationShare:
-            "안전 연락망에 위치를 공유할까요?"
-        case .emergencySMS:
-            "112 문자 신고를 준비할까요?"
-        case .emergencyCall:
-            "112에 전화할까요?"
-        }
+    func handleScenarioListChange(_: [ScenarioReference], _: [ScenarioReference]) {
+        normalizeScenarioSelection()
     }
 
-    var confirmationMessage: String {
-        switch self {
-        case .locationShare:
-            "현재 가상 통화를 종료하고 위치가 포함된 메시지 작성 화면을 엽니다. 메시지는 사용자가 직접 전송합니다."
-        case .emergencySMS:
-            "현재 가상 통화를 종료하고 위치가 포함된 \(SOSEmergencyDestination.displayName) 문자 작성 화면을 엽니다. 문자는 사용자가 직접 전송합니다."
-        case .emergencyCall:
-            "현재 가상 통화를 종료하고 시스템 전화 확인 화면을 엽니다. 확인하면 \(SOSEmergencyDestination.displayName)로 연결됩니다."
-        }
-    }
+    func handleScenePhaseChange(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
+        guard newPhase == .active else { return }
 
-    var confirmButtonTitle: String {
-        switch self {
-        case .locationShare:
-            "위치 공유 준비"
-        case .emergencySMS:
-            "문자 작성"
-        case .emergencyCall:
-            "112 전화"
+        Task {
+            syncCurrentScenarioToWidget()
+            await widgetStatusManager.checkWidgetStatus()
         }
-    }
-
-    var isEmergency: Bool {
-        self != .locationShare
     }
 }
 
