@@ -28,9 +28,6 @@ struct ScenarioSelectionSheetView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(spacing: 24) {
                 dragHandle
 

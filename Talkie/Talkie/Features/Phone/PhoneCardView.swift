@@ -20,49 +20,53 @@ struct PhoneCardView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 112)
+
+                scenarioInfo
+
+                Spacer()
+                    .frame(height: 62)
+
+                profilePlaceholder
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
             cardHeader
-
-            Spacer(minLength: 0)
-
-            scenarioInfo
-                .padding(.bottom, 52)
-
-            profilePlaceholder
-
-            Spacer(minLength: 0)
+                .padding(.top, 32)
+                .padding(.trailing, 32)
         }
-        .padding(24)
         .frame(maxWidth: .infinity)
-        .frame(height: 440)
+        .frame(height: 411)
         .background(cardBackground)
     }
 }
 
 private extension PhoneCardView {
     var cardHeader: some View {
-        HStack {
-            
-            Spacer()
-            
-            Button(action: onChangeScenario) {
-                Text("변경")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.86))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Constants.grey800.opacity(0.72))
-                    .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
+        Button(action: onChangeScenario) {
+            Text("변경")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.white.opacity(0.86))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Constants.grey800.opacity(0.72))
+                .clipShape(Capsule())
         }
+        .buttonStyle(.plain)
+        .padding(.horizontal, -12)
+        .padding(.vertical, -12)
     }
     
     var profilePlaceholder: some View {
         ZStack {
             Circle()
                 .fill(Color.white.opacity(0.08))
-                .frame(width: 140, height: 140)
+                .frame(width: 112, height: 112)
                 .overlay {
                     Circle()
                         .stroke(Color.white.opacity(0.12), lineWidth: 1)
@@ -70,7 +74,7 @@ private extension PhoneCardView {
             
             Image("Profile")
                 .resizable()
-                .frame(width: 140, height: 140)
+                .frame(width: 112, height: 112)
                 .clipShape(Circle())
         }
     }
@@ -80,20 +84,20 @@ private extension PhoneCardView {
         if let scenario {
             VStack(spacing: 8) {
                 Text(scenario.title)
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                 
                 Text("발화자 | \(scenario.callerName)")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.56))
+                    .foregroundStyle(.white.opacity(0.42))
                     .lineLimit(1)
             }
         } else {
             VStack(spacing: 8){
                 Text("선택된 대화가 없습니다")
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: 24, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                 
@@ -118,10 +122,10 @@ private extension PhoneCardView {
     }
     
     var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 28)
+        RoundedRectangle(cornerRadius: 32)
             .fill(Constants.grey700)
             .overlay {
-                RoundedRectangle(cornerRadius: 28)
+                RoundedRectangle(cornerRadius: 32)
                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
             }
     }
@@ -130,5 +134,4 @@ private extension PhoneCardView {
 #Preview {
     PhoneCardView(scenario: nil)
         .padding()
-        .background(Constants.grey800)
 }

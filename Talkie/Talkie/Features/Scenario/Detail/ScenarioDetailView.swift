@@ -27,9 +27,6 @@ struct ScenarioDetailView: View {
 
     var body: some View {
         ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
             VStack(alignment: .leading, spacing: 0) {
                 navigationBar
                 scenarioHeader
@@ -37,6 +34,7 @@ struct ScenarioDetailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .navigationDestination(isPresented: $isShowingInfoEditView) {
             if let scenario = viewModel.customScenario {
@@ -86,18 +84,9 @@ struct ScenarioDetailView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
-
+        DepthNavigationBar {
+            dismiss()
+        } trailingContent: {
             if viewModel.canManageScenario {
                 Menu {
                     Button("제목/발화자 수정") {
@@ -113,16 +102,14 @@ struct ScenarioDetailView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 24, weight: .medium))
                         .foregroundColor(.grey100)
-                        .frame(width: 44, height: 44)
+                        .frame(width:40, height:40)
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
     }
 
     private var scenarioHeader: some View {
@@ -135,7 +122,7 @@ struct ScenarioDetailView: View {
 
                     Text("발화자 | \(viewModel.content.callerName)")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.grey300)
+                        .foregroundColor(.grey500)
                 }
 
                 Spacer()
@@ -147,12 +134,16 @@ struct ScenarioDetailView: View {
                         viewModel.isPlayingAll ? "정지" : "전체 듣기",
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
-                    .font(.system(size: 13, weight: .bold))
+                    .font(Font.custom("Pretendard", size: 16).weight(.semibold))
                     .foregroundColor(.main500)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 16)
+                    .padding(.vertical, 10)
+                    .background(Constants.main200A5)
+                    .cornerRadius(69.23077)
                     .overlay {
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 69.23077)
+                            .inset(by: 0.5)
                             .stroke(.main500, lineWidth: 1)
                     }
                 }
