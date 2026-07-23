@@ -25,6 +25,7 @@ struct AppMainView: View {
     private var widgetCallRequestID = ""
     
     @State private var launchState: AppLaunchState = .splash
+    @State private var hasPreparedLaunch = false
     
     var body: some View {
         DarkScreen {
@@ -49,9 +50,24 @@ struct AppMainView: View {
             }
         }
         .animation(.easeInOut, value: launchState)
+        // 분기 화면이 바뀌어도 유지되는 루트 수명에 연결해 위젯 딥링크가 splash를
+        // 건너뛰는 경우에도 고아 Live Activity 정리가 취소되지 않게 합니다.
+        .task {
+            await prepareLaunch()
+        }
         .onOpenURL { url in
             handleDeepLink(url)
         }
+    }
+
+    /// 강제 종료나 크래시 뒤 시스템에 남은 Live Activity는 새 프로세스가 시작될 때 정리합니다.
+    /// 프로세스가 이미 종료된 정확한 순간에는 앱 코드를 실행할 수 없으므로, 다음 실행이
+    /// 로컬 ActivityKit만 사용하는 현재 구조에서 보장할 수 있는 가장 빠른 복구 시점입니다.
+    private func prepareLaunch() async {
+        guard !hasPreparedLaunch else { return }
+        hasPreparedLaunch = true
+        await FakeCallLiveActivityManager.shared.end()
+        await finishSplash()
     }
     
     private func finishSplash() async {

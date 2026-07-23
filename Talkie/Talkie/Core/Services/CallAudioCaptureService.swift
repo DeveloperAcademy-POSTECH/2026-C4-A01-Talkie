@@ -99,6 +99,21 @@ nonisolated final class CallAudioCaptureService: @unchecked Sendable {
         voiceActivityDetector.pauseListening()
     }
 
+    /// 백그라운드 전환이나 일시적인 오디오 interruption 뒤에도 기존 input tap과
+    /// 녹음 writer를 버리지 않고 마이크 엔진만 다시 활성화합니다.
+    /// 새 capture session을 만들지 않으므로 진행 중인 녹음 파일도 끊기지 않습니다.
+    func resumeIfNeeded(speakerEnabled: Bool) throws {
+        guard inputFormat != nil, isTapInstalled else {
+            throw CaptureError.audioInputUnavailable
+        }
+
+        try FakeCallAudioSession.activate(speakerEnabled: speakerEnabled)
+        guard !audioEngine.isRunning else { return }
+
+        audioEngine.prepare()
+        try audioEngine.start()
+    }
+
     func finish() -> CompletedCallRecording? {
         stopAudioInput()
         return recordingWriter.finish()

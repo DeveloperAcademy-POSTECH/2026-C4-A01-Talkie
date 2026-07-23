@@ -123,6 +123,25 @@ final class ScriptedAudioPlayer: NSObject, AVSpeechSynthesizerDelegate, AVAudioP
         }
     }
 
+    /// 앱이 백그라운드로 이동하거나 시스템 오디오 interruption이 끝났을 때
+    /// 통화용 session을 다시 활성화하고, 중간에 멈춘 상대 음성을 이어서 재생합니다.
+    /// 이미 정상 재생 중이면 session 상태만 확인하고 재생 위치는 건드리지 않습니다.
+    func resumeIfNeeded(speakerEnabled: Bool) {
+        do {
+            try FakeCallAudioSession.activate(speakerEnabled: speakerEnabled)
+        } catch {
+            return
+        }
+
+        if let filePlayer, !filePlayer.isPlaying {
+            _ = filePlayer.play()
+        }
+
+        if synthesizer.isPaused {
+            synthesizer.continueSpeaking()
+        }
+    }
+
     nonisolated func audioPlayerDidFinishPlaying(
         _ player: AVAudioPlayer,
         successfully flag: Bool
