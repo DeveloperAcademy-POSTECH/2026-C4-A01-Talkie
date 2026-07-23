@@ -28,9 +28,14 @@ extension OnboardingData {
             imageName: "Onboarding_image2"
         ),
         OnboardingData(
+            title: "통화를 끊지 않고 도움을 요청하세요.",
+            description: "통화 화면에서 112신고, 위치 공유를 바로 이용할 수 있어요.",
+            imageName: "Onboarding_image3"
+        ),
+        OnboardingData(
             title: "안심할 수 있는 기록까지",
             description: "통화와 함께 음성을 자동 기록해 필요한 순간을 남겨요.",
-            imageName: "Onboarding_image3"
+            imageName: "Onboarding_image4"
         )
     ]
 }
