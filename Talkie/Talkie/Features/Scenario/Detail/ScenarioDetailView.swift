@@ -105,6 +105,7 @@ struct ScenarioDetailView: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
+                .accessibilityLabel("시나리오 옵션 더보기")
             }
         }
     }

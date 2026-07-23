@@ -309,19 +309,19 @@ final class ScriptEditViewModel {
     
     private func requestMicrophonePermission(for scriptLine: ScriptLine) {
         pendingPermissionScriptLine = scriptLine
-        
-        AVAudioApplication.requestRecordPermission { isGranted in
-            Task { @MainActor in
-                if isGranted {
-                    if let scriptLine = self.pendingPermissionScriptLine {
-                        self.startRecordingAfterPermissionGranted(for: scriptLine)
-                    }
-                } else {
-                    self.errorMessage = "마이크 권한이 없어 녹음할 수 없습니다."
+
+        Task { @MainActor in
+            let isGranted = await AVAudioApplication.requestRecordPermission()
+
+            if isGranted {
+                if let scriptLine = self.pendingPermissionScriptLine {
+                    self.startRecordingAfterPermissionGranted(for: scriptLine)
                 }
-                
-                self.pendingPermissionScriptLine = nil
+            } else {
+                self.errorMessage = "마이크 권한이 없어 녹음할 수 없습니다."
             }
+
+            self.pendingPermissionScriptLine = nil
         }
     }
     

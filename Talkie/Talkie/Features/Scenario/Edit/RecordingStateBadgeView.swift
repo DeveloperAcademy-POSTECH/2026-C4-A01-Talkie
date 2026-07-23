@@ -20,8 +20,8 @@ struct RecordingStateBadgeView: View {
                 RecordingWaveView()
             }
             .foregroundColor(Constants.primaryNormal)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 2)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
             .background(Constants.primaryNormal.opacity(0.16))
             .cornerRadius(12)
         } else if isRecorded {
@@ -33,9 +33,9 @@ struct RecordingStateBadgeView: View {
                     .font(.system(size: 10, weight: .bold))
             }
             .foregroundColor(Constants.textInverse)
-            .padding(.leading, 8)
-            .padding(.trailing, 2)
-            .padding(.vertical, 2)
+            .padding(.leading, 10)
+            .padding(.trailing, 6)
+            .padding(.vertical, 3)
             .background(Constants.surfaceRecordingCompleted)
             .cornerRadius(12)
         } else {

@@ -88,17 +88,15 @@ final class SOSManager {
         currentError = nil
 
         let emergencyNumber = SOSEmergencyDestination.displayName
-        
-        SOSEmergencyCallService.call(
-            phoneNumber: emergencyNumber
-        ) { [weak self] didOpen in
-            Task { @MainActor in
-                guard !didOpen else {
-                    return
-                }
-                
-                self?.currentError = .cannotMakePhoneCall
+
+        Task { [weak self] in
+            let didOpen = await SOSEmergencyCallService.call(phoneNumber: emergencyNumber)
+
+            guard !didOpen else {
+                return
             }
+
+            self?.currentError = .cannotMakePhoneCall
         }
     }
     

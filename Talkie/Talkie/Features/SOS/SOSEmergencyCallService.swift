@@ -9,18 +9,17 @@ import Foundation
 import UIKit
 
 enum SOSEmergencyCallService {
-    static func call(
-        phoneNumber: String,
-        completion: @escaping (Bool) -> Void
-    ) {
+    @MainActor
+    static func call(phoneNumber: String) async -> Bool {
         guard let phoneURL = URL(string: "tel:\(phoneNumber)"),
               UIApplication.shared.canOpenURL(phoneURL) else {
-            completion(false)
-            return
+            return false
         }
-        
-        UIApplication.shared.open(phoneURL) { didOpen in
-            completion(didOpen)
+
+        return await withCheckedContinuation { continuation in
+            UIApplication.shared.open(phoneURL) { didOpen in
+                continuation.resume(returning: didOpen)
+            }
         }
     }
 }

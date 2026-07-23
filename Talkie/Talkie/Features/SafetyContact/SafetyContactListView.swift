@@ -60,11 +60,14 @@ struct SafetyContactListView: View {
 
                                             Image(systemName: "chevron.right")
                                                 .foregroundStyle(.white.opacity(0.4))
+                                                .accessibilityHidden(true)
                                         }
                                         .padding(18)
                                         .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60, alignment: .center)
                                         .background(Constants.surfaceTextField)
                                         .clipShape(RoundedRectangle(cornerRadius: 28))
+                                        .accessibilityElement(children: .combine)
+                                        .accessibilityLabel("\(contact.name) 연락망 상세 보기")
                                     }
                                 }
                             }

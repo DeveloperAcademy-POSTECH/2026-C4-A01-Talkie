@@ -58,6 +58,7 @@ struct DeleteConfirmationOverlay: View {
                     .frame(width: 90, height: 83)
                     .padding(.top, 20)
                     .padding(.bottom, 32)
+                    .accessibilityHidden(true)
 
                 HStack(alignment: .center, spacing: 10) {
                     DeleteConfirmationButton(

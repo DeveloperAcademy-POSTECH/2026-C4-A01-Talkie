@@ -14,6 +14,7 @@ struct SplashView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 120, height: 120)
+                .accessibilityLabel("Talkie 로고")
         }
     }
 }

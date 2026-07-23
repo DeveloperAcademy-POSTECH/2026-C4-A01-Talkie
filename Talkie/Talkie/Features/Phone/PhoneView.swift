@@ -128,10 +128,18 @@ struct PhoneView: View {
             .task {
                 await preparePhoneScreen()
             }
-            .onChange(of: widgetCallRequestID, handleWidgetCallRequestChange)
-            .onChange(of: currentScenarioWidgetSnapshot, handleCurrentScenarioChange)
-            .onChange(of: availableScenarioReferences, handleScenarioListChange)
-            .onChange(of: scenePhase, handleScenePhaseChange)
+            .onChange(of: widgetCallRequestID) { oldValue, newValue in
+                handleWidgetCallRequestChange(oldValue, newValue)
+            }
+            .onChange(of: currentScenarioWidgetSnapshot) { oldValue, newValue in
+                handleCurrentScenarioChange(oldValue, newValue)
+            }
+            .onChange(of: availableScenarioReferences) { oldValue, newValue in
+                handleScenarioListChange(oldValue, newValue)
+            }
+            .onChange(of: scenePhase) { oldValue, newValue in
+                handleScenePhaseChange(oldValue, newValue)
+            }
         }
     }
 }

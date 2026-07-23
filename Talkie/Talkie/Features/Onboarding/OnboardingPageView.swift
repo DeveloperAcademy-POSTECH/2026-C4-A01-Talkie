@@ -31,6 +31,7 @@ struct OnboardingPageView: View {
                     .scaledToFit()
                     .frame(maxHeight: 450)
                     .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
             }
             
             Spacer()

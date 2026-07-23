@@ -105,6 +105,7 @@ struct ScriptEditView: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isEditingScripts ? "편집 완료" : "대사 편집")
         } else {
             Text("읽기 전용")
                 .font(Font.pretendard(.medium, size: 14))
@@ -182,6 +183,8 @@ struct ScriptEditView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .contentMargins(.horizontal, 0, for: .scrollContent)
+        .contentMargins(.vertical, 0, for: .scrollContent)
         .scrollDismissesKeyboard(.interactively)
         .environment(
             \.editMode,

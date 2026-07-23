@@ -76,6 +76,7 @@ private extension PhoneCardView {
                 .resizable()
                 .frame(width: 112, height: 112)
                 .clipShape(Circle())
+                .accessibilityHidden(true)
         }
     }
     

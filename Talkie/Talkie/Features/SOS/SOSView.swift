@@ -10,6 +10,8 @@ import SwiftData
 import UIKit
 
 struct SOSView: View {
+    @Environment(\.openURL) private var openURL
+
     @State private var sosManager = SOSManager()
     @State private var selectedAction: SOSAction?
 
@@ -148,6 +150,7 @@ private extension SOSView {
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
                 .frame(width: 36, height: 36)
+                .accessibilityHidden(true)
 
             Text(title)
                 .font(Font.pretendard(.semiBold, size: 17))
@@ -159,12 +162,16 @@ private extension SOSView {
             Image(systemName: "chevron.right")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 32)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(isHighlighted ? Constants.bgRegular : Constants.grey700)
         .cornerRadius(24)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(isHighlighted ? "선택됨" : "")
         .overlay {
             if isHighlighted {
                 RoundedRectangle(cornerRadius: 24)
@@ -196,7 +203,7 @@ private extension SOSView {
             return
         }
 
-        UIApplication.shared.open(settingsURL)
+        openURL(settingsURL)
     }
 }
 

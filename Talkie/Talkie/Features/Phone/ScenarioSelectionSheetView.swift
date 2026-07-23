@@ -68,6 +68,7 @@ struct ScenarioSelectionSheetView: View {
             .fill(Color.white.opacity(0.22))
             .frame(width: 48, height: 5)
             .padding(.top, 4)
+            .accessibilityHidden(true)
     }
 
     private var scenarioList: some View {
@@ -125,6 +126,7 @@ struct ScenarioSelectionSheetView: View {
                     .fill(isSelected ? Color.clear : Color.black.opacity(0.28))
             }
             .frame(width: 22, height: 22)
+            .accessibilityHidden(true)
     }
 }
 

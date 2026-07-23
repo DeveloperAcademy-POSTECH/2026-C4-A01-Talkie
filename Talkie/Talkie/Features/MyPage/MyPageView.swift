@@ -116,12 +116,14 @@ private struct MyPageNavigationRow: View {
             Image(systemName: "chevron.right")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.38))
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 64)
         .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 28))
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 }
 

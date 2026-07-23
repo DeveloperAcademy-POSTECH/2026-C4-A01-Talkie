@@ -26,6 +26,7 @@ struct WidgetInstallBannerView: View {
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))
+                        .accessibilityHidden(true)
                 }
                 .foregroundStyle(.white.opacity(0.30))
             }
