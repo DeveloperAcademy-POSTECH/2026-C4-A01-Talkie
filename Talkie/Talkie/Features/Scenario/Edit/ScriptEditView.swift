@@ -13,8 +13,6 @@ struct ScriptEditView: View {
 
     @State private var viewModel: ScriptEditViewModel
     @State private var isEditingScripts = false
-    @State private var pendingDeleteOffsets: IndexSet?
-    @State private var isShowingDeleteConfirmation = false
     @FocusState private var focusedScriptLineID: PersistentIdentifier?
 
     private let actionButtonTitle: String
@@ -23,7 +21,7 @@ struct ScriptEditView: View {
     init(
         scenario: Scenario,
         modelContext: ModelContext,
-        actionButtonTitle: String = "시나리오 생성",
+        actionButtonTitle: String = "시나리오 생성하기",
         insertsScenarioOnComplete: Bool = false,
         onComplete: (() -> Void)? = nil
     ) {
@@ -39,7 +37,7 @@ struct ScriptEditView: View {
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             Color.black
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
@@ -52,15 +50,11 @@ struct ScriptEditView: View {
                 recordingProgressHeader
                 scriptLineList
             }
-            .disabled(isShowingDeleteConfirmation)
+            .padding(.bottom, 88)
 
-            if isShowingDeleteConfirmation {
-                deleteConfirmationOverlay
-            }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
             bottomActionButton
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
@@ -95,14 +89,14 @@ struct ScriptEditView: View {
             } label: {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(Constants.grey800)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 48, height: 48)
                         .background(Constants.main500)
                         .clipShape(Circle())
                 } else {
                     Text("편집")
-                        .font(.pretendard(.medium, size: 16))
+                        .font(Font.pretendard(.medium, size: 16))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -111,9 +105,10 @@ struct ScriptEditView: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isEditingScripts ? "편집 완료" : "대사 편집")
         } else {
             Text("읽기 전용")
-                .font(.pretendard(.medium, size: 14))
+                .font(Font.pretendard(.medium, size: 14))
                 .foregroundColor(.white.opacity(0.72))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -123,20 +118,17 @@ struct ScriptEditView: View {
     }
 
     private var recordingProgressHeader: some View {
-        HStack(spacing: 6) {
-            Text("대화 문장 녹음 진행도")
-                .font(.pretendard(.bold, size: 16))
+        (
+            Text("대화 문장 녹음 진행도 ")
+                .font(Font.pretendard(.semiBold, size: 16))
                 .foregroundColor(.white)
-
-            HStack(spacing: 0) {
-                Text("\(viewModel.recordedCount)")
-                    .foregroundColor(Constants.primaryNormal)
-
-                Text("/\(viewModel.totalCount)")
-                    .foregroundColor(Constants.grey300)
-            }
-            .font(.pretendard(.bold, size: 16))
-        }
+            + Text("\(viewModel.recordedCount)")
+                .font(Font.pretendard(.regular, size: 16))
+                .foregroundColor(Constants.primaryNormal)
+            + Text("/\(viewModel.totalCount)")
+                .font(Font.pretendard(.regular, size: 16))
+                .foregroundColor(Constants.grey300)
+        )
         .padding(.horizontal, 16)
         .padding(.top, 32)
         .padding(.bottom, 16)
@@ -148,6 +140,7 @@ struct ScriptEditView: View {
                 ScriptLineCardView(
                     scriptLine: scriptLine,
                     isRecording: viewModel.isRecording(scriptLine),
+                    isPlaying: viewModel.isPlaying(scriptLine),
                     isEditing: isEditingScripts,
                     isReadOnly: viewModel.isPresetScenario,
                     focusedScriptLineID: $focusedScriptLineID,
@@ -175,7 +168,8 @@ struct ScriptEditView: View {
             }
             .onDelete { offsets in
                 guard isEditingScripts else { return }
-                requestDelete(offsets)
+                dismissKeyboard()
+                viewModel.deleteScriptLines(at: offsets)
             }
 
             if viewModel.canEditScripts && !isEditingScripts {
@@ -189,6 +183,8 @@ struct ScriptEditView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .contentMargins(.horizontal, 0, for: .scrollContent)
+        .contentMargins(.vertical, 0, for: .scrollContent)
         .scrollDismissesKeyboard(.interactively)
         .environment(
             \.editMode,
@@ -200,13 +196,14 @@ struct ScriptEditView: View {
         Button {
             viewModel.addScriptLine()
         } label: {
-            Image(systemName: "plus")
+            Image(systemName: "plus.circle")
                 .font(.system(size: 30, weight: .light))
                 .foregroundColor(Constants.textTertiary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 152)
+                .frame(height: 64)
+                .padding(16)
                 .background(Constants.grey700)
-                .cornerRadius(16)
+                .cornerRadius(20)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("대사 추가")
@@ -223,101 +220,17 @@ struct ScriptEditView: View {
             }
         } label: {
             Text(viewModel.isPresetScenario ? "돌아가기" : actionButtonTitle)
-                .font(.pretendard(.bold, size: 18))
-                .foregroundColor(.white)
+                .font(Font.pretendard(.semiBold, size: 17))
+                .foregroundColor(Constants.textPrimary)
                 .frame(maxWidth: .infinity)
+                .padding(.horizontal, 10)
                 .padding(.vertical, 16)
                 .background(Constants.primaryNormal)
                 .cornerRadius(16)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 12)
-        .padding(.bottom, 16)
+        .padding(.bottom, 36)
         .background(Color.black)
-    }
-
-    private var deleteConfirmationOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.62)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    cancelPendingDeletion()
-                }
-
-            VStack(alignment: .center, spacing: 20) {
-                VStack(alignment: .center, spacing: 6) {
-                    Text("대화 문장을 삭제하시겠습니까?")
-                        .font(.pretendard(.semiBold, size: 18))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Constants.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .top)
-
-                    Text("다시 복구할 수 없습니다.")
-                        .font(.pretendard(.regular, size: 14))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Constants.textTertiary)
-                        .frame(maxWidth: .infinity, alignment: .top)
-                }
-
-                Image("Group 18")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 90, height: 83)
-
-                HStack(alignment: .center, spacing: 10) {
-                    Button(action: cancelPendingDeletion) {
-                        Text("취소")
-                            .font(.pretendard(.semiBold, size: 16))
-                            .foregroundColor(Constants.textInverse)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 44)
-                            .padding(.vertical, 10)
-                            .background(Constants.surfaceDisable)
-                            .cornerRadius(12)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button(action: confirmPendingDeletion) {
-                        Text("삭제하기")
-                            .font(.pretendard(.semiBold, size: 16))
-                            .foregroundColor(Constants.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 44)
-                            .padding(.vertical, 10)
-                            .background(Constants.primaryNormal)
-                            .cornerRadius(12)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 32)
-            .padding(.bottom, 16)
-            .frame(width: 336, alignment: .top)
-            .background(Constants.bgRegular)
-            .cornerRadius(24)
-        }
-    }
-
-    private func requestDelete(_ offsets: IndexSet) {
-        dismissKeyboard()
-        pendingDeleteOffsets = offsets
-        isShowingDeleteConfirmation = true
-    }
-
-    private func cancelPendingDeletion() {
-        pendingDeleteOffsets = nil
-        isShowingDeleteConfirmation = false
-    }
-
-    private func confirmPendingDeletion() {
-        guard let pendingDeleteOffsets else {
-            return
-        }
-
-        viewModel.deleteScriptLines(at: pendingDeleteOffsets)
-        self.pendingDeleteOffsets = nil
-        isShowingDeleteConfirmation = false
     }
 
     private func dismissKeyboard() {

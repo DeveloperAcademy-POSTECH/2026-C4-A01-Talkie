@@ -33,9 +33,11 @@ struct CallHistoryView: View {
                 )
 
                 Text("통화 내역")
-                    .font(.pretendard(.bold, size: 28))
+                    .font(Font.pretendard(.semiBold, size: 20))
                     .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
                     .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
 
                 historyContent
             }
@@ -45,18 +47,22 @@ struct CallHistoryView: View {
                     .padding(.trailing, 28)
                     .padding(.bottom, 28)
             }
+
+            if shouldConfirmDeletion {
+                DeleteConfirmationOverlay(
+                    title: "녹음본을 삭제하시겠습니까?",
+                    onCancel: {
+                        shouldConfirmDeletion = false
+                    },
+                    onConfirm: deleteSelectedSessions
+                )
+            }
         }
         .preferredColorScheme(.dark)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .onDisappear(perform: player.stop)
-        .alert("녹음 삭제", isPresented: $shouldConfirmDeletion) {
-            Button("취소", role: .cancel) { }
-            Button("삭제", role: .destructive, action: deleteSelectedSessions)
-        } message: {
-            Text("선택한 \(selectedSessionIDs.count)개의 통화내역과 녹음 파일을 삭제할까요?")
-        }
         .alert(
             "작업 실패",
             isPresented: Binding(
@@ -174,11 +180,13 @@ struct CallHistoryView: View {
 
             selectedSessionIDs.removeAll()
             isSelecting = false
+            shouldConfirmDeletion = false
             if failedFileCount > 0 {
                 deletionError = "통화내역은 삭제했지만 일부 녹음 파일을 정리하지 못했습니다."
             }
         } catch {
             modelContext.rollback()
+            shouldConfirmDeletion = false
             deletionError = "선택한 통화내역을 모두 삭제하지 못했습니다."
         }
     }
@@ -193,15 +201,32 @@ private struct CallHistoryHeader: View {
         DepthNavigationBar {
             onBack()
         } trailingContent: {
+//            Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
+//                .font(Font.pretendard(.semiBold, size: 16))
+//                .foregroundStyle(.white)
+//                .frame(width: 57, height: 44)
+//                .buttonStyle(.glass)
+//                .buttonBorderShape(.capsule)
             Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
-                .font(.system(size: 16, weight: .semibold))
+                .font(Font.pretendard(.semiBold, size: 16))
                 .foregroundStyle(.white)
-                .frame(minWidth: 64, minHeight: 36)
-                .background(Color.white.opacity(0.06), in: Capsule())
+                .frame(width: 57, height: 44)
+                .background(Color.white.opacity(0.06))
+                .clipShape(Capsule())
                 .overlay {
-                    Capsule().stroke(Color.white.opacity(0.20), lineWidth: 1)
+                    Capsule()
+                        .stroke(Color.white.opacity(0.20), lineWidth: 1)
                 }
+                .buttonStyle(PressableCapsuleButtonStyle())
         }
+    }
+}
+struct PressableCapsuleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.78 : 1.0)
+            .animation(.spring(response: 0.18, dampingFraction: 0.72), value: configuration.isPressed)
     }
 }
 
@@ -216,18 +241,12 @@ private struct CallHistoryRow: View {
     var body: some View {
         HStack(spacing: 16) {
             if isSelecting {
-                Circle()
-                    .stroke(
-                        isSelected ? Constants.main500 : Color.white.opacity(0.12),
-                        lineWidth: isSelected ? 3 : 1
-                    )
-                    .frame(width: 24, height: 24)
-                    .accessibilityHidden(true)
+                selectionIndicator
             }
 
             VStack(alignment: .leading, spacing: 5) {
                 Text("\(Self.dateFormatter.string(from: session.startedAt)) 녹음")
-                    .font(.pretendard(.medium, size: 18))
+                    .font(Font.pretendard(.medium, size: 18))
                     .foregroundStyle(.white)
 
                 Text(Self.durationText(session.recording?.duration ?? 0))
@@ -240,12 +259,12 @@ private struct CallHistoryRow: View {
             if !isSelecting {
                 Button(action: onPlay) {
                     Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: 24, weight: .semibold))
                         .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
-                        .background(Color.black.opacity(0.28), in: Circle())
+                        .frame(width: 36, height: 36)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
                 .accessibilityLabel(isPlaying ? "녹음 일시정지" : "녹음 재생")
             }
         }
@@ -257,6 +276,21 @@ private struct CallHistoryRow: View {
         .onTapGesture(perform: onTap)
         .accessibilityElement(children: .contain)
         .accessibilityValue(isSelecting ? (isSelected ? "선택됨" : "선택되지 않음") : "")
+    }
+
+    private var selectionIndicator: some View {
+        ZStack {
+            Circle()
+                .fill(isSelected ? Constants.main500 : Constants.grey800)
+                .frame(width: 22, height: 22)
+
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Constants.grey800)
+            }
+        }
+        .accessibilityHidden(true)
     }
 
     private static let dateFormatter: DateFormatter = {

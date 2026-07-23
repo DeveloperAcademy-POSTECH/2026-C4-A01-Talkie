@@ -75,10 +75,7 @@ final class SOSManager {
             return
         }
 
-        guard let emergencyNumber = SOSEmergencyDestination.phoneNumber else {
-            currentError = .testEmergencyNumberNotConfigured
-            return
-        }
+        let emergencyNumber = SOSEmergencyDestination.displayName
         
         pendingMessageRequest = SOSMessageRequest(
             mode: .emergencySMS112,
@@ -90,21 +87,16 @@ final class SOSManager {
     func callEmergencyServices() {
         currentError = nil
 
-        guard let emergencyNumber = SOSEmergencyDestination.phoneNumber else {
-            currentError = .testEmergencyNumberNotConfigured
-            return
-        }
-        
-        SOSEmergencyCallService.call(
-            phoneNumber: emergencyNumber
-        ) { [weak self] didOpen in
-            Task { @MainActor in
-                guard !didOpen else {
-                    return
-                }
-                
-                self?.currentError = .cannotMakePhoneCall
+        let emergencyNumber = SOSEmergencyDestination.displayName
+
+        Task { [weak self] in
+            let didOpen = await SOSEmergencyCallService.call(phoneNumber: emergencyNumber)
+
+            guard !didOpen else {
+                return
             }
+
+            self?.currentError = .cannotMakePhoneCall
         }
     }
     

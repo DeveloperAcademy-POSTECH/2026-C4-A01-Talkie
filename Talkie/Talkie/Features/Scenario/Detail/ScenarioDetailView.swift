@@ -32,6 +32,15 @@ struct ScenarioDetailView: View {
                 scenarioHeader
                 scriptLineList
             }
+            .disabled(isShowingDeleteConfirmation)
+
+            if isShowingDeleteConfirmation {
+                DeleteConfirmationOverlay(
+                    title: "시나리오를 삭제하시겠습니까?",
+                    onCancel: cancelDeleteScenario,
+                    onConfirm: deleteScenario
+                )
+            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
@@ -51,18 +60,6 @@ struct ScenarioDetailView: View {
                     isShowingScriptEditView = false
                 }
             }
-        }
-        .alert(
-            "시나리오를 삭제하시겠습니까?",
-            isPresented: $isShowingDeleteConfirmation
-        ) {
-            Button("취소", role: .cancel) { }
-
-            Button("삭제하기", role: .destructive) {
-                deleteScenario()
-            }
-        } message: {
-            Text("다시 복구할 수 없습니다.")
         }
         .alert(
             "작업 실패",
@@ -108,6 +105,7 @@ struct ScenarioDetailView: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
+                .accessibilityLabel("시나리오 옵션 더보기")
             }
         }
     }
@@ -117,11 +115,11 @@ struct ScenarioDetailView: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.content.title)
-                        .font(.pretendard(.bold, size: 20))
+                        .font(Font.pretendard(.bold, size: 20))
                         .foregroundColor(.grey100)
 
                     Text("발화자 | \(viewModel.content.callerName)")
-                        .font(.pretendard(.medium, size: 14))
+                        .font(Font.pretendard(.medium, size: 14))
                         .foregroundColor(.grey500)
                 }
 
@@ -134,7 +132,7 @@ struct ScenarioDetailView: View {
                         viewModel.isPlayingAll ? "정지" : "전체 듣기",
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
-                    .font(.pretendard(.semiBold, size: 16))
+                    .font(Font.pretendard(.semiBold, size: 16))
                     .foregroundColor(.main500)
                     .padding(.leading, 12)
                     .padding(.trailing, 16)
@@ -168,35 +166,46 @@ struct ScenarioDetailView: View {
     }
 
     private func scriptLineRow(_ scriptLine: ScenarioLineContent) -> some View {
-        HStack(alignment: .center, spacing: 14) {
-            Text(scriptLine.text)
-                .font(.pretendard(.regular, size: 16))
-                .foregroundColor(.grey100)
-                .lineSpacing(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        let isRecorded = scriptLine.audioSource != nil
 
-            Button {
-                viewModel.playSingleLine(scriptLine)
-            } label: {
-                Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(viewModel.isPlaying(scriptLine) ? .main500 : .grey100)
-                    .frame(width: 36, height: 36)
-                    .background(.grey900)
-                    .clipShape(Circle())
+        return VStack(alignment: .leading, spacing: 24) {
+            RecordingStateBadgeView(
+                isRecording: false,
+                isRecorded: isRecorded
+            )
+
+            HStack(alignment: .center, spacing: 14) {
+                Text(scriptLine.text)
+                    .font(Font.pretendard(.regular, size: 16))
+                    .foregroundColor(.grey100)
+                    .lineSpacing(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if isRecorded {
+                    Button {
+                        viewModel.playSingleLine(scriptLine)
+                    } label: {
+                        Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(viewModel.isPlaying(scriptLine) ? .main500 : .grey100)
+                            .frame(width: 36, height: 36)
+                            .background(.grey900)
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("\(scriptLine.text) 재생")
+                    .accessibilityValue(viewModel.isPlaying(scriptLine) ? "재생 중" : "정지됨")
+                }
             }
-            .disabled(scriptLine.audioSource == nil)
-            .opacity(scriptLine.audioSource == nil ? 0.36 : 1)
-            .accessibilityLabel("\(scriptLine.text) 재생")
-            .accessibilityValue(viewModel.isPlaying(scriptLine) ? "재생 중" : "정지됨")
         }
-        .padding(20)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(viewModel.isPlaying(scriptLine) ? .main500.opacity(0.22) : .grey700)
                 .overlay {
                     if viewModel.isPlaying(scriptLine) {
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(.main500.opacity(0.9), lineWidth: 1)
                     }
                 }
@@ -205,8 +214,15 @@ struct ScenarioDetailView: View {
 
     private func deleteScenario() {
         if viewModel.deleteScenario(using: modelContext) {
+            isShowingDeleteConfirmation = false
             dismiss()
+        } else {
+            isShowingDeleteConfirmation = false
         }
+    }
+
+    private func cancelDeleteScenario() {
+        isShowingDeleteConfirmation = false
     }
 }
 

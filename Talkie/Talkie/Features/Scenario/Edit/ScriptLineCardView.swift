@@ -11,6 +11,7 @@ import SwiftData
 struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
+    let isPlaying: Bool
     let isEditing: Bool
     let isReadOnly: Bool
     let focusedScriptLineID: FocusState<PersistentIdentifier?>.Binding
@@ -19,7 +20,7 @@ struct ScriptLineCardView: View {
     let onTextChange: (String) -> Void
     
     var body: some View {
-        ZStack(alignment: .trailing) {
+        ZStack(alignment: .bottomTrailing) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     RecordingStateBadgeView(
@@ -37,16 +38,18 @@ struct ScriptLineCardView: View {
                         prompt: placeholderText,
                         axis: .vertical
                     )
-                    .font(.pretendard(.regular, size: 16))
+                    .font(Font.pretendard(.regular, size: 16))
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
                     .focused(focusedScriptLineID, equals: scriptLine.persistentModelID)
+                    .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
                 } else {
                     if scriptLine.text.isEmpty {
                         placeholderText
+                            .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
                     } else {
                         Text(scriptLine.text)
-                            .font(.pretendard(.regular, size: 16))
+                            .font(Font.pretendard(.regular, size: 16))
                             .foregroundColor(textColor)
                             .lineSpacing(4)
                             .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .topLeading)
@@ -64,10 +67,11 @@ struct ScriptLineCardView: View {
 
                     recordButton
                 }
+                .zIndex(1)
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
         .background(cardBackground)
         .shadow(
             color: isRecording ? Constants.primaryNormal.opacity(0.18) : .clear,
@@ -127,28 +131,30 @@ struct ScriptLineCardView: View {
 
     private var placeholderText: Text {
         Text("대화 내용을 입력하고 녹음해보세요.")
-            .font(.pretendard(.regular, size: 16))
+            .font(Font.pretendard(.regular, size: 16))
             .foregroundColor(Constants.textTertiary)
     }
     
     private var playButton: some View {
         Button(action: onPlay) {
-            Image(systemName: "play.fill")
+            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(isPlaying ? Constants.primaryNormal : .white)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)
                 .clipShape(RoundedRectangle(cornerRadius: 70))
         }
         .buttonStyle(.plain)
         .contentShape(Circle())
+        .zIndex(2)
         .accessibilityLabel("녹음 재생")
+        .accessibilityValue(isPlaying ? "재생 중" : "정지됨")
     }
     
     private var recordButton: some View {
         Button(action: onRecordToggle) {
             Image(systemName: isRecording ? "square.fill" : "mic.fill")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: isRecording ? 24 : 18, weight: .semibold))
                 .foregroundColor(Constants.primaryNormal)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)

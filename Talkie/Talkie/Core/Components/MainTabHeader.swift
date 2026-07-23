@@ -14,7 +14,7 @@ struct MainTabHeader<TrailingContent: View>: View {
     var body: some View {
         HStack(alignment: .center) {
             Text(title)
-                .font(.pretendard(.bold, size: 24))
+                .font(Font.pretendard(.bold, size: 24))
                 .foregroundStyle(Constants.textPrimary)
 
             Spacer()

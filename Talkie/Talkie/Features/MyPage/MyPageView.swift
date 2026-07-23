@@ -67,7 +67,7 @@ struct MyPageView: View {
                             .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 16)
                     .padding(.top, 36)
                     .padding(.bottom, 40)
                 }
@@ -87,7 +87,7 @@ private struct MyPageMenuSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.pretendard(.semiBold, size: 17))
+                .font(Font.pretendard(.semiBold, size: 17))
                 .foregroundStyle(Constants.grey300.opacity(0.72))
 
             content
@@ -102,7 +102,7 @@ private struct MyPageNavigationRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(title)
-                .font(.pretendard(.medium, size: 18))
+                .font(Font.pretendard(.medium, size: 18))
                 .foregroundStyle(.white)
 
             Spacer()
@@ -116,12 +116,14 @@ private struct MyPageNavigationRow: View {
             Image(systemName: "chevron.right")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.38))
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 64)
         .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 28))
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -131,7 +133,7 @@ private struct MyPageToggleRow: View {
 
     var body: some View {
         Toggle(title, isOn: $isOn)
-            .font(.pretendard(.medium, size: 18))
+            .font(Font.pretendard(.medium, size: 18))
             .foregroundStyle(.white)
             .tint(Color(red: 0.20, green: 0.78, blue: 0.35))
             .padding(.horizontal, 20)

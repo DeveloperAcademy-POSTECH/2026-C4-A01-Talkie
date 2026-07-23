@@ -85,7 +85,7 @@ struct WidgetInstallUI: View {
                 Spacer()
 
                 Text("위젯 설정 방법")
-                    .font(.pretendard(.semiBold, size: 16))
+                    .font(Font.pretendard(.semiBold, size: 16))
                     .foregroundStyle(.white)
 
                 Spacer()
@@ -119,7 +119,7 @@ private struct WidgetInstallStepView: View {
         VStack(alignment: .leading, spacing: 28) {
             HStack(alignment: .top, spacing: 16) {
                 Text(number)
-                    .font(.pretendard(.bold, size: 16))
+                    .font(Font.pretendard(.bold, size: 16))
                     .foregroundStyle(WidgetInstallStyle.point)
                     .frame(width: 28, height: 26)
                     .background {
@@ -128,7 +128,7 @@ private struct WidgetInstallStepView: View {
                     }
 
                 Text(copy)
-                    .font(.pretendard(.semiBold, size: 16))
+                    .font(Font.pretendard(.semiBold, size: 16))
                     .foregroundStyle(.white)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)

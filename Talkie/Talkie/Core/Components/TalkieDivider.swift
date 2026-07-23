@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TalkieDivider: View {
     var color: Color = Constants.grey700
-    var height: CGFloat = 1
+    var height: CGFloat = 0.5
 
     var body: some View {
         Rectangle()

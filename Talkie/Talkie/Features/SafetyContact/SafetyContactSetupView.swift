@@ -11,6 +11,7 @@ import SwiftData
 struct SafetyContactSetupView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = SafetyContactSetupViewModel()
+    @FocusState private var focusedField: ContactInputField?
     
     let onComplete: () -> Void
     
@@ -18,82 +19,131 @@ struct SafetyContactSetupView: View {
         @Bindable var viewModel = viewModel
         
         DarkScreen {
-            VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("안심 연락망을 입력해주세요.")
-                        .font(.pretendard(.semiBold, size: 24))
-                        .foregroundColor(Constants.grey100)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                    
-                    Text("설정에서 언제든지 변경할 수 있어요.")
-                        .font(.pretendard(.regular, size: 16))
-                        .foregroundColor(Constants.grey300)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                }
-                
-                VStack(spacing: 16) {
-                    ForEach(viewModel.contactInputs.indices, id: \.self) { index in
-                        contactInputRow(
-                            index: index,
-                            name: $viewModel.contactInputs[index].name,
-                            phoneNumber: phoneNumberBinding(for: index)
-                        )
+            ZStack(alignment: .bottom) {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        focusedField = nil
+                    }
+
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("안심 연락망을 입력해주세요.")
+                            .font(Font.pretendard(.semiBold, size: 24))
+                            .foregroundColor(Constants.grey100)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                        Text("설정에서 언제든지 변경할 수 있어요.")
+                            .font(Font.pretendard(.regular, size: 16))
+                            .foregroundColor(Constants.grey300)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
+
+                    VStack(spacing: 16) {
+                        ForEach(viewModel.contactInputs.indices, id: \.self) { index in
+                            contactInputRow(
+                                index: index,
+                                name: nameBinding(for: index),
+                                phoneNumber: phoneNumberBinding(for: index)
+                            )
+                        }
+                    }
+                    .padding(.top, 40)
+
+                    Button {
+                        focusedField = nil
+                        viewModel.addContactInput()
+                    } label: {
+                        Text("+ 연락망 추가하기")
+                            .font(Font.pretendard(.medium, size: 16))
+                            .foregroundColor(Constants.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 40)
+
+                    if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                            .padding(.top, 16)
                     }
                 }
-                .padding(.top, 40)
-                
-                Button {
-                    viewModel.addContactInput()
-                } label: {
-                    Text("+ 연락망 추가하기")
-                        .font(.pretendard(.medium, size: 16))
-                        .foregroundColor(Constants.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 40)
-                
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .padding(.top, 16)
-                }
-                
-                Spacer()
-                
-                Button {
-                    viewModel.saveContacts(
-                        modelContext: modelContext,
-                        onComplete: onComplete
-                    )
-                } label: {
-                    Text("시작하기")
-                        .font(.pretendard(.medium, size: 16))
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 16)
-                }
-                .background(viewModel.canStart ? Constants.main500 : Constants.surfaceDisable)
-                .foregroundStyle(.black)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .disabled(!viewModel.canStart)
+                .padding(.horizontal, 16)
+                .padding(.top, 120)
+                .padding(.bottom, 32)
+
+                startButton
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 32)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 120)
-            .padding(.bottom, 32)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 }
 
+private enum ContactInputField: Hashable {
+    case name(Int)
+    case phoneNumber(Int)
+}
+
 private extension SafetyContactSetupView {
+    var startButton: some View {
+        Button {
+            focusedField = nil
+            viewModel.saveContacts(
+                modelContext: modelContext,
+                onComplete: onComplete
+            )
+        } label: {
+            Text("시작하기")
+                .font(Font.pretendard(.medium, size: 16))
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 16)
+        }
+        .background(viewModel.canStart ? Constants.main500 : Constants.surfaceDisable)
+        .foregroundStyle(.black)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .disabled(!viewModel.canStart)
+    }
+
+    func nameBinding(for index: Int) -> Binding<String> {
+        Binding(
+            get: {
+                viewModel.contactInputs[index].name
+            },
+            set: { newValue in
+                updateContactInput(at: index) { input in
+                    input.name = newValue
+                }
+            }
+        )
+    }
+
     func phoneNumberBinding(for index: Int) -> Binding<String> {
         Binding(
             get: {
                 viewModel.contactInputs[index].phoneNumber
             },
             set: { newValue in
-                viewModel.contactInputs[index].phoneNumber = PhoneNumberFormatter.format(newValue)
+                updateContactInput(at: index) { input in
+                    input.phoneNumber = PhoneNumberFormatter.format(newValue)
+                }
             }
         )
+    }
+
+    func updateContactInput(
+        at index: Int,
+        transform: (inout SafetyContactInput) -> Void
+    ) {
+        guard viewModel.contactInputs.indices.contains(index) else {
+            return
+        }
+
+        var updatedInputs = viewModel.contactInputs
+        transform(&updatedInputs[index])
+        viewModel.contactInputs = updatedInputs
     }
 
     func contactInputRow(
@@ -103,21 +153,23 @@ private extension SafetyContactSetupView {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text("연락망\(index + 1)")
-                .font(.pretendard(.medium, size: 14))
+                .font(Font.pretendard(.medium, size: 14))
                 .foregroundColor(Constants.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
             HStack(alignment: .center, spacing: 8) {
                 contactTextField(
                     placeholder: "이름",
-                    text: name
+                    text: name,
+                    focusedField: .name(index)
                 )
                 .frame(width: 100)
 
                 contactTextField(
                     placeholder: "전화번호",
                     text: phoneNumber,
-                    keyboardType: .phonePad
+                    keyboardType: .phonePad,
+                    focusedField: .phoneNumber(index)
                 )
             }
         }
@@ -126,7 +178,8 @@ private extension SafetyContactSetupView {
     func contactTextField(
         placeholder: String,
         text: Binding<String>,
-        keyboardType: UIKeyboardType = .default
+        keyboardType: UIKeyboardType = .default,
+        focusedField field: ContactInputField
     ) -> some View {
         TextField(
             "",
@@ -134,9 +187,10 @@ private extension SafetyContactSetupView {
             prompt: Text(placeholder)
                 .foregroundColor(Constants.grey400)
         )
-        .font(.pretendard(.medium, size: 16))
+        .font(Font.pretendard(.medium, size: 16))
         .foregroundColor(Constants.grey100)
         .keyboardType(keyboardType)
+        .focused($focusedField, equals: field)
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(Constants.surfaceTextField)

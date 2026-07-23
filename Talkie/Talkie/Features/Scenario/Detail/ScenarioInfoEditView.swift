@@ -17,6 +17,7 @@ struct ScenarioInfoEditView: View {
     @State private var title: String
     @State private var callerName: String
     @State private var errorMessage: String?
+    @FocusState private var focusedField: ScenarioInfoEditField?
 
     init(scenario: Scenario) {
         self.scenario = scenario
@@ -30,42 +31,59 @@ struct ScenarioInfoEditView: View {
 
     var body: some View {
         ZStack {
-            VStack(alignment: .leading, spacing: 28) {
+            Color.black
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    focusedField = nil
+                }
+
+            VStack(alignment: .leading, spacing: 0) {
                 navigationBar
 
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 32) {
                     inputSection(
                         title: "시나리오 제목",
-                        placeholder: "예: 엄마와의 대화",
-                        text: $title
+                        placeholder: "엄마와의 대화",
+                        text: $title,
+                        focusField: .scenarioTitle
                     )
 
                     inputSection(
                         title: "발화자",
-                        placeholder: "예: 엄마",
-                        text: $callerName
+                        placeholder: "엄마",
+                        text: $callerName,
+                        focusField: .callerName
                     )
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 32)
+                .padding(.bottom, 36)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Spacer()
 
                 Button {
                     saveScenarioInfo()
                 } label: {
-                    Text("수정하기")
-                        .font(.pretendard(.bold, size: 18))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(isFormValid ? Constants.main500 : Constants.main500.opacity(0.24))
-                        .cornerRadius(16)
+                    HStack(alignment: .center, spacing: 10) {
+                        Text("수정하기")
+                            .font(Font.pretendard(.semiBold, size: 17))
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(Constants.textPrimary)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 16)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(isFormValid ? Constants.main500 : Constants.surfaceDisable)
+                    .cornerRadius(16)
                 }
                 .disabled(!isFormValid)
                 .padding(.horizontal, 16)
+                .padding(.bottom, 36)
             }
-            .padding(.bottom, 32)
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
@@ -91,19 +109,27 @@ struct ScenarioInfoEditView: View {
     private func inputSection(
         title: String,
         placeholder: String,
-        text: Binding<String>
+        text: Binding<String>,
+        focusField: ScenarioInfoEditField
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(.pretendard(.regular, size: 16))
-                .foregroundColor(Constants.grey500)
-
-            TextField("", text: text, prompt: Text(placeholder).foregroundColor(.white.opacity(0.16)))
-                .font(.pretendard(.regular, size: 16))
-                .foregroundColor(.white)
-                .padding(16)
+                .font(Font.pretendard(.medium, size: 14))
+                .foregroundColor(Constants.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .background(Constants.grey700)
+
+            TextField(
+                "",
+                text: text,
+                prompt: Text(placeholder)
+                    .foregroundColor(Constants.grey500)
+            )
+                .font(Font.pretendard(.regular, size: 16))
+                .foregroundColor(Constants.grey100)
+                .focused($focusedField, equals: focusField)
+                .padding(16)
+                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                .background(Constants.surfaceTextField)
                 .cornerRadius(16)
         }
     }
@@ -133,6 +159,11 @@ struct ScenarioInfoEditView: View {
     private var trimmedCallerName: String {
         callerName.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+}
+
+private enum ScenarioInfoEditField: Hashable {
+    case scenarioTitle
+    case callerName
 }
 
 #Preview {

@@ -10,12 +10,12 @@ struct OnboardingPageView: View {
             
             VStack(alignment: .leading, spacing: 3) {
                 Text(data.title)
-                    .font(.pretendard(.bold, size: 22))
+                    .font(Font.pretendard(.bold, size: 22))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.leading)
                  
                 Text(data.description)
-                    .font(.pretendard(.regular, size: 16))
+                    .font(Font.pretendard(.regular, size: 16))
                     .foregroundStyle(.white.opacity(0.7))
                     .multilineTextAlignment(.leading)
             }
@@ -31,6 +31,7 @@ struct OnboardingPageView: View {
                     .scaledToFit()
                     .frame(maxHeight: 450)
                     .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
             }
             
             Spacer()

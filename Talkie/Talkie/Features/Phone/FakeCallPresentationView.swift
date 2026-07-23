@@ -77,7 +77,7 @@ private struct FailedFakeCallView: View {
 
             VStack(spacing: 20) {
                 Text(message)
-                    .font(.pretendard(.semiBold, size: 17))
+                    .font(Font.pretendard(.semiBold, size: 17))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
 

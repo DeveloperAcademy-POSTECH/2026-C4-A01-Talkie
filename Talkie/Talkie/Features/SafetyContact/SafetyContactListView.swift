@@ -24,44 +24,57 @@ struct SafetyContactListView: View {
                     addContactButton
                 }
 
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text("안전 연락망")
-                        .font(.pretendard(.bold, size: 22))
+                        .font(Font.pretendard(.bold, size: 22))
                         .foregroundStyle(.white)
 
-                    Text("가상 전화를 하는 중에 위치공유를 선택하면 등록된 연락처로 현재 위치를 문자로 전송할 수 있어요.")
-                        .font(.pretendard(.regular, size: 15))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("가상 전화를 하는 중에 위치공유를 선택하면")
+                        Text("등록된 연락처로 현재 위치를 문자로 전송할 수 있어요.")
+                    }
+                        .font(Font.pretendard(.regular, size: 15))
                         .foregroundStyle(.white.opacity(0.7))
+                        .lineSpacing(6)
+                        .padding(.top, 8)
 
-                    if safetyContacts.isEmpty {
-                        ContentUnavailableView(
-                            "등록된 안전 연락망이 없습니다",
-                            systemImage: "person.crop.circle.badge.plus"
-                        )
-                        .foregroundStyle(.white)
-                    } else {
-                        VStack(spacing: 16) {
-                            ForEach(safetyContacts) { contact in
-                                NavigationLink {
-                                    SafetyContactDetailView(contact: contact)
-                                } label: {
-                                    HStack {
-                                        Text(contact.name)
-                                            .font(.pretendard(.medium, size: 16))
-                                            .foregroundStyle(.white)
+                    Group {
+                        if safetyContacts.isEmpty {
+                            ContentUnavailableView(
+                                "등록된 안전 연락망이 없습니다",
+                                systemImage: "person.crop.circle.badge.plus"
+                            )
+                            .foregroundStyle(.white)
+                        } else {
+                            VStack(spacing: 16) {
+                                ForEach(safetyContacts) { contact in
+                                    NavigationLink {
+                                        SafetyContactDetailView(contact: contact)
+                                    } label: {
+                                        HStack {
+                                            Text(contact.name)
+                                                .font(Font.pretendard(.medium, size: 16))
+                                                .foregroundStyle(.white)
 
-                                        Spacer()
+                                            Spacer()
 
-                                        Image(systemName: "chevron.right")
-                                            .foregroundStyle(.white.opacity(0.4))
+                                            Image(systemName: "chevron.right")
+                                                .foregroundStyle(.white.opacity(0.4))
+                                                .accessibilityHidden(true)
+                                        }
+                                        .padding(18)
+                                        .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60, alignment: .center)
+                                        .background(Constants.surfaceTextField)
+                                        .clipShape(RoundedRectangle(cornerRadius: 28))
+                                        .accessibilityElement(children: .combine)
+                                        .accessibilityLabel("\(contact.name) 연락망 상세 보기")
                                     }
-                                    .padding()
-                                    .background(Constants.grey700)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
                                 }
                             }
                         }
                     }
+                    .padding(.top, 32)
+
                     Spacer()
                 }
                 .padding(.horizontal, 16)
@@ -80,9 +93,9 @@ struct SafetyContactListView: View {
             isShowingAddContact = true
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 24, weight: .semibold))
+                .font(.system(size: 24, weight: .medium))
                 .foregroundColor(Constants.grey800)
-                .frame(width: 36, height: 36)
+                .frame(width: 48, height: 48)
                 .background(Constants.main500)
                 .clipShape(Circle())
         }

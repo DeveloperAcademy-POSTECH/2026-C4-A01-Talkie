@@ -13,7 +13,6 @@ enum SOSError: Error, Equatable {
     case noEmergencyContacts
     case messageUnavailable
     case cannotMakePhoneCall
-    case testEmergencyNumberNotConfigured
     
     var message: String {
         switch self {
@@ -27,8 +26,6 @@ enum SOSError: Error, Equatable {
             return "이 기기에서는 문자 메시지를 보낼 수 없습니다."
         case .cannotMakePhoneCall:
             return "이 기기에서는 전화 연결을 할 수 없습니다."
-        case .testEmergencyNumberNotConfigured:
-            return "Debug 빌드의 신고 테스트 번호가 설정되지 않았습니다. Xcode Scheme에 TALKIE_SOS_TEST_NUMBER를 설정해주세요."
         }
     }
 }

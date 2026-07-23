@@ -5,21 +5,17 @@
 
 import Foundation
 
-/// 개발 중 실제 112로 문자나 전화를 보내지 않도록 신고 대상을 한 곳에서 결정합니다.
+/// 112 문자/전화 신고 대상을 한 곳에서 결정합니다.
 ///
 /// Debug 빌드는 Xcode Scheme의 Environment Variables에 `TALKIE_SOS_TEST_NUMBER`를
-/// 설정한 경우에만 신고 흐름을 엽니다. Release 빌드는 최종 서비스 번호인 112를 사용합니다.
+/// 설정하면 해당 테스트 번호를 사용하고, 없으면 실제 서비스 번호인 112를 사용합니다.
+/// 문자 전송과 전화 연결은 모두 iOS 시스템 화면에서 사용자가 마지막으로 확인합니다.
 enum SOSEmergencyDestination {
     private static let testNumberEnvironmentKey = "TALKIE_SOS_TEST_NUMBER"
 
-    static var phoneNumber: String? {
+    static var phoneNumber: String {
 #if DEBUG
-        guard let rawValue = ProcessInfo.processInfo.environment[
-            testNumberEnvironmentKey
-        ] else {
-            return nil
-        }
-        return sanitizedPhoneNumber(rawValue)
+        return configuredTestNumber ?? "112"
 #else
         return "112"
 #endif
@@ -27,10 +23,20 @@ enum SOSEmergencyDestination {
 
     static var displayName: String {
 #if DEBUG
-        phoneNumber.map { "테스트 번호 \($0)" } ?? "설정되지 않은 테스트 번호"
+        configuredTestNumber.map { "테스트 번호 \($0)" } ?? "112"
 #else
         "112"
 #endif
+    }
+
+    private static var configuredTestNumber: String? {
+        guard let rawValue = ProcessInfo.processInfo.environment[
+            testNumberEnvironmentKey
+        ] else {
+            return nil
+        }
+
+        return sanitizedPhoneNumber(rawValue)
     }
 
     private static func sanitizedPhoneNumber(_ value: String) -> String? {

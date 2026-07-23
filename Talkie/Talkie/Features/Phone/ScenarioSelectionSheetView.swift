@@ -32,7 +32,7 @@ struct ScenarioSelectionSheetView: View {
                 dragHandle
 
                 Text("통화용 오디오")
-                    .font(.pretendard(.bold, size: 18))
+                    .font(Font.pretendard(.bold, size: 18))
                     .foregroundStyle(.white)
 
                 scenarioList
@@ -48,7 +48,7 @@ struct ScenarioSelectionSheetView: View {
                     dismiss()
                 } label: {
                     Text("선택하기")
-                        .font(.pretendard(.bold, size: 18))
+                        .font(Font.pretendard(.bold, size: 18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
@@ -68,6 +68,7 @@ struct ScenarioSelectionSheetView: View {
             .fill(Color.white.opacity(0.22))
             .frame(width: 48, height: 5)
             .padding(.top, 4)
+            .accessibilityHidden(true)
     }
 
     private var scenarioList: some View {
@@ -89,12 +90,12 @@ struct ScenarioSelectionSheetView: View {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 7) {
                     Text(scenario.title)
-                        .font(.pretendard(.bold, size: 17))
+                        .font(Font.pretendard(.bold, size: 17))
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
                     Text("발화자 | \(scenario.callerName)")
-                        .font(.pretendard(.medium, size: 13))
+                        .font(Font.pretendard(.medium, size: 13))
                         .foregroundStyle(.white.opacity(0.42))
                         .lineLimit(1)
                 }
@@ -125,6 +126,7 @@ struct ScenarioSelectionSheetView: View {
                     .fill(isSelected ? Color.clear : Color.black.opacity(0.28))
             }
             .frame(width: 22, height: 22)
+            .accessibilityHidden(true)
     }
 }
 

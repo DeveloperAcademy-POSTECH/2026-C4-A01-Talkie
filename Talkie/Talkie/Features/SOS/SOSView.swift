@@ -10,6 +10,8 @@ import SwiftData
 import UIKit
 
 struct SOSView: View {
+    @Environment(\.openURL) private var openURL
+
     @State private var sosManager = SOSManager()
     @State private var selectedAction: SOSAction?
 
@@ -20,13 +22,12 @@ struct SOSView: View {
         DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
                 MainTabHeader(title: "SOS")
-                    .padding(.top, 32)
-
-                VStack(alignment: .leading, spacing: 28) {
+                
+                VStack(alignment: .leading, spacing: 8) {
                     dangerTitle
 
                     Text("아래 버튼을 눌러 현재 위치 공유 또는 신고를 선택할 수 있어요.")
-                        .font(.pretendard(.regular, size: 14))
+                        .font(Font.pretendard(.regular, size: 14))
                         .foregroundColor(Constants.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                         .lineLimit(nil)
@@ -135,7 +136,8 @@ private extension SOSView {
             Text("위험하신가요?")
                 .foregroundColor(Constants.primaryNormal)
         }
-        .font(.pretendard(.semiBold, size: 28))
+        .font(Font.pretendard(.semiBold, size: 20))
+        .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
     }
 
     func actionRow(
@@ -148,22 +150,28 @@ private extension SOSView {
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
                 .frame(width: 36, height: 36)
+                .accessibilityHidden(true)
 
             Text(title)
-                .font(.pretendard(.semiBold, size: 20))
-                .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textPrimary)
+                .font(Font.pretendard(.semiBold, size: 17))
+                .multilineTextAlignment(.center)
+                .foregroundColor(Constants.textPrimary)
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textTertiary)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 32)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(isHighlighted ? Constants.bgRegular : Constants.grey700)
         .cornerRadius(24)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(isHighlighted ? "선택됨" : "")
         .overlay {
             if isHighlighted {
                 RoundedRectangle(cornerRadius: 24)
@@ -181,9 +189,9 @@ private extension SOSView {
                 .padding(.top, 2)
 
             Text("허위 신고 시 형법 제137조(위계에 의한 공무집행방해) 및 112신고의 운영 및 처리에 관한 법률 제18조(500만원 이하 과태료)에 따라 처벌 받을 수 있습니다.")
-                .font(.pretendard(.regular, size: 12))
+                .font(Font.pretendard(.regular, size: 12))
                 .foregroundColor(Constants.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .frame(width: 338, alignment: .topLeading)
                 .lineSpacing(4)
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
@@ -195,7 +203,7 @@ private extension SOSView {
             return
         }
 
-        UIApplication.shared.open(settingsURL)
+        openURL(settingsURL)
     }
 }
 
