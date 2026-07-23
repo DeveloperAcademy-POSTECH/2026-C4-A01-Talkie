@@ -50,13 +50,9 @@ struct CompletedFakeCallSession: Sendable {
 @MainActor
 @Observable
 /// 가상 통화 화면의 상태와 재생/VAD 수명주기를 한 곳에서 조정한다.
-/// SpeechDetector 서비스의 callback은 임의 실행 문맥에서 오므로 `bindVoiceActivityEvents()`에서
+/// 적응형 VAD의 callback은 오디오 실행 문맥에서 오므로 `bindVoiceActivityEvents()`에서
 /// MainActor로 되돌린 뒤에만 phase와 SwiftUI 관찰 상태를 변경한다.
 final class FakeCallCoordinator {
-    // SpeechDetector가 결과를 내지 못하거나 사용자가 말하지 않아도 통화가 멈추지 않게 하는 시간 정책.
-    // 이것은 발화 판정 대체 알고리즘이 아니라, VAD와 독립된 진행 안전장치다.
-    static let noSpeechFallbackDelay: Duration = .seconds(3)
-
     private(set) var phase: FakeCallPhase = .idle
     private(set) var profile: VirtualCallerProfile?
     private(set) var scriptLines: [FakeCallScriptLine] = []
@@ -75,7 +71,8 @@ final class FakeCallCoordinator {
     private var hasMicrophonePermission = false
     private var activeScenarioTitle = "가상 통화"
     private var playbackPreparationTask: Task<Void, Never>?
-    private var fallbackTask: Task<Void, Never>?
+    /// 오디오 callback이 MainActor에 도착하기 전에 다음 턴이 시작돼도 이전 결과를 무시하기 위한 식별자입니다.
+    private var activeVoiceTurnID: UUID?
 
     init(repository: (any FakeCallScriptRepository)? = nil) {
         let voiceActivityDetector = VoiceActivityDetector()
@@ -238,6 +235,8 @@ final class FakeCallCoordinator {
                     return
                 }
 
+                // 상대방 음원이 스피커로 나오기 전에만 초기 환경 소음 보정을 허용합니다.
+                audioCaptureService.endAmbientCalibration()
                 audioPlayer.play(
                     text: line.text,
                     audioFileURL: audioFileURL(for: clip),
@@ -253,36 +252,34 @@ final class FakeCallCoordinator {
     }
 
     private func waitForUserSpeech() {
-        // 상대 문장 재생이 끝난 시점부터 마이크 분석과 3초 무응답 타이머를 동시에 시작한다.
+        // 상대 문장 재생이 끝나면 적응형 VAD가 오디오 버퍼 시간으로 연속 무음을 측정합니다.
+        // 별도 Task.sleep 타이머가 없으므로 소리가 들어온 동안 3초가 벽시계처럼 흐르지 않습니다.
         phase = .waitingForUser
         currentInputLevel = -80
 
         if hasMicrophonePermission {
             do {
                 voiceMonitoringState = .listening
-                try audioCaptureService.startVoiceDetection()
+                activeVoiceTurnID = try audioCaptureService.beginVoiceDetection()
             } catch {
                 hasMicrophonePermission = false
                 voiceMonitoringState = .unavailable
+                activeVoiceTurnID = nil
             }
         } else {
             voiceMonitoringState = .unavailable
+            activeVoiceTurnID = nil
         }
-
-        scheduleNoSpeechFallback()
     }
 
-    private func handleSpeechStarted() {
-        guard phase == .waitingForUser else { return }
-        // 실제 발화가 시작됐으므로 무응답 타이머가 문장 중간에 다음 턴으로 넘기지 않게 취소한다.
-        fallbackTask?.cancel()
-        fallbackTask = nil
+    private func handleSpeechStarted(turnID: UUID) {
+        guard phase == .waitingForUser, activeVoiceTurnID == turnID else { return }
         voiceMonitoringState = .speechDetected
         phase = .userSpeaking
     }
 
-    private func handleSpeechEnded() {
-        guard phase == .userSpeaking else { return }
+    private func handleSpeechEnded(turnID: UUID) {
+        guard phase == .userSpeaking, activeVoiceTurnID == turnID else { return }
 
         // Gate가 이미 연속 무음을 확인했으므로 입력을 정리하고 즉시 다음 문장으로 진행한다.
         stopVoiceMonitoring()
@@ -290,15 +287,10 @@ final class FakeCallCoordinator {
         advanceAfterUserTurn()
     }
 
-    private func handleDetectionUnavailable() {
-        guard phase == .waitingForUser || phase == .userSpeaking else { return }
-        audioCaptureService.stopVoiceDetection()
-        voiceMonitoringState = .unavailable
-        currentInputLevel = -80
-        phase = .waitingForUser
-        // Apple 파이프라인이 중간에 실패했을 때도 dB 판정으로 전환하지 않는다.
-        // 이미 speechStarted를 받은 뒤 실패한 경우까지 waitingForUser로 되돌려 3초 후 안전하게 진행한다.
-        scheduleNoSpeechFallback()
+    private func handleContinuousSilenceReached(turnID: UUID) {
+        guard phase == .waitingForUser, activeVoiceTurnID == turnID else { return }
+        // VAD가 실제 입력 버퍼에서 3초의 연속 무음을 확인한 경우에만 다음 문장으로 진행합니다.
+        advanceAfterUserTurn()
     }
 
     private func advanceAfterUserTurn() {
@@ -315,36 +307,26 @@ final class FakeCallCoordinator {
         playCurrentLine()
     }
 
-    private func scheduleNoSpeechFallback() {
-        // 호출될 때마다 이전 Task를 취소해 한 턴에 여러 타이머가 경쟁하지 않게 한다.
-        fallbackTask?.cancel()
-        fallbackTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.noSpeechFallbackDelay)
-            guard !Task.isCancelled else { return }
-            self?.advanceAfterUserTurn()
-        }
-    }
-
     private func bindVoiceActivityEvents() {
         // VoiceActivityDetector는 nonisolated 서비스다. 모든 UI 상태 변경은 명시적으로 MainActor에서 수행한다.
-        voiceActivityDetector.onSpeechStarted = { [weak self] in
+        voiceActivityDetector.onSpeechStarted = { [weak self] turnID in
             guard let coordinator = self else { return }
             Task { @MainActor in
-                coordinator.handleSpeechStarted()
+                coordinator.handleSpeechStarted(turnID: turnID)
             }
         }
 
-        voiceActivityDetector.onSpeechEnded = { [weak self] in
+        voiceActivityDetector.onSpeechEnded = { [weak self] turnID in
             guard let coordinator = self else { return }
             Task { @MainActor in
-                coordinator.handleSpeechEnded()
+                coordinator.handleSpeechEnded(turnID: turnID)
             }
         }
 
-        voiceActivityDetector.onDetectionUnavailable = { [weak self] in
+        voiceActivityDetector.onContinuousSilenceReached = { [weak self] turnID in
             guard let coordinator = self else { return }
             Task { @MainActor in
-                coordinator.handleDetectionUnavailable()
+                coordinator.handleContinuousSilenceReached(turnID: turnID)
             }
         }
 
@@ -367,12 +349,11 @@ final class FakeCallCoordinator {
     private func cancelPendingWork() {
         playbackPreparationTask?.cancel()
         playbackPreparationTask = nil
-        fallbackTask?.cancel()
-        fallbackTask = nil
     }
 
     private func stopVoiceMonitoring() {
         audioCaptureService.stopVoiceDetection()
+        activeVoiceTurnID = nil
         currentInputLevel = -80
         voiceMonitoringState = hasMicrophonePermission ? .inactive : .unavailable
     }

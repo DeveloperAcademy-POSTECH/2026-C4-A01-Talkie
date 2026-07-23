@@ -77,19 +77,26 @@ nonisolated final class CallAudioCaptureService: @unchecked Sendable {
             self.inputFormat = nil
             throw error
         }
+        // 첫 상대방 음원을 준비하는 짧은 구간에 실제 주변 소음 기준을 선행 학습합니다.
+        voiceActivityDetector.beginAmbientCalibration()
 
         return didStartRecording
     }
 
-    func startVoiceDetection() throws {
-        guard let inputFormat, audioEngine.isRunning else {
+    func endAmbientCalibration() {
+        voiceActivityDetector.endAmbientCalibration()
+    }
+
+    /// 현재 사용자 턴의 적응형 VAD를 시작하고, callback 검증에 사용할 턴 ID를 반환합니다.
+    func beginVoiceDetection() throws -> UUID {
+        guard inputFormat != nil, audioEngine.isRunning else {
             throw CaptureError.audioInputUnavailable
         }
-        try voiceActivityDetector.start(inputFormat: inputFormat)
+        return voiceActivityDetector.beginListening()
     }
 
     func stopVoiceDetection() {
-        voiceActivityDetector.stop()
+        voiceActivityDetector.pauseListening()
     }
 
     func finish() -> CompletedCallRecording? {
@@ -103,7 +110,7 @@ nonisolated final class CallAudioCaptureService: @unchecked Sendable {
     }
 
     private func stopAudioInput() {
-        voiceActivityDetector.stop()
+        voiceActivityDetector.reset()
         removeInputTapIfNeeded()
         if audioEngine.isRunning {
             audioEngine.stop()
