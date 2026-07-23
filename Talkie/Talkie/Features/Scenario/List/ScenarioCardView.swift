@@ -20,7 +20,7 @@ struct ScenarioCardView: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text("발화자  \(scenario.callerName)")
+                Text("발화자 | \(scenario.callerName)")
                     .font(Font.pretendard(.regular, size: 14))
                     .foregroundColor(Constants.grey500)
                     .lineLimit(1)

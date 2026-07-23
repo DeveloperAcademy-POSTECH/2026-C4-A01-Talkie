@@ -51,7 +51,7 @@ struct PhoneView: View {
     }
 
     private var currentScenarioWidgetSnapshot: String {
-        "\(currentScenario.title)|\(currentScenario.callerName)"
+        "\(currentScenario.title)ㅣ\(currentScenario.callerName)"
     }
 
     private var availableScenarioReferences: [ScenarioReference] {

@@ -19,7 +19,7 @@ struct ScriptLineCardView: View {
     let onTextChange: (String) -> Void
     
     var body: some View {
-        ZStack(alignment: .trailing) {
+        ZStack(alignment: .bottomTrailing) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     RecordingStateBadgeView(
@@ -41,9 +41,11 @@ struct ScriptLineCardView: View {
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
                     .focused(focusedScriptLineID, equals: scriptLine.persistentModelID)
+                    .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
                 } else {
                     if scriptLine.text.isEmpty {
                         placeholderText
+                            .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
                     } else {
                         Text(scriptLine.text)
                             .font(Font.pretendard(.regular, size: 16))
@@ -53,6 +55,7 @@ struct ScriptLineCardView: View {
                     }
                 }
             }
+            .padding(.top, 10)
             .padding(.trailing, showsTrailingControls ? 52 : 0)
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -67,7 +70,7 @@ struct ScriptLineCardView: View {
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
         .background(cardBackground)
         .shadow(
             color: isRecording ? Constants.primaryNormal.opacity(0.18) : .clear,
@@ -148,7 +151,7 @@ struct ScriptLineCardView: View {
     private var recordButton: some View {
         Button(action: onRecordToggle) {
             Image(systemName: isRecording ? "square.fill" : "mic.fill")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: isRecording ? 24 : 18, weight: .semibold))
                 .foregroundColor(Constants.primaryNormal)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)

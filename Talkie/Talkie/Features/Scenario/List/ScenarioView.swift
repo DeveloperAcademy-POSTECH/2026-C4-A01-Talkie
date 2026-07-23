@@ -37,15 +37,15 @@ struct ScenarioView: View {
                         .accessibilityLabel("시나리오 추가")
                     }
 
-                    Text("총 \(totalScenarioCount)개")
-                        .font(Font.pretendard(.semiBold, size: 16))
-                        .foregroundColor(Constants.textTertiary)
-                        .frame(width: 95, height: 24, alignment: .leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-
-                    ScrollView{
+                    ScrollView {
+                        Text("총 \(totalScenarioCount)개")
+                            .font(Font.pretendard(.semiBold, size: 16))
+                            .foregroundColor(Constants.textTertiary)
+                            .frame(width: 95, height: 24, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                        
                         LazyVStack(spacing: 16) {
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
@@ -67,6 +67,20 @@ struct ScenarioView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 16)
+                    }
+                    .scrollIndicators(.hidden)
+                    .mask {
+                        VStack(spacing: 0) {
+                            LinearGradient(
+                                colors: [.clear, .black],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 28)
+
+                            Rectangle()
+                                .fill(.black)
+                        }
                     }
                     Spacer()
                 }

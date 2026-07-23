@@ -13,6 +13,7 @@ struct ScenarioCreateView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var viewModel = ScenarioCreateViewModel()
+    @FocusState private var focusedField: ScenarioCreateField?
     private let onComplete: (() -> Void)?
 
     init(onComplete: (() -> Void)? = nil) {
@@ -23,6 +24,13 @@ struct ScenarioCreateView: View {
         @Bindable var viewModel = viewModel
         
         ZStack {
+            Color.black
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    focusedField = nil
+                }
+
             VStack(alignment: .leading) {
                 
                 // 2. 커스텀 상단 뒤로가기 바 영역
@@ -44,14 +52,16 @@ struct ScenarioCreateView: View {
                     scenarioTextField(
                         title: "시나리오 제목",
                         placeholder: "엄마와의 대화",
-                        text: $viewModel.scenarioTitle
+                        text: $viewModel.scenarioTitle,
+                        focusField: .scenarioTitle
                     )
 
                     // 5. 발화자 입력 섹션
                     scenarioTextField(
                         title: "발화자",
                         placeholder: "엄마",
-                        text: $viewModel.callerName
+                        text: $viewModel.callerName,
+                        focusField: .callerName
                     )
                 }
                 .padding(.horizontal, 16)
@@ -67,19 +77,22 @@ struct ScenarioCreateView: View {
                 } label: {
                     HStack(alignment: .center, spacing: 10) {
                         Text("다음으로")
-                            .font(Font.pretendard(.bold, size: 18))
-                            .foregroundColor(Constants.grey100)
+                            .font(Font.pretendard(.semiBold, size: 17))
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(Constants.textPrimary)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .background(viewModel.isFormValid ? Constants.main500 : Constants.grey500)
+                    .background(viewModel.isFormValid ? Constants.main500 : Constants.surfaceDisable)
                     .cornerRadius(16)
                 }
                 .disabled(!viewModel.isFormValid)
                 .padding(.horizontal, 16)
+                .padding(.bottom, 36)
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .alert(
@@ -117,7 +130,8 @@ private extension ScenarioCreateView {
     func scenarioTextField(
         title: String,
         placeholder: String,
-        text: Binding<String>
+        text: Binding<String>,
+        focusField: ScenarioCreateField
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
@@ -133,12 +147,18 @@ private extension ScenarioCreateView {
             )
             .font(Font.pretendard(.regular, size: 16))
             .foregroundColor(Constants.grey100)
+            .focused($focusedField, equals: focusField)
             .padding(16)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
             .background(Constants.surfaceTextField)
             .cornerRadius(16)
         }
     }
+}
+
+private enum ScenarioCreateField: Hashable {
+    case scenarioTitle
+    case callerName
 }
 
 // MARK: - Preview

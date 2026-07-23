@@ -42,6 +42,8 @@ struct RecordingStateBadgeView: View {
             Text("녹음 준비")
                 .font(Font.pretendard(.medium, size: 12))
                 .foregroundColor(Constants.textSecondary)
+                .lineLimit(1)
+                .frame(height: 18)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
                 .background(Constants.surfaceRecordingNotYet)
