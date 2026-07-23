@@ -21,12 +21,12 @@ struct SafetyContactSetupView: View {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("안심 연락망을 입력해주세요.")
-                        .font(Font.custom("Pretendard", size: 24).weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 24))
                         .foregroundColor(Constants.grey100)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                     
                     Text("설정에서 언제든지 변경할 수 있어요.")
-                        .font(Font.custom("Pretendard", size: 16))
+                        .font(.pretendard(.regular, size: 16))
                         .foregroundColor(Constants.grey300)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
@@ -46,7 +46,7 @@ struct SafetyContactSetupView: View {
                     viewModel.addContactInput()
                 } label: {
                     Text("+ 연락망 추가하기")
-                        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                        .font(.pretendard(.medium, size: 16))
                         .foregroundColor(Constants.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -67,7 +67,7 @@ struct SafetyContactSetupView: View {
                     )
                 } label: {
                     Text("시작하기")
-                        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                        .font(.pretendard(.medium, size: 16))
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 16)
@@ -103,7 +103,7 @@ private extension SafetyContactSetupView {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text("연락망\(index + 1)")
-                .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                .font(.pretendard(.medium, size: 14))
                 .foregroundColor(Constants.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -134,7 +134,7 @@ private extension SafetyContactSetupView {
             prompt: Text(placeholder)
                 .foregroundColor(Constants.grey400)
         )
-        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+        .font(.pretendard(.medium, size: 16))
         .foregroundColor(Constants.grey100)
         .keyboardType(keyboardType)
         .padding(16)

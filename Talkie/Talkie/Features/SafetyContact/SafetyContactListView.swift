@@ -26,12 +26,11 @@ struct SafetyContactListView: View {
 
                 VStack(alignment: .leading, spacing: 20) {
                     Text("안전 연락망")
-                        .font(.title2)
-                        .bold()
+                        .font(.pretendard(.bold, size: 22))
                         .foregroundStyle(.white)
 
                     Text("가상 전화를 하는 중에 위치공유를 선택하면 등록된 연락처로 현재 위치를 문자로 전송할 수 있어요.")
-                        .font(.subheadline)
+                        .font(.pretendard(.regular, size: 15))
                         .foregroundStyle(.white.opacity(0.7))
 
                     if safetyContacts.isEmpty {
@@ -48,6 +47,7 @@ struct SafetyContactListView: View {
                                 } label: {
                                     HStack {
                                         Text(contact.name)
+                                            .font(.pretendard(.medium, size: 16))
                                             .foregroundStyle(.white)
 
                                         Spacer()
@@ -80,9 +80,9 @@ struct SafetyContactListView: View {
             isShowingAddContact = true
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 20, weight: .semibold))
+                .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(Constants.grey800)
-                .frame(width: 40, height: 40)
+                .frame(width: 36, height: 36)
                 .background(Constants.main500)
                 .clipShape(Circle())
         }

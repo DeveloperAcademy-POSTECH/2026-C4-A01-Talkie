@@ -95,14 +95,14 @@ struct ScriptEditView: View {
             } label: {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Constants.grey800)
                         .frame(width: 36, height: 36)
                         .background(Constants.main500)
                         .clipShape(Circle())
                 } else {
                     Text("편집")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.pretendard(.medium, size: 16))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -113,7 +113,7 @@ struct ScriptEditView: View {
             .buttonStyle(.plain)
         } else {
             Text("읽기 전용")
-                .font(.system(size: 14, weight: .medium))
+                .font(.pretendard(.medium, size: 14))
                 .foregroundColor(.white.opacity(0.72))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -125,7 +125,7 @@ struct ScriptEditView: View {
     private var recordingProgressHeader: some View {
         HStack(spacing: 6) {
             Text("대화 문장 녹음 진행도")
-                .font(.system(size: 16, weight: .bold))
+                .font(.pretendard(.bold, size: 16))
                 .foregroundColor(.white)
 
             HStack(spacing: 0) {
@@ -135,7 +135,7 @@ struct ScriptEditView: View {
                 Text("/\(viewModel.totalCount)")
                     .foregroundColor(Constants.grey300)
             }
-            .font(.system(size: 16, weight: .bold))
+            .font(.pretendard(.bold, size: 16))
         }
         .padding(.horizontal, 16)
         .padding(.top, 32)
@@ -223,7 +223,7 @@ struct ScriptEditView: View {
             }
         } label: {
             Text(viewModel.isPresetScenario ? "돌아가기" : actionButtonTitle)
-                .font(.system(size: 18, weight: .bold))
+                .font(.pretendard(.bold, size: 18))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -247,13 +247,13 @@ struct ScriptEditView: View {
             VStack(alignment: .center, spacing: 20) {
                 VStack(alignment: .center, spacing: 6) {
                     Text("대화 문장을 삭제하시겠습니까?")
-                        .font(Font.custom("Pretendard", size: 18).weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 18))
                         .multilineTextAlignment(.center)
                         .foregroundColor(Constants.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .top)
 
                     Text("다시 복구할 수 없습니다.")
-                        .font(Font.custom("Pretendard", size: 14))
+                        .font(.pretendard(.regular, size: 14))
                         .multilineTextAlignment(.center)
                         .foregroundColor(Constants.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .top)
@@ -267,7 +267,7 @@ struct ScriptEditView: View {
                 HStack(alignment: .center, spacing: 10) {
                     Button(action: cancelPendingDeletion) {
                         Text("취소")
-                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .font(.pretendard(.semiBold, size: 16))
                             .foregroundColor(Constants.textInverse)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)
@@ -279,7 +279,7 @@ struct ScriptEditView: View {
 
                     Button(action: confirmPendingDeletion) {
                         Text("삭제하기")
-                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .font(.pretendard(.semiBold, size: 16))
                             .foregroundColor(Constants.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)

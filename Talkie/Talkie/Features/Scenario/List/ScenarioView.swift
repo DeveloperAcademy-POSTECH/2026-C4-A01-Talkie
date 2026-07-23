@@ -40,7 +40,7 @@ struct ScenarioView: View {
 
 
                     Text("총 \(totalScenarioCount)개")
-                        .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 16))
                         .foregroundColor(Constants.textTertiary)
                         .frame(width: 95, height: 24, alignment: .leading)
                         .frame(maxWidth: .infinity, alignment: .leading)

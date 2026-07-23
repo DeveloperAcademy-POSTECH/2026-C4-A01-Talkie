@@ -26,7 +26,7 @@ struct PhoneHomeContentView: View {
                             .font(.system(size: 24, weight: .semibold))
                             .foregroundStyle(Constants.textPrimary)
                             .multilineTextAlignment(.center)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 36, height: 36)
                     }
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
@@ -71,7 +71,7 @@ private struct StartFakeCallButton: View {
                     .font(.system(size: 16, weight: .bold))
 
                 Text("전화하기")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.pretendard(.bold, size: 16))
             }
             .foregroundStyle(Color.green)
             .padding(.horizontal, 10)

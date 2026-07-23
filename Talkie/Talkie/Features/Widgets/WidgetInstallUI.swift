@@ -70,9 +70,9 @@ struct WidgetInstallUI: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(.white)
-                        .frame(width:40, height:40)
+                        .frame(width:36, height:36)
                         .background {
                             Circle()
                                 .fill(.white.opacity(0.04))
@@ -85,13 +85,13 @@ struct WidgetInstallUI: View {
                 Spacer()
 
                 Text("위젯 설정 방법")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.pretendard(.semiBold, size: 16))
                     .foregroundStyle(.white)
 
                 Spacer()
 
                 Color.clear
-                    .frame(width:40, height:40)
+                    .frame(width:36, height:36)
             }
             .padding(.horizontal, 16)
             .padding(.top, topInset + 26)
@@ -119,7 +119,7 @@ private struct WidgetInstallStepView: View {
         VStack(alignment: .leading, spacing: 28) {
             HStack(alignment: .top, spacing: 16) {
                 Text(number)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.pretendard(.bold, size: 16))
                     .foregroundStyle(WidgetInstallStyle.point)
                     .frame(width: 28, height: 26)
                     .background {
@@ -128,7 +128,7 @@ private struct WidgetInstallStepView: View {
                     }
 
                 Text(copy)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.pretendard(.semiBold, size: 16))
                     .foregroundStyle(.white)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)

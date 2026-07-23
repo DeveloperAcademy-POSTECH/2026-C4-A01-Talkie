@@ -54,7 +54,7 @@ struct ActiveFakeCallView: View {
             VStack(alignment: .leading, spacing: 2) {
                 TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
                     Text(callDuration(at: context.date))
-                        .font(.system(size: 22, weight: .medium).monospacedDigit())
+                        .font(Font.pretendard(.medium, size: 22).monospacedDigit())
                         .foregroundStyle(.white.opacity(0.58))
                         .contentTransition(.numericText())
                         .onLongPressGesture(minimumDuration: 1) {
@@ -64,7 +64,7 @@ struct ActiveFakeCallView: View {
                 }
 
                 Text(profile.displayName)
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.pretendard(.bold, size: 34))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.62)
@@ -191,7 +191,7 @@ private struct ActiveCallControlButton: View {
             .opacity(1)
 
             Text(title)
-                .font(.system(size: 17, weight: .regular))
+                .font(.pretendard(.regular, size: 17))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -219,7 +219,7 @@ private struct ActiveCallControlButton: View {
                     .font(.system(size: 30, weight: .semibold))
 
                 Text("?")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.pretendard(.bold, size: 12))
                     .foregroundStyle(Color.black.opacity(0.7))
                     .offset(x: -4)
             }

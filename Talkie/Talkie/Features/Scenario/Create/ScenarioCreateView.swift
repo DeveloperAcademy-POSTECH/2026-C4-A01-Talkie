@@ -33,7 +33,7 @@ struct ScenarioCreateView: View {
                 
                 // 3. 메인 타이틀
                 Text("시나리오 제목과 발화자를 입력해주세요.")
-                    .font(Font.custom("Pretendard", size: 20).weight(.semibold))
+                    .font(.pretendard(.semiBold, size: 20))
                     .foregroundColor(Constants.grey100)
                     .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
                     .padding(.horizontal, 16)
@@ -67,7 +67,7 @@ struct ScenarioCreateView: View {
                 } label: {
                     HStack(alignment: .center, spacing: 10) {
                         Text("다음으로")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.pretendard(.bold, size: 18))
                             .foregroundColor(Constants.grey100)
                     }
                     .padding(.horizontal, 10)
@@ -121,7 +121,7 @@ private extension ScenarioCreateView {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                .font(.pretendard(.medium, size: 14))
                 .foregroundColor(Constants.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -131,7 +131,7 @@ private extension ScenarioCreateView {
                 prompt: Text(placeholder)
                     .foregroundColor(Constants.grey500)
             )
-            .font(Font.custom("Pretendard", size: 16))
+            .font(.pretendard(.regular, size: 16))
             .foregroundColor(Constants.grey100)
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .topLeading)
