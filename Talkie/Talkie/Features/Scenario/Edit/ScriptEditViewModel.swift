@@ -18,11 +18,13 @@ final class ScriptEditViewModel {
     private var hasInsertedScenario = false
     private var audioRecorder: AVAudioRecorder?
     private var audioPlayer: AVAudioPlayer?
+    private var playbackTask: Task<Void, Never>?
     private var recordingFileName: String?
     private var pendingPermissionScriptLine: ScriptLine?
 
     var scenario: Scenario
     private(set) var recordingScriptLine: ScriptLine?
+    private(set) var playingScriptLine: ScriptLine?
     private(set) var errorMessage: String?
 
     init(
@@ -124,8 +126,17 @@ final class ScriptEditViewModel {
     func isRecording(_ scriptLine: ScriptLine) -> Bool {
         recordingScriptLine === scriptLine
     }
+
+    func isPlaying(_ scriptLine: ScriptLine) -> Bool {
+        playingScriptLine === scriptLine
+    }
     
     func playRecording(for scriptLine: ScriptLine) {
+        if isPlaying(scriptLine) {
+            stopPlayback()
+            return
+        }
+
         playAudio(for: scriptLine)
     }
     
@@ -253,13 +264,21 @@ final class ScriptEditViewModel {
             if recordingScriptLine != nil {
                 cancelCurrentRecording()
             }
+
+            stopPlayback()
             
             let audioURL = try AudioFileManager.url(for: audioFileName)
             try configureAudioSessionForPlayback()
             
             audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
             audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
+            guard audioPlayer?.play() == true else {
+                errorMessage = "녹음 파일을 재생하지 못했습니다."
+                return
+            }
+
+            playingScriptLine = scriptLine
+            schedulePlaybackCompletion()
         } catch {
             errorMessage = "녹음 파일을 재생하지 못했습니다."
             print("오디오 재생 실패: \(error.localizedDescription)")
@@ -267,8 +286,11 @@ final class ScriptEditViewModel {
     }
     
     func stopPlayback() {
+        playbackTask?.cancel()
+        playbackTask = nil
         audioPlayer?.stop()
         audioPlayer = nil
+        playingScriptLine = nil
     }
     
     func completeEditing() -> Bool {
@@ -357,6 +379,27 @@ final class ScriptEditViewModel {
         }
         
         recordingFileName = nil
+    }
+
+    private func schedulePlaybackCompletion() {
+        playbackTask?.cancel()
+
+        guard let duration = audioPlayer?.duration else {
+            return
+        }
+
+        playbackTask = Task {
+            let nanoseconds = UInt64(max(duration, 0.1) * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: nanoseconds)
+
+            guard !Task.isCancelled else {
+                return
+            }
+
+            await MainActor.run {
+                self.stopPlayback()
+            }
+        }
     }
     
     private func configureAudioSessionForRecording() throws {

@@ -75,10 +75,7 @@ final class SOSManager {
             return
         }
 
-        guard let emergencyNumber = SOSEmergencyDestination.phoneNumber else {
-            currentError = .testEmergencyNumberNotConfigured
-            return
-        }
+        let emergencyNumber = SOSEmergencyDestination.displayName
         
         pendingMessageRequest = SOSMessageRequest(
             mode: .emergencySMS112,
@@ -90,10 +87,7 @@ final class SOSManager {
     func callEmergencyServices() {
         currentError = nil
 
-        guard let emergencyNumber = SOSEmergencyDestination.phoneNumber else {
-            currentError = .testEmergencyNumberNotConfigured
-            return
-        }
+        let emergencyNumber = SOSEmergencyDestination.displayName
         
         SOSEmergencyCallService.call(
             phoneNumber: emergencyNumber

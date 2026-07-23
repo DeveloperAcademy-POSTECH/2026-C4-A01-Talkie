@@ -43,7 +43,7 @@ struct SafetyContactDetailView: View {
                             saveContact()
                         } label: {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 20, weight: .medium))
+                                .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(Constants.grey800)
                                 .frame(width:48, height:48)
                                 .background(Constants.main500)

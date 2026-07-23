@@ -21,7 +21,7 @@ struct SOSView: View {
             VStack(alignment: .leading, spacing: 0) {
                 MainTabHeader(title: "SOS")
                 
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 8) {
                     dangerTitle
 
                     Text("아래 버튼을 눌러 현재 위치 공유 또는 신고를 선택할 수 있어요.")
@@ -134,7 +134,8 @@ private extension SOSView {
             Text("위험하신가요?")
                 .foregroundColor(Constants.primaryNormal)
         }
-        .font(Font.pretendard(.semiBold, size: 28))
+        .font(Font.pretendard(.semiBold, size: 20))
+        .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
     }
 
     func actionRow(
@@ -149,8 +150,9 @@ private extension SOSView {
                 .frame(width: 36, height: 36)
 
             Text(title)
-                .font(Font.pretendard(.semiBold, size: 20))
-                .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textPrimary)
+                .font(Font.pretendard(.semiBold, size: 17))
+                .multilineTextAlignment(.center)
+                .foregroundColor(Constants.textPrimary)
 
             Spacer()
 
@@ -182,7 +184,7 @@ private extension SOSView {
             Text("허위 신고 시 형법 제137조(위계에 의한 공무집행방해) 및 112신고의 운영 및 처리에 관한 법률 제18조(500만원 이하 과태료)에 따라 처벌 받을 수 있습니다.")
                 .font(Font.pretendard(.regular, size: 12))
                 .foregroundColor(Constants.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .frame(width: 338, alignment: .topLeading)
                 .lineSpacing(4)
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)

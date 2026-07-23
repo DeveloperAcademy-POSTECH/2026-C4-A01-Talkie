@@ -13,8 +13,6 @@ struct ScriptEditView: View {
 
     @State private var viewModel: ScriptEditViewModel
     @State private var isEditingScripts = false
-    @State private var pendingDeleteOffsets: IndexSet?
-    @State private var isShowingDeleteConfirmation = false
     @FocusState private var focusedScriptLineID: PersistentIdentifier?
 
     private let actionButtonTitle: String
@@ -53,18 +51,8 @@ struct ScriptEditView: View {
                 scriptLineList
             }
             .padding(.bottom, 88)
-            .disabled(isShowingDeleteConfirmation)
 
             bottomActionButton
-                .disabled(isShowingDeleteConfirmation)
-
-            if isShowingDeleteConfirmation {
-                DeleteConfirmationOverlay(
-                    title: "대화 문장을 삭제하시겠습니까?",
-                    onCancel: cancelPendingDeletion,
-                    onConfirm: confirmPendingDeletion
-                )
-            }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
@@ -101,7 +89,7 @@ struct ScriptEditView: View {
             } label: {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(Constants.grey800)
                         .frame(width: 48, height: 48)
                         .background(Constants.main500)
@@ -151,6 +139,7 @@ struct ScriptEditView: View {
                 ScriptLineCardView(
                     scriptLine: scriptLine,
                     isRecording: viewModel.isRecording(scriptLine),
+                    isPlaying: viewModel.isPlaying(scriptLine),
                     isEditing: isEditingScripts,
                     isReadOnly: viewModel.isPresetScenario,
                     focusedScriptLineID: $focusedScriptLineID,
@@ -179,8 +168,7 @@ struct ScriptEditView: View {
             .onDelete { offsets in
                 guard isEditingScripts else { return }
                 dismissKeyboard()
-                pendingDeleteOffsets = offsets
-                isShowingDeleteConfirmation = true
+                viewModel.deleteScriptLines(at: offsets)
             }
 
             if viewModel.canEditScripts && !isEditingScripts {
@@ -240,21 +228,6 @@ struct ScriptEditView: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 36)
         .background(Color.black)
-    }
-
-    private func cancelPendingDeletion() {
-        pendingDeleteOffsets = nil
-        isShowingDeleteConfirmation = false
-    }
-
-    private func confirmPendingDeletion() {
-        guard let pendingDeleteOffsets else {
-            return
-        }
-
-        viewModel.deleteScriptLines(at: pendingDeleteOffsets)
-        self.pendingDeleteOffsets = nil
-        isShowingDeleteConfirmation = false
     }
 
     private func dismissKeyboard() {

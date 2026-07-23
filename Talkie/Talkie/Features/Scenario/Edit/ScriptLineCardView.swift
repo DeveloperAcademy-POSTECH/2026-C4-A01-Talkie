@@ -11,6 +11,7 @@ import SwiftData
 struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
+    let isPlaying: Bool
     let isEditing: Bool
     let isReadOnly: Bool
     let focusedScriptLineID: FocusState<PersistentIdentifier?>.Binding
@@ -55,7 +56,6 @@ struct ScriptLineCardView: View {
                     }
                 }
             }
-            .padding(.top, 10)
             .padding(.trailing, showsTrailingControls ? 52 : 0)
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -67,6 +67,7 @@ struct ScriptLineCardView: View {
 
                     recordButton
                 }
+                .zIndex(1)
             }
         }
         .padding(16)
@@ -136,16 +137,18 @@ struct ScriptLineCardView: View {
     
     private var playButton: some View {
         Button(action: onPlay) {
-            Image(systemName: "play.fill")
+            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(isPlaying ? Constants.primaryNormal : .white)
                 .frame(width: 36, height: 36)
                 .background(Constants.surfaceButton)
                 .clipShape(RoundedRectangle(cornerRadius: 70))
         }
         .buttonStyle(.plain)
         .contentShape(Circle())
+        .zIndex(2)
         .accessibilityLabel("녹음 재생")
+        .accessibilityValue(isPlaying ? "재생 중" : "정지됨")
     }
     
     private var recordButton: some View {
