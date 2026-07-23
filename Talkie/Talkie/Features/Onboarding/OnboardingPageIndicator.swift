@@ -24,5 +24,5 @@ struct OnboardingPageIndicator: View {
 }
 
 #Preview {
-    OnboardingPageIndicator(pageCount: 3, selectedIndex: 0)
+    OnboardingPageIndicator(pageCount: 4, selectedIndex: 0)
 }

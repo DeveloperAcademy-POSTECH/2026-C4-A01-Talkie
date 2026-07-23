@@ -4,8 +4,40 @@
 //
 
 
+@preconcurrency import AVFoundation
 import Foundation
 import Observation
+
+/// NotificationCenter observer의 등록과 해제를 MainActor 상태에서 분리합니다.
+/// Coordinator가 사라질 때 이 객체의 deinit이 토큰을 정리하므로 고아 observer가 남지 않습니다.
+nonisolated private final class FakeCallAudioInterruptionObserver: @unchecked Sendable {
+    private var token: NSObjectProtocol?
+
+    init(onShouldResume: @escaping @Sendable () -> Void) {
+        token = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { notification in
+            guard let rawType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  AVAudioSession.InterruptionType(rawValue: rawType) == .ended else {
+                return
+            }
+
+            let rawOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            let shouldResume = AVAudioSession.InterruptionOptions(rawValue: rawOptions)
+                .contains(.shouldResume)
+            guard shouldResume else { return }
+            onShouldResume()
+        }
+    }
+
+    deinit {
+        if let token {
+            NotificationCenter.default.removeObserver(token)
+        }
+    }
+}
 
 enum FakeCallPhase: Equatable {
     case idle
@@ -67,10 +99,12 @@ final class FakeCallCoordinator {
     private let voiceActivityDetector: VoiceActivityDetector
     private let audioCaptureService: CallAudioCaptureService
     private let ringtonePlayer: any IncomingCallRingtonePlaying
+    private let proximityMonitor: CallProximityMonitor
 
     private var hasMicrophonePermission = false
     private var activeScenarioTitle = "가상 통화"
     private var playbackPreparationTask: Task<Void, Never>?
+    private var audioInterruptionObserver: FakeCallAudioInterruptionObserver?
     /// 오디오 callback이 MainActor에 도착하기 전에 다음 턴이 시작돼도 이전 결과를 무시하기 위한 식별자입니다.
     private var activeVoiceTurnID: UUID?
 
@@ -83,14 +117,17 @@ final class FakeCallCoordinator {
             voiceActivityDetector: voiceActivityDetector
         )
         ringtonePlayer = IncomingCallRingtoneService.shared
+        proximityMonitor = CallProximityMonitor()
         bindVoiceActivityEvents()
+        observeAudioSessionInterruption()
     }
 
     init(
         repository: any FakeCallScriptRepository,
         audioPlayer: ScriptedAudioPlayer,
         voiceActivityDetector: VoiceActivityDetector,
-        ringtonePlayer: (any IncomingCallRingtonePlaying)? = nil
+        ringtonePlayer: (any IncomingCallRingtonePlaying)? = nil,
+        proximityMonitor: CallProximityMonitor? = nil
     ) {
         self.repository = repository
         self.audioPlayer = audioPlayer
@@ -99,7 +136,9 @@ final class FakeCallCoordinator {
             voiceActivityDetector: voiceActivityDetector
         )
         self.ringtonePlayer = ringtonePlayer ?? IncomingCallRingtoneService.shared
+        self.proximityMonitor = proximityMonitor ?? CallProximityMonitor()
         bindVoiceActivityEvents()
+        observeAudioSessionInterruption()
     }
 
     func startIncomingCall() {
@@ -146,6 +185,10 @@ final class FakeCallCoordinator {
         ringtonePlayer.stopRinging()
         callStartedAt = Date()
         activeScenarioTitle = scenarioTitle
+        proximityMonitor.update(
+            isCallActive: true,
+            isSpeakerEnabled: isSpeakerEnabled
+        )
 
         Task {
             hasMicrophonePermission = await VoiceActivityDetector.requestPermission()
@@ -206,8 +249,31 @@ final class FakeCallCoordinator {
         do {
             try FakeCallAudioSession.setSpeakerEnabled(enabled)
             isSpeakerEnabled = enabled
+            proximityMonitor.update(
+                isCallActive: phase.isActiveCall,
+                isSpeakerEnabled: enabled
+            )
         } catch {
             return
+        }
+    }
+
+    /// 홈 화면 이동, 화면 잠금, 다른 앱 전환처럼 프로세스가 살아 있는 백그라운드 상태에서
+    /// 통화 오디오와 마이크 입력을 계속 유지합니다. 정상 실행 중이면 아무것도 재생성하지 않습니다.
+    func resumeAudioIfNeeded() {
+        guard phase.isActiveCall else { return }
+
+        audioPlayer.resumeIfNeeded(speakerEnabled: isSpeakerEnabled)
+
+        guard hasMicrophonePermission else { return }
+        do {
+            try audioCaptureService.resumeIfNeeded(
+                speakerEnabled: isSpeakerEnabled
+            )
+        } catch {
+            hasMicrophonePermission = false
+            voiceMonitoringState = .unavailable
+            activeVoiceTurnID = nil
         }
     }
 
@@ -346,6 +412,16 @@ final class FakeCallCoordinator {
         }
     }
 
+    /// 일반 전화나 Siri 등으로 오디오 session이 중단됐다가 시스템이 재개를 허용하면
+    /// 백그라운드 여부와 관계없이 기존 통화의 재생기와 마이크 엔진을 복구합니다.
+    private func observeAudioSessionInterruption() {
+        audioInterruptionObserver = FakeCallAudioInterruptionObserver { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.resumeAudioIfNeeded()
+            }
+        }
+    }
+
     private func cancelPendingWork() {
         playbackPreparationTask?.cancel()
         playbackPreparationTask = nil
@@ -408,6 +484,7 @@ final class FakeCallCoordinator {
     private func resetRuntimeState() {
         cancelPendingWork()
         ringtonePlayer.stopRinging()
+        proximityMonitor.stop()
         currentLineIndex = 0
         callStartedAt = nil
         hasMicrophonePermission = false

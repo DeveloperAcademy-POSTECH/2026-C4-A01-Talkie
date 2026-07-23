@@ -90,6 +90,14 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		D1A300062FFFCF4000235021 /* TalkieLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D1A300152FFFCF4000235021 /* Exceptions for "TalkieLiveActivity" folder in "CallShortcutWidgetExtension" target */,
+			);
+			path = TalkieLiveActivity;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +142,7 @@
 			children = (
 				41A2E09B2FFFCF4000235021 /* Talkie */,
 				41092DC4301007CA00F61DCF /* CallShortcutWidget */,
+				D1A300062FFFCF4000235021 /* TalkieLiveActivity */,
 				41092DBF301007C900F61DCF /* Frameworks */,
 				41A2E09A2FFFCF4000235021 /* Products */,
 				41092FEB3010CF1400F61DCF /* Recovered References */,
@@ -166,6 +175,8 @@
 			);
 			fileSystemSynchronizedGroups = (
 				41092DC4301007CA00F61DCF /* CallShortcutWidget */,
+				D1A300052FFFCF4000235021 /* Shared */,
+				D1A300062FFFCF4000235021 /* TalkieLiveActivity */,
 			);
 			name = CallShortcutWidgetExtension;
 			packageProductDependencies = (
@@ -487,7 +498,8 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Configuration/Talkie-Info.plist";
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
@@ -532,7 +544,8 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = UFXU86865W;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Configuration/Talkie-Info.plist";
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = \"com.Team01.Talkie\";\n    CFBundleURLSchemes =     (\n        myapp\n    );\n}";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
