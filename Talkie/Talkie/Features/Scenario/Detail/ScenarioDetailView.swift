@@ -34,6 +34,7 @@ struct ScenarioDetailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .navigationDestination(isPresented: $isShowingInfoEditView) {
             if let scenario = viewModel.customScenario {
@@ -121,7 +122,7 @@ struct ScenarioDetailView: View {
 
                     Text("발화자 | \(viewModel.content.callerName)")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.grey300)
+                        .foregroundColor(.grey500)
                 }
 
                 Spacer()
@@ -133,12 +134,16 @@ struct ScenarioDetailView: View {
                         viewModel.isPlayingAll ? "정지" : "전체 듣기",
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
-                    .font(.system(size: 13, weight: .bold))
+                    .font(Font.custom("Pretendard", size: 16).weight(.semibold))
                     .foregroundColor(.main500)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 16)
+                    .padding(.vertical, 10)
+                    .background(Constants.main200A5)
+                    .cornerRadius(69.23077)
                     .overlay {
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 69.23077)
+                            .inset(by: 0.5)
                             .stroke(.main500, lineWidth: 1)
                     }
                 }

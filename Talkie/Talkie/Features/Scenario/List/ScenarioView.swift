@@ -14,6 +14,10 @@ struct ScenarioView: View {
 
     @State private var isShowingCreateView = false
 
+    private var totalScenarioCount: Int {
+        PresetScenarioCatalog.all.count + scenarios.count
+    }
+
     var body: some View {
         NavigationStack {
             DarkScreen {
@@ -43,7 +47,7 @@ struct ScenarioView: View {
                     .padding(.top, 32)
 
 
-                    Text("총 \(scenarios.count)개")
+                    Text("총 \(totalScenarioCount)개")
                         .font(Font.custom("Pretendard", size: 16).weight(.semibold))
                         .foregroundColor(Constants.textTertiary)
                         .frame(width: 95, height: 24, alignment: .leading)

@@ -17,6 +17,7 @@ struct SafetyContactDetailView: View {
     @State private var name: String
     @State private var phoneNumber: String
     @State private var shouldShareLocation: Bool
+    @State private var isShowingDeleteConfirmation = false
 
     init(contact: SafetyContact?) {
         self.contact = contact
@@ -31,75 +32,86 @@ struct SafetyContactDetailView: View {
     }
 
     var body: some View {
-        DarkScreen {
-            VStack(alignment: .leading, spacing: 0) {
-                // 상단 네비게이션 바
-                DepthNavigationBar {
-                    dismiss()
-                } trailingContent: {
-                    Button {
-                        saveContact()
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(Constants.grey800)
-                            .frame(width:40, height:40)
-                            .background(Constants.main500)
-                            .clipShape(Circle())
-                    }
-                    .disabled(!isFormValid)
-                    .accessibilityLabel("연락망 저장")
-                }
-
-                // 메인 입려 폼 영역
-                VStack(alignment: .leading, spacing: 28) {
-                    // 이름 입력 섹션
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("이름")
-                            .font(Font.custom("Pretendard", size: 14).weight(.medium))
-                            .foregroundColor(Constants.textSecondary)
-
-                        contactTextField(
-                            placeholder: "이름을 입력해주세요",
-                            text: $name
-                        )
+        ZStack {
+            DarkScreen {
+                VStack(alignment: .leading, spacing: 0) {
+                    // 상단 네비게이션 바
+                    DepthNavigationBar {
+                        dismiss()
+                    } trailingContent: {
+                        Button {
+                            saveContact()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(Constants.grey800)
+                                .frame(width:40, height:40)
+                                .background(Constants.main500)
+                                .clipShape(Circle())
+                        }
+                        .disabled(!isFormValid)
+                        .accessibilityLabel("연락망 저장")
                     }
 
-                    // 연락처 입력 섹션
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("연락처")
-                            .font(Font.custom("Pretendard", size: 14).weight(.medium))
-                            .foregroundColor(Constants.textSecondary)
-
-                        contactTextField(
-                            placeholder: "전화번호를 입력해주세요",
-                            text: formattedPhoneNumber,
-                            keyboardType: .phonePad
-                        )
-                    }
-
-                    Toggle(isOn: $shouldShareLocation) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("위치 공유 문자 보내기")
-                                .font(Font.custom("Pretendard", size: 16).weight(.medium))
-                                .foregroundColor(Constants.grey100)
-
-                            Text("SOS 탭에서 위치 공유를 실행하면 이 연락처로 문자가 전송됩니다.")
-                                .font(Font.custom("Pretendard", size: 13))
+                    // 메인 입력 폼 영역
+                    VStack(alignment: .leading, spacing: 28) {
+                        // 이름 입력 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("이름")
+                                .font(Font.custom("Pretendard", size: 14).weight(.medium))
                                 .foregroundColor(Constants.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+
+                            contactTextField(
+                                placeholder: "이름을 입력해주세요",
+                                text: $name
+                            )
+                        }
+
+                        // 연락처 입력 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("연락처")
+                                .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                                .foregroundColor(Constants.textSecondary)
+
+                            contactTextField(
+                                placeholder: "전화번호를 입력해주세요",
+                                text: formattedPhoneNumber,
+                                keyboardType: .phonePad
+                            )
+                        }
+
+                        Toggle(isOn: $shouldShareLocation) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("위치 공유 문자 보내기")
+                                    .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                                    .foregroundColor(Constants.grey100)
+
+                                Text("SOS 탭에서 위치 공유를 실행하면 이 연락처로 문자가 전송됩니다.")
+                                    .font(Font.custom("Pretendard", size: 13))
+                                    .foregroundColor(Constants.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .toggleStyle(.switch)
+                        .tint(Constants.main500)
+                        .padding(16)
+                        .background(Constants.surfaceTextField)
+                        .cornerRadius(16)
+
+                        Spacer()
+
+                        if contact != nil {
+                            deleteButton
                         }
                     }
-                    .toggleStyle(.switch)
-                    .tint(Constants.main500)
-                    .padding(16)
-                    .background(Constants.surfaceTextField)
-                    .cornerRadius(16)
-
-                    Spacer()
+                    .padding(.horizontal, 16) // 네비게이션 바 버튼과 라인을 일치시킵니다.
+                    .padding(.top, 24)
+                    .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 16) // 네비게이션 바 버튼과 라인을 일치시킵니다.
-                .padding(.top, 24)
+            }
+
+            if isShowingDeleteConfirmation {
+                deleteConfirmationOverlay
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -134,10 +146,115 @@ struct SafetyContactDetailView: View {
             print("안전 연락망 저장 실패: \(error.localizedDescription)")
         }
     }
+
+    private func requestDeleteContact() {
+        isShowingDeleteConfirmation = true
+    }
+
+    private func cancelDeleteContact() {
+        isShowingDeleteConfirmation = false
+    }
+
+    private func confirmDeleteContact() {
+        guard let contact else {
+            isShowingDeleteConfirmation = false
+            return
+        }
+
+        modelContext.delete(contact)
+
+        do {
+            try modelContext.save()
+            isShowingDeleteConfirmation = false
+            dismiss()
+        } catch {
+            modelContext.rollback()
+            isShowingDeleteConfirmation = false
+            print("안전 연락망 삭제 실패: \(error.localizedDescription)")
+        }
+    }
 }
 
 // MARK: - Helper Views
 private extension SafetyContactDetailView {
+    var deleteButton: some View {
+        Button(action: requestDeleteContact) {
+            Text("삭제하기")
+                .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                .foregroundColor(Constants.textPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 16)
+                .background(Constants.primaryNormal)
+                .cornerRadius(16)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("안전 연락망 삭제")
+    }
+
+    var deleteConfirmationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.62)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    cancelDeleteContact()
+                }
+
+            VStack(alignment: .center, spacing: 20) {
+                VStack(alignment: .center, spacing: 6) {
+                    Text("연락망을 삭제하시겠습니까?")
+                        .font(Font.custom("Pretendard", size: 18).weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(Constants.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .top)
+
+                    Text("다시 복구할 수 없습니다.")
+                        .font(Font.custom("Pretendard", size: 14))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(Constants.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+
+                Image("Group 18")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 90, height: 83)
+
+                HStack(alignment: .center, spacing: 10) {
+                    Button(action: cancelDeleteContact) {
+                        Text("취소")
+                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .foregroundColor(Constants.textInverse)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 44)
+                            .padding(.vertical, 10)
+                            .background(Constants.surfaceDisable)
+                            .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: confirmDeleteContact) {
+                        Text("삭제하기")
+                            .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                            .foregroundColor(Constants.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 44)
+                            .padding(.vertical, 10)
+                            .background(Constants.primaryNormal)
+                            .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 32)
+            .padding(.bottom, 16)
+            .frame(width: 336, alignment: .top)
+            .background(Constants.bgRegular)
+            .cornerRadius(24)
+        }
+    }
+
     var formattedPhoneNumber: Binding<String> {
         Binding(
             get: {

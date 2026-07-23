@@ -58,7 +58,6 @@ struct ScenarioCreateView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 36)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .background(Constants.bgRegular)
                 
                 Spacer()
                 
@@ -82,6 +81,7 @@ struct ScenarioCreateView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .alert(
             "저장 실패",
             isPresented: Binding(

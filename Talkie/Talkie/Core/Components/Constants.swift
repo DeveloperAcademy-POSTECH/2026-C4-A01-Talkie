@@ -15,6 +15,7 @@ struct Constants {
     static let grey700 = Color("grey 700")
     static let grey800 = Color("grey 800")
     static let main500 = Color("main 500")
+    static let main200A5 = Color("main 500").opacity(0.05)
     static let main500A0 = Color("main 500").opacity(0)
     static let main500A32 = Color("main 500").opacity(0.32)
     static let bgRegular = Color("grey 800")

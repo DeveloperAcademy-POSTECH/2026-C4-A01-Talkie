@@ -46,6 +46,7 @@ struct ScenarioInfoEditView: View {
                         text: $callerName
                     )
                 }
+                .padding(.horizontal, 16)
 
                 Spacer()
 
@@ -66,6 +67,7 @@ struct ScenarioInfoEditView: View {
             .padding(.bottom, 32)
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .alert(
             "저장 실패",
@@ -93,8 +95,8 @@ struct ScenarioInfoEditView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(.custom("Pretendard", size: 14).weight(.medium))
-                .foregroundColor(Constants.grey300)
+                .font(.custom("Pretendard", size: 16))
+                .foregroundColor(Constants.grey500)
 
             TextField("", text: text, prompt: Text(placeholder).foregroundColor(.white.opacity(0.16)))
                 .font(.custom("Pretendard", size: 16))

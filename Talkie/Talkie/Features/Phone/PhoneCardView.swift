@@ -89,7 +89,7 @@ private extension PhoneCardView {
                 
                 Text("발화자 | \(scenario.callerName)")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.56))
+                    .foregroundStyle(.white.opacity(0.42))
                     .lineLimit(1)
             }
         } else {

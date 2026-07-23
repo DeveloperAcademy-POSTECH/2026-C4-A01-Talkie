@@ -87,7 +87,7 @@ private struct MyPageMenuSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.system(size: 17, weight: .bold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Constants.grey300.opacity(0.72))
 
             content
@@ -120,7 +120,7 @@ private struct MyPageNavigationRow: View {
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 64)
-        .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 18))
+        .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 28))
         .contentShape(Rectangle())
     }
 }
@@ -136,7 +136,7 @@ private struct MyPageToggleRow: View {
             .tint(Color(red: 0.20, green: 0.78, blue: 0.35))
             .padding(.horizontal, 20)
             .frame(minHeight: 64)
-            .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 18))
+            .background(Constants.grey700, in: RoundedRectangle(cornerRadius: 28))
     }
 }
 

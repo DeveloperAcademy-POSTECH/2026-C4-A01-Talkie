@@ -15,7 +15,7 @@ struct DepthNavigationBar<TrailingContent: View>: View {
     private let horizontalPadding: CGFloat = 8
     private let topPadding: CGFloat = 12
     private let dividerTopSpacing: CGFloat = 12
-    private let buttonSize: CGFloat = 44
+    private let buttonSize: CGFloat = 40
 
     init(
         title: String? = nil,

@@ -22,7 +22,7 @@ struct ScriptEditView: View {
     init(
         scenario: Scenario,
         modelContext: ModelContext,
-        actionButtonTitle: String = "대화 생성",
+        actionButtonTitle: String = "시나리오 생성",
         onComplete: (() -> Void)? = nil
     ) {
         _viewModel = State(
@@ -38,14 +38,18 @@ struct ScriptEditView: View {
                 navigationBar
                 recordingProgressHeader
                 scriptLineList
-                bottomActionButton
             }
+            .disabled(isShowingDeleteConfirmation)
 
             if isShowingDeleteConfirmation {
                 deleteConfirmationOverlay
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            bottomActionButton
+        }
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .alert(
             "저장 실패",
@@ -79,6 +83,7 @@ struct ScriptEditView: View {
                 if isEditingScripts {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(Constants.grey800)
                         .frame(width: 36, height: 36)
                         .background(Constants.main500)
                         .clipShape(Circle())
@@ -92,6 +97,7 @@ struct ScriptEditView: View {
                         .cornerRadius(40)
                 }
             }
+            .buttonStyle(.plain)
         } else {
             Text("읽기 전용")
                 .font(.system(size: 14, weight: .medium))
@@ -144,7 +150,7 @@ struct ScriptEditView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .listRowInsets(
-                    EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                    EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
                 )
                 .deleteDisabled(!isEditingScripts || !viewModel.canEditScripts)
                 .moveDisabled(!isEditingScripts || !viewModel.canEditScripts)
@@ -158,12 +164,12 @@ struct ScriptEditView: View {
                 requestDelete(offsets)
             }
 
-            if viewModel.canEditScripts {
+            if viewModel.canEditScripts && !isEditingScripts {
                 addScriptLineButton
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(
-                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                        EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
                     )
             }
         }
@@ -210,7 +216,9 @@ struct ScriptEditView: View {
                 .cornerRadius(16)
         }
         .padding(.horizontal, 16)
+        .padding(.top, 12)
         .padding(.bottom, 16)
+        .background(Color.black)
     }
 
     private var deleteConfirmationOverlay: some View {
@@ -252,6 +260,7 @@ struct ScriptEditView: View {
                             .background(Constants.surfaceDisable)
                             .cornerRadius(12)
                     }
+                    .buttonStyle(.plain)
 
                     Button(action: confirmPendingDeletion) {
                         Text("삭제하기")
@@ -263,6 +272,7 @@ struct ScriptEditView: View {
                             .background(Constants.primaryNormal)
                             .cornerRadius(12)
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 16)

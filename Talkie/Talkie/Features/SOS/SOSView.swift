@@ -130,7 +130,6 @@ private extension SOSView {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
-        .background(Constants.bgRegular)
     }
 
     var dangerTitle: some View {

@@ -64,6 +64,7 @@ struct SafetyContactListView: View {
                     isShowingAddContact = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 24, weight: .semibold))
                         .frame(width:36, height:36)
                 }
             }
