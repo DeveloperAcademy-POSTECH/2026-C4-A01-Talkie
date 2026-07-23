@@ -63,7 +63,7 @@ struct ScenarioCreateView: View {
                 
                 // 6. 하단 '다음으로' 버튼
                 Button {
-                    viewModel.saveInitialScenario(modelContext: modelContext)
+                    viewModel.prepareInitialScenario()
                 } label: {
                     HStack(alignment: .center, spacing: 10) {
                         Text("다음으로")
@@ -97,7 +97,8 @@ struct ScenarioCreateView: View {
             if let scenario = viewModel.createdScenario {
                 ScriptEditView(
                     scenario: scenario,
-                    modelContext: modelContext
+                    modelContext: modelContext,
+                    insertsScenarioOnComplete: true
                 ) {
                     viewModel.shouldNavigateToScriptEdit = false
 

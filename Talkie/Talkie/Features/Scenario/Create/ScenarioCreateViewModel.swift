@@ -21,7 +21,7 @@ final class ScenarioCreateViewModel {
         !trimmedScenarioTitle.isEmpty && !trimmedCallerName.isEmpty
     }
     
-    func saveInitialScenario(modelContext: ModelContext) {
+    func prepareInitialScenario() {
         guard isFormValid else {
             errorMessage = "시나리오 제목과 발화자를 모두 입력해주세요."
             return
@@ -38,16 +38,8 @@ final class ScenarioCreateViewModel {
         }
         
         scenario.scriptLines = scriptLines
-        modelContext.insert(scenario)
-        
-        do {
-            try modelContext.save()
-            createdScenario = scenario
-            shouldNavigateToScriptEdit = true
-        } catch {
-            errorMessage = "시나리오를 저장하지 못했습니다."
-            print("시나리오 저장 실패: \(error.localizedDescription)")
-        }
+        createdScenario = scenario
+        shouldNavigateToScriptEdit = true
     }
     
     private var trimmedScenarioTitle: String {

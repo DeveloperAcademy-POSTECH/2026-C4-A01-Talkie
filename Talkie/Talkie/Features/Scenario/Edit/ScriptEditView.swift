@@ -15,6 +15,7 @@ struct ScriptEditView: View {
     @State private var isEditingScripts = false
     @State private var pendingDeleteOffsets: IndexSet?
     @State private var isShowingDeleteConfirmation = false
+    @FocusState private var focusedScriptLineID: PersistentIdentifier?
 
     private let actionButtonTitle: String
     private let onComplete: (() -> Void)?
@@ -23,10 +24,15 @@ struct ScriptEditView: View {
         scenario: Scenario,
         modelContext: ModelContext,
         actionButtonTitle: String = "시나리오 생성",
+        insertsScenarioOnComplete: Bool = false,
         onComplete: (() -> Void)? = nil
     ) {
         _viewModel = State(
-            initialValue: ScriptEditViewModel(scenario: scenario, modelContext: modelContext)
+            initialValue: ScriptEditViewModel(
+                scenario: scenario,
+                modelContext: modelContext,
+                insertsScenarioOnComplete: insertsScenarioOnComplete
+            )
         )
         self.actionButtonTitle = actionButtonTitle
         self.onComplete = onComplete
@@ -34,6 +40,13 @@ struct ScriptEditView: View {
 
     var body: some View {
         ZStack {
+            Color.black
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboard()
+                }
+
             VStack(alignment: .leading, spacing: 0) {
                 navigationBar
                 recordingProgressHeader
@@ -45,7 +58,7 @@ struct ScriptEditView: View {
                 deleteConfirmationOverlay
             }
         }
-        .safeAreaInset(edge: .bottom) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             bottomActionButton
         }
         .navigationBarBackButtonHidden(true)
@@ -137,6 +150,7 @@ struct ScriptEditView: View {
                     isRecording: viewModel.isRecording(scriptLine),
                     isEditing: isEditingScripts,
                     isReadOnly: viewModel.isPresetScenario,
+                    focusedScriptLineID: $focusedScriptLineID,
                     onPlay: {
                         viewModel.playRecording(for: scriptLine)
                     },
@@ -175,6 +189,7 @@ struct ScriptEditView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .environment(
             \.editMode,
             .constant(isEditingScripts ? EditMode.active : EditMode.inactive)
@@ -285,6 +300,7 @@ struct ScriptEditView: View {
     }
 
     private func requestDelete(_ offsets: IndexSet) {
+        dismissKeyboard()
         pendingDeleteOffsets = offsets
         isShowingDeleteConfirmation = true
     }
@@ -302,6 +318,10 @@ struct ScriptEditView: View {
         viewModel.deleteScriptLines(at: pendingDeleteOffsets)
         self.pendingDeleteOffsets = nil
         isShowingDeleteConfirmation = false
+    }
+
+    private func dismissKeyboard() {
+        focusedScriptLineID = nil
     }
 }
 

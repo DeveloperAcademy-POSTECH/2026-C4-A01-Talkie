@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
     let isEditing: Bool
     let isReadOnly: Bool
+    let focusedScriptLineID: FocusState<PersistentIdentifier?>.Binding
     let onPlay: () -> Void
     let onRecordToggle: () -> Void
     let onTextChange: (String) -> Void
@@ -28,7 +30,7 @@ struct ScriptLineCardView: View {
                     Spacer()
                 }
                 
-                if isEditing && !isReadOnly {
+                if shouldShowTextField {
                     TextField(
                         "",
                         text: scriptTextBinding,
@@ -38,6 +40,7 @@ struct ScriptLineCardView: View {
                     .font(.custom("Pretendard", size: 16))
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
+                    .focused(focusedScriptLineID, equals: scriptLine.persistentModelID)
                 } else {
                     if scriptLine.text.isEmpty {
                         placeholderText
@@ -76,6 +79,10 @@ struct ScriptLineCardView: View {
 
     private var showsTrailingControls: Bool {
         !isEditing && !isReadOnly
+    }
+
+    private var shouldShowTextField: Bool {
+        !isReadOnly
     }
     
     private var textColor: Color {

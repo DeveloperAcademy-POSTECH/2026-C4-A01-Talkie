@@ -51,6 +51,21 @@
 			);
 			target = 41092DBD301007C900F61DCF /* CallShortcutWidgetExtension */;
 		};
+		41093C9E3011EEA300F61DCF /* Exceptions for "Talkie" folder in "CallShortcutWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Resources/Font/Pretendard-Black.otf",
+				"Resources/Font/Pretendard-Bold.otf",
+				"Resources/Font/Pretendard-ExtraBold.otf",
+				"Resources/Font/Pretendard-ExtraLight.otf",
+				"Resources/Font/Pretendard-Light.otf",
+				"Resources/Font/Pretendard-Medium.otf",
+				"Resources/Font/Pretendard-Regular.otf",
+				"Resources/Font/Pretendard-SemiBold.otf",
+				"Resources/Font/Pretendard-Thin.otf",
+			);
+			target = 41092DBD301007C900F61DCF /* CallShortcutWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -64,6 +79,9 @@
 		};
 		41A2E09B2FFFCF4000235021 /* Talkie */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				41093C9E3011EEA300F61DCF /* Exceptions for "Talkie" folder in "CallShortcutWidgetExtension" target */,
+			);
 			path = Talkie;
 			sourceTree = "<group>";
 		};

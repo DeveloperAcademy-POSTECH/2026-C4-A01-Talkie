@@ -22,16 +22,10 @@ struct ScenarioView: View {
         NavigationStack {
             DarkScreen {
                 VStack(spacing: 0) {
-                    HStack(alignment: .center) {
-                        Text("시나리오")
-                            .font(Font.custom("Pretendard", size: 24).weight(.semibold))
-                            .foregroundColor(Constants.textPrimary)
-
-                        Spacer()
-
-                        Button{
+                    MainTabHeader(title: "시나리오") {
+                        Button {
                             isShowingCreateView = true
-                        } label : {
+                        } label: {
                             Image(systemName: "plus")
                                 .font(Font.custom("SF Pro", size: 20).weight(.medium))
                                 .multilineTextAlignment(.center)
@@ -40,10 +34,8 @@ struct ScenarioView: View {
                         }
                         .buttonStyle(.glass)
                         .buttonBorderShape(.circle)
+                        .accessibilityLabel("시나리오 추가")
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
                     .padding(.top, 32)
 
 

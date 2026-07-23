@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SOSError: Error {
+enum SOSError: Error, Equatable {
     case locationPermissionDenied
     case locationUnavailable
     case noEmergencyContacts
