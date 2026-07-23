@@ -86,18 +86,9 @@ struct ScenarioDetailView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
-
+        DepthNavigationBar {
+            dismiss()
+        } trailingContent: {
             if viewModel.canManageScenario {
                 Menu {
                     Button("제목/발화자 수정") {
@@ -113,7 +104,7 @@ struct ScenarioDetailView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(.grey100)
                         .frame(width: 44, height: 44)
                 }
@@ -121,8 +112,6 @@ struct ScenarioDetailView: View {
                 .buttonBorderShape(.circle)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
     }
 
     private var scenarioHeader: some View {

@@ -29,80 +29,57 @@ struct MyPageView: View {
             Constants.grey800
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 36) {
-                    MyPageHeader(title: "마이페이지", onBack: dismiss.callAsFunction)
+            VStack(spacing: 0) {
+                DepthNavigationBar(title: "마이페이지") {
+                    dismiss()
+                }
 
-                    MyPageMenuSection(title: "안전 연락망") {
-                        NavigationLink {
-                            SafetyContactListView()
-                        } label: {
-                            MyPageNavigationRow(title: "안전 연락망 모두 보기")
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 36) {
+                        MyPageMenuSection(title: "안전 연락망") {
+                            NavigationLink {
+                                SafetyContactListView()
+                            } label: {
+                                MyPageNavigationRow(title: "안전 연락망 모두 보기")
+                            }
                         }
-                    }
 
-                    MyPageMenuSection(title: "이전 통화내역 보기") {
-                        NavigationLink {
-                            CallHistoryView()
-                        } label: {
-                            MyPageNavigationRow(
-                                title: "모든 통화내역 보기",
-                                trailingText: "\(recordedCallCount)"
+                        MyPageMenuSection(title: "이전 통화내역 보기") {
+                            NavigationLink {
+                                CallHistoryView()
+                            } label: {
+                                MyPageNavigationRow(
+                                    title: "모든 통화내역 보기",
+                                    trailingText: "\(recordedCallCount)"
+                                )
+                            }
+                        }
+
+                        MyPageMenuSection(title: "자동 녹음") {
+                            MyPageToggleRow(
+                                title: "가상 통화 시 자동 녹음",
+                                isOn: $isAutomaticRecordingEnabled
                             )
                         }
-                    }
 
-                    MyPageMenuSection(title: "자동 녹음") {
-                        MyPageToggleRow(
-                            title: "가상 통화 시 자동 녹음",
-                            isOn: $isAutomaticRecordingEnabled
-                        )
+                        MyPageMenuSection(title: "iCloud 동기화") {
+                            MyPageToggleRow(
+                                title: "iCloud 동기화",
+                                isOn: $isICloudSyncEnabled
+                            )
+                            .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
+                        }
                     }
-
-                    MyPageMenuSection(title: "iCloud 동기화") {
-                        MyPageToggleRow(
-                            title: "iCloud 동기화",
-                            isOn: $isICloudSyncEnabled
-                        )
-                        .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
-                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 36)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
             }
         }
         .preferredColorScheme(.dark)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
-    }
-}
-
-private struct MyPageHeader: View {
-    let title: String
-    let onBack: () -> Void
-
-    var body: some View {
-        ZStack {
-            Text(title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(.white)
-
-            HStack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .accessibilityLabel("뒤로")
-
-                Spacer()
-            }
-        }
-        .padding(.top, 10)
     }
 }
 

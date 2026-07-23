@@ -64,9 +64,9 @@ struct ScenarioInfoEditView: View {
                         .cornerRadius(16)
                 }
                 .disabled(!isFormValid)
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 32)
+            .padding(.bottom, 32)
         }
         .navigationBarBackButtonHidden(true)
         .preferredColorScheme(.dark)
@@ -84,17 +84,8 @@ struct ScenarioInfoEditView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
+        DepthNavigationBar {
+            dismiss()
         }
     }
 

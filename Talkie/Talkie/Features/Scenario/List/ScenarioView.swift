@@ -21,32 +21,38 @@ struct ScenarioView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    HStack {
+                    HStack(alignment: .center) {
                         Text("시나리오")
-                            .font(.largeTitle)
-                            .bold()
+                            .font(Font.custom("Pretendard", size: 24).weight(.semibold))
+                            .foregroundColor(Constants.textPrimary)
+
                         Spacer()
-                        
+
                         Button{
                             isShowingCreateView = true
                         } label : {
                             Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .semibold))
+                                .font(Font.custom("SF Pro", size: 24).weight(.semibold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Constants.textPrimary)
                                 .frame(width: 44, height: 44)
-                                .foregroundColor(.white)
                         }
                         .buttonStyle(.glass)
                         .buttonBorderShape(.circle)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 20)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
+                    .padding(.top, 32)
+
 
                     Text("총 \(scenarios.count)개")
                         .font(Font.custom("Pretendard", size: 16).weight(.semibold))
                         .foregroundColor(Constants.textTertiary)
                         .frame(width: 95, height: 24, alignment: .leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
 
                     ScrollView{
                         LazyVStack(spacing: 16) {
@@ -68,10 +74,11 @@ struct ScenarioView: View {
                                 .buttonStyle(.plain)
                             }
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 24)
             }
             .preferredColorScheme(.dark)
             .navigationDestination(isPresented: $isShowingCreateView) {
@@ -83,11 +90,3 @@ struct ScenarioView: View {
     }
 }
 
-#Preview {
-    ScenarioView()
-        .modelContainer(for: [
-            Scenario.self,
-            ScriptLine.self,
-            AudioClipMetadata.self
-        ], inMemory: true)
-}

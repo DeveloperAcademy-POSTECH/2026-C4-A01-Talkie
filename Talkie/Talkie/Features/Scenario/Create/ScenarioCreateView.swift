@@ -26,24 +26,13 @@ struct ScenarioCreateView: View {
             // 1. 피그마 전체 배경 톤 반영
             Constants.grey800
                 .ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading) {
                 
                 // 2. 커스텀 상단 뒤로가기 바 영역
-                HStack(alignment: .center, spacing: 10) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(Constants.grey100)
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.circle)
-                    Spacer()
+                DepthNavigationBar {
+                    dismiss()
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+
                 
                 // 3. 메인 타이틀
                 Text("시나리오 제목과 발화자를 입력해주세요.")
@@ -51,12 +40,13 @@ struct ScenarioCreateView: View {
                     .foregroundColor(Constants.grey100)
                     .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .topLeading)
                     .padding(.horizontal, 16)
+                    .padding(.top, 32)
                 
                 VStack(alignment: .leading, spacing: 32) {
                     // 4. 시나리오 제목 입력 섹션
                     scenarioTextField(
                         title: "시나리오 제목",
-                        placeholder: "예: 엄마와의 대화",
+                        placeholder: "엄마와의 대화",
                         text: $viewModel.scenarioTitle
                     )
 
@@ -93,7 +83,6 @@ struct ScenarioCreateView: View {
                 .disabled(!viewModel.isFormValid)
                 .padding(.horizontal, 16)
             }
-            .padding(.vertical, 32)
         }
         .navigationBarBackButtonHidden(true)
         .alert(

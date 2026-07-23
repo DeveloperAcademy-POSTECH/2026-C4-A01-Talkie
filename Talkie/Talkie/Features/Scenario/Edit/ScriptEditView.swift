@@ -64,28 +64,11 @@ struct ScriptEditView: View {
     }
 
     private var navigationBar: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-
-            Spacer()
-
-            Text(viewModel.scenario.title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.white)
-
-            Spacer()
-
+        DepthNavigationBar(title: viewModel.scenario.title) {
+            dismiss()
+        } trailingContent: {
             trailingNavigationControl
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
     }
 
     @ViewBuilder
@@ -100,7 +83,7 @@ struct ScriptEditView: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(Constants.grey800)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 36, height: 36)
                         .background(Constants.main500)
                         .clipShape(Circle())
                 } else {

@@ -11,64 +11,85 @@ import SwiftData
 struct SafetyContactDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    
+
     let contact: SafetyContact?
-    
+
     @State private var name: String
     @State private var phoneNumber: String
-    
+
     init(contact: SafetyContact?) {
         self.contact = contact
         _name = State(initialValue: contact?.name ?? "")
         _phoneNumber = State(initialValue: contact?.phoneNumber ?? "")
     }
-    
+
     var body: some View {
         ZStack {
             Color.black
                 .ignoresSafeArea()
-            
-            VStack(alignment: .leading, spacing: 28) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("이름")
-                        .foregroundStyle(.white.opacity(0.7))
-                    
-                    TextField("이름", text: $name)
-                        .textFieldStyle(.roundedBorder)
+
+            VStack(alignment: .leading, spacing: 0) {
+                // 상단 네비게이션 바
+                DepthNavigationBar {
+                    dismiss()
+                } trailingContent: {
+                    Button {
+                        saveContact()
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Constants.grey800)
+                            .frame(width: 44, height: 44)
+                            .background(Constants.main500)
+                            .clipShape(Circle())
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                              phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel("연락망 저장")
                 }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("연락처")
-                        .foregroundStyle(.white.opacity(0.7))
-                    
-                    TextField("전화번호", text: $phoneNumber)
-                        .keyboardType(.phonePad)
-                        .textFieldStyle(.roundedBorder)
+
+                // 메인 입려 폼 영역
+                VStack(alignment: .leading, spacing: 28) {
+                    // 이름 입력 섹션
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("이름")
+                            .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                            .foregroundColor(Constants.textSecondary)
+
+                        contactTextField(
+                            placeholder: "이름을 입력해주세요",
+                            text: $name
+                        )
+                    }
+
+                    // 연락처 입력 섹션
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("연락처")
+                            .font(Font.custom("Pretendard", size: 14).weight(.medium))
+                            .foregroundColor(Constants.textSecondary)
+
+                        contactTextField(
+                            placeholder: "전화번호를 입력해주세요",
+                            text: $phoneNumber,
+                            keyboardType: .phonePad
+                        )
+                    }
+
+                    Spacer()
                 }
-                
-                Spacer()
+                .padding(.horizontal, 16) // 네비게이션 바 버튼과 라인을 일치시킵니다.
+                .padding(.top, 24)
             }
-            .padding(20)
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    saveContact()
-                } label: {
-                    Image(systemName: "checkmark")
-                }
-                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                          phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-        }
-        .navigationTitle("연락망 상세")
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .preferredColorScheme(.dark)
     }
-    
+
     private func saveContact() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPhoneNumber = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if let contact {
             contact.name = trimmedName
             contact.phoneNumber = trimmedPhoneNumber
@@ -79,7 +100,7 @@ struct SafetyContactDetailView: View {
             )
             modelContext.insert(contact)
         }
-        
+
         do {
             try modelContext.save()
             dismiss()
@@ -89,10 +110,33 @@ struct SafetyContactDetailView: View {
     }
 }
 
+// MARK: - Helper Views
+private extension SafetyContactDetailView {
+    func contactTextField(
+        placeholder: String,
+        text: Binding<String>,
+        keyboardType: UIKeyboardType = .default
+    ) -> some View {
+        TextField(
+            "",
+            text: text,
+            prompt: Text(placeholder)
+                .foregroundColor(Constants.grey400)
+        )
+        .font(Font.custom("Pretendard", size: 16).weight(.medium))
+        .foregroundColor(Constants.grey100)
+        .keyboardType(keyboardType)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(Constants.surfaceTextField)
+        .cornerRadius(12)
+    }
+}
+
 #Preview {
     let container = try! PreviewContainerFactory.makeSafetyContactContainer()
     let contact = SafetyContact(name: "엄마", phoneNumber: "010-1234-5678")
-    
+
     return NavigationStack {
         SafetyContactDetailView(contact: contact)
     }

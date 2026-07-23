@@ -21,7 +21,7 @@ struct SafetyContactSetupView: View {
             Color.black
                 .ignoresSafeArea()
             
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("안심 연락망을 입력해주세요.")
                         .font(Font.custom("Pretendard", size: 24).weight(.semibold))
@@ -43,6 +43,7 @@ struct SafetyContactSetupView: View {
                         )
                     }
                 }
+                .padding(.top, 40)
                 
                 Button {
                     viewModel.addContactInput()
@@ -52,10 +53,12 @@ struct SafetyContactSetupView: View {
                         .foregroundColor(Constants.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.top, 40)
                 
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .foregroundStyle(.red)
+                        .padding(.top, 16)
                 }
                 
                 Spacer()
@@ -77,7 +80,9 @@ struct SafetyContactSetupView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .disabled(!viewModel.canStart)
             }
-            .padding(24)
+            .padding(.horizontal, 16)
+            .padding(.top, 120)
+            .padding(.bottom, 32)
         }
         .preferredColorScheme(.dark)
     }
