@@ -16,14 +16,23 @@ struct PhoneHomeContentView: View {
     let onStartCall: () -> Void
 
     var body: some View {
-        ZStack {
-            Constants.grey800
-                .ignoresSafeArea()
-
+        DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
-                PhoneHeaderView()
-                    .padding(.horizontal, 20)
-                    .padding(.top, 32)
+                MainTabHeader(title: "대화 선택") {
+                    NavigationLink {
+                        MyPageView()
+                    } label: {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundStyle(Constants.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 36, height: 36)
+                    }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .accessibilityLabel("마이페이지")
+                }
+                .padding(.top, 32)
 
                 if !isWidgetInstalled {
                     NavigationLink {
@@ -32,7 +41,7 @@ struct PhoneHomeContentView: View {
                         WidgetInstallBannerView()
                     }
                     .buttonStyle(.plain)
-                    .padding(.top, 24)
+                    .padding(.top, 12)
                 }
 
                 VStack(spacing: 20) {
@@ -43,35 +52,11 @@ struct PhoneHomeContentView: View {
 
                     StartFakeCallButton(action: onStartCall)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, isWidgetInstalled ? 84 : 40)
+                .padding(.horizontal, 24)
+                .padding(.top, isWidgetInstalled ? 52 : 32)
 
                 Spacer()
             }
-        }
-    }
-}
-
-private struct PhoneHeaderView: View {
-    var body: some View {
-        HStack {
-            Text("대화 선택")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(.white)
-
-            Spacer()
-
-            NavigationLink {
-                MyPageView()
-            } label: {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel("마이페이지")
         }
     }
 }
@@ -86,7 +71,7 @@ private struct StartFakeCallButton: View {
                     .font(.system(size: 16, weight: .bold))
 
                 Text("전화하기")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.pretendard(.bold, size: 16))
             }
             .foregroundStyle(Color.green)
             .padding(.horizontal, 10)

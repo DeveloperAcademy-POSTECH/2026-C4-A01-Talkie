@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct SOSView: View {
     @State private var sosManager = SOSManager()
@@ -18,14 +19,14 @@ struct SOSView: View {
     var body: some View {
         DarkScreen {
             VStack(alignment: .leading, spacing: 0) {
-                sosHeader
+                MainTabHeader(title: "SOS")
                     .padding(.top, 32)
 
                 VStack(alignment: .leading, spacing: 28) {
                     dangerTitle
 
                     Text("아래 버튼을 눌러 현재 위치 공유 또는 신고를 선택할 수 있어요.")
-                        .font(Font.custom("Pretendard", size: 14))
+                        .font(.pretendard(.regular, size: 14))
                         .foregroundColor(Constants.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                         .lineLimit(nil)
@@ -105,6 +106,13 @@ struct SOSView: View {
                 }
             )
         ) {
+            if sosManager.currentError == .locationPermissionDenied {
+                Button("설정 열기") {
+                    openAppSettings()
+                    sosManager.currentError = nil
+                }
+            }
+
             Button("확인", role: .cancel) { }
         } message: {
             Text(sosManager.currentError?.message ?? "")
@@ -119,19 +127,6 @@ private enum SOSAction {
 }
 
 private extension SOSView {
-    var sosHeader: some View {
-        HStack(alignment: .center) {
-            Text("SOS")
-                .font(Font.custom("Pretendard", size: 24).weight(.semibold))
-                .foregroundColor(Constants.textPrimary)
-
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
-    }
-
     var dangerTitle: some View {
         HStack(spacing: 0) {
             Text("지금 ")
@@ -140,7 +135,7 @@ private extension SOSView {
             Text("위험하신가요?")
                 .foregroundColor(Constants.primaryNormal)
         }
-        .font(Font.custom("Pretendard", size: 28).weight(.semibold))
+        .font(.pretendard(.semiBold, size: 28))
     }
 
     func actionRow(
@@ -155,7 +150,7 @@ private extension SOSView {
                 .frame(width: 36, height: 36)
 
             Text(title)
-                .font(Font.custom("Pretendard", size: 20).weight(.semibold))
+                .font(.pretendard(.semiBold, size: 20))
                 .foregroundColor(isHighlighted ? Constants.primaryNormal : Constants.textPrimary)
 
             Spacer()
@@ -186,13 +181,21 @@ private extension SOSView {
                 .padding(.top, 2)
 
             Text("허위 신고 시 형법 제137조(위계에 의한 공무집행방해) 및 112신고의 운영 및 처리에 관한 법률 제18조(500만원 이하 과태료)에 따라 처벌 받을 수 있습니다.")
-                .font(Font.custom("Pretendard", size: 12))
+                .font(.pretendard(.regular, size: 12))
                 .foregroundColor(Constants.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .lineSpacing(4)
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    func openAppSettings() {
+        guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else {
+            return
+        }
+
+        UIApplication.shared.open(settingsURL)
     }
 }
 

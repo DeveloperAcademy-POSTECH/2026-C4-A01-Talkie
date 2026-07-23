@@ -90,13 +90,13 @@ struct CallShortcutWidgetEntryView: View {
         VStack(alignment: .center, spacing: 20) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(entry.scenarioTitle)
-                    .font(Font.custom("Pretendard", size: 16).weight(.medium))
+                    .font(.pretendard(.medium, size: 16))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Text(entry.callerName)
-                    .font(Font.custom("Pretendard", size: 14))
+                    .font(.pretendard(.regular, size: 14))
                     .foregroundColor(WidgetColor.grey400)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .topLeading)

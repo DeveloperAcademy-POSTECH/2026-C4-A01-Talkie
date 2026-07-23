@@ -39,11 +39,11 @@ struct IncomingFakeCallView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("휴대전화")
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.pretendard(.medium, size: 22))
                     .foregroundStyle(.white.opacity(0.58))
 
                 Text(profile.displayName)
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.pretendard(.bold, size: 34))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.62)
@@ -160,7 +160,7 @@ private struct CallActionButton: View {
             .contentShape(Circle())
 
             Text(title)
-                .font(.system(size: 17, weight: .regular))
+                .font(.pretendard(.regular, size: 17))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

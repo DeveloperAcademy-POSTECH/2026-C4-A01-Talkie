@@ -51,10 +51,18 @@
 			);
 			target = 41092DBD301007C900F61DCF /* CallShortcutWidgetExtension */;
 		};
-		D1A300152FFFCF4000235021 /* Exceptions for "TalkieLiveActivity" folder in "CallShortcutWidgetExtension" target */ = {
+		41093C9E3011EEA300F61DCF /* Exceptions for "Talkie" folder in "CallShortcutWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				TalkieLiveActivityBundle.swift,
+				"Resources/Font/Pretendard-Black.otf",
+				"Resources/Font/Pretendard-Bold.otf",
+				"Resources/Font/Pretendard-ExtraBold.otf",
+				"Resources/Font/Pretendard-ExtraLight.otf",
+				"Resources/Font/Pretendard-Light.otf",
+				"Resources/Font/Pretendard-Medium.otf",
+				"Resources/Font/Pretendard-Regular.otf",
+				"Resources/Font/Pretendard-SemiBold.otf",
+				"Resources/Font/Pretendard-Thin.otf",
 			);
 			target = 41092DBD301007C900F61DCF /* CallShortcutWidgetExtension */;
 		};
@@ -71,6 +79,9 @@
 		};
 		41A2E09B2FFFCF4000235021 /* Talkie */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				41093C9E3011EEA300F61DCF /* Exceptions for "Talkie" folder in "CallShortcutWidgetExtension" target */,
+			);
 			path = Talkie;
 			sourceTree = "<group>";
 		};
@@ -493,6 +504,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIAppFonts = "Pretendard-Black.otf Pretendard-Bold.otf Pretendard-ExtraBold.otf Pretendard-ExtraLight.otf Pretendard-Light.otf Pretendard-Medium.otf Pretendard-Regular.otf Pretendard-SemiBold.otf Pretendard-Thin.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = audio;
@@ -538,6 +550,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "안전 연락망에 현재 위치를 공유하기 위해 위치 정보를 사용합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "가상 통화의 자연스러운 진행과 사용자가 켠 자동 녹음 기능을 위해 마이크를 사용합니다. 녹음은 기기에 저장되며 마이페이지에서 재생하거나 삭제할 수 있습니다.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIAppFonts = "Pretendard-Black.otf Pretendard-Bold.otf Pretendard-ExtraBold.otf Pretendard-ExtraLight.otf Pretendard-Light.otf Pretendard-Medium.otf Pretendard-Regular.otf Pretendard-SemiBold.otf Pretendard-Thin.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = audio;

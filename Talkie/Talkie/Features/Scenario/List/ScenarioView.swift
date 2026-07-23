@@ -22,33 +22,25 @@ struct ScenarioView: View {
         NavigationStack {
             DarkScreen {
                 VStack(spacing: 0) {
-                    HStack(alignment: .center) {
-                        Text("시나리오")
-                            .font(Font.custom("Pretendard", size: 24).weight(.semibold))
-                            .foregroundColor(Constants.textPrimary)
-
-                        Spacer()
-
-                        Button{
+                    MainTabHeader(title: "시나리오") {
+                        Button {
                             isShowingCreateView = true
-                        } label : {
+                        } label: {
                             Image(systemName: "plus")
-                                .font(Font.custom("SF Pro", size: 20).weight(.medium))
+                                .font(.system(size: 24, weight: .medium))
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Constants.textPrimary)
-                                .frame(width: 40, height: 40)
+                                .frame(width: 36, height: 36)
                         }
                         .buttonStyle(.glass)
                         .buttonBorderShape(.circle)
+                        .accessibilityLabel("시나리오 추가")
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity, minHeight: 68, maxHeight: 68, alignment: .topLeading)
                     .padding(.top, 32)
 
 
                     Text("총 \(totalScenarioCount)개")
-                        .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 16))
                         .foregroundColor(Constants.textTertiary)
                         .frame(width: 95, height: 24, alignment: .leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -57,20 +49,20 @@ struct ScenarioView: View {
 
                     ScrollView{
                         LazyVStack(spacing: 16) {
-                            ForEach(PresetScenarioCatalog.all) { preset in
-                                NavigationLink {
-                                    ScenarioDetailView(preset: preset)
-                                } label: {
-                                    ScenarioCardView(scenario: preset.content)
-                                }
-                                .buttonStyle(.plain)
-                            }
-
                             ForEach(scenarios) { scenario in
                                 NavigationLink {
                                     ScenarioDetailView(scenario: scenario)
                                 } label: {
                                     ScenarioCardView(scenario: scenario.content)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            ForEach(PresetScenarioCatalog.all) { preset in
+                                NavigationLink {
+                                    ScenarioDetailView(preset: preset)
+                                } label: {
+                                    ScenarioCardView(scenario: preset.content)
                                 }
                                 .buttonStyle(.plain)
                             }

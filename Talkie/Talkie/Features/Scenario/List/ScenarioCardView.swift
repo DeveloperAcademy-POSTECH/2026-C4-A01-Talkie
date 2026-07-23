@@ -15,13 +15,13 @@ struct ScenarioCardView: View {
         VStack(alignment: .leading, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(scenario.title)
-                    .font(Font.custom("Pretendard", size: 18).weight(.semibold))
+                    .font(.pretendard(.semiBold, size: 18))
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text("발화자  \(scenario.callerName)")
-                    .font(Font.custom("Pretendard", size: 14))
+                    .font(.pretendard(.regular, size: 14))
                     .foregroundColor(Constants.grey500)
                     .lineLimit(1)
             }
@@ -31,7 +31,7 @@ struct ScenarioCardView: View {
                 .frame(height: 1)
             
             Text(joinedScriptLines)
-                .font(Font.custom("Pretendard", size: 14))
+                .font(.pretendard(.regular, size: 14))
                 .foregroundColor(Constants.textSecondary)
                 .lineLimit(2)
                 .lineSpacing(4)

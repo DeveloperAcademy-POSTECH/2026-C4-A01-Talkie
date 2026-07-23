@@ -54,7 +54,7 @@ struct ScenarioInfoEditView: View {
                     saveScenarioInfo()
                 } label: {
                     Text("수정하기")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.pretendard(.bold, size: 18))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -95,11 +95,11 @@ struct ScenarioInfoEditView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(title)
-                .font(.custom("Pretendard", size: 16))
+                .font(.pretendard(.regular, size: 16))
                 .foregroundColor(Constants.grey500)
 
             TextField("", text: text, prompt: Text(placeholder).foregroundColor(.white.opacity(0.16)))
-                .font(.custom("Pretendard", size: 16))
+                .font(.pretendard(.regular, size: 16))
                 .foregroundColor(.white)
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .topLeading)

@@ -104,7 +104,7 @@ struct ScenarioDetailView: View {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(.grey100)
-                        .frame(width:40, height:40)
+                        .frame(width:36, height:36)
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
@@ -117,11 +117,11 @@ struct ScenarioDetailView: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.content.title)
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.pretendard(.bold, size: 20))
                         .foregroundColor(.grey100)
 
                     Text("발화자 | \(viewModel.content.callerName)")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.pretendard(.medium, size: 14))
                         .foregroundColor(.grey500)
                 }
 
@@ -134,7 +134,7 @@ struct ScenarioDetailView: View {
                         viewModel.isPlayingAll ? "정지" : "전체 듣기",
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
-                    .font(Font.custom("Pretendard", size: 16).weight(.semibold))
+                    .font(.pretendard(.semiBold, size: 16))
                     .foregroundColor(.main500)
                     .padding(.leading, 12)
                     .padding(.trailing, 16)
@@ -170,7 +170,7 @@ struct ScenarioDetailView: View {
     private func scriptLineRow(_ scriptLine: ScenarioLineContent) -> some View {
         HStack(alignment: .center, spacing: 14) {
             Text(scriptLine.text)
-                .font(.custom("Pretendard", size: 16))
+                .font(.pretendard(.regular, size: 16))
                 .foregroundColor(.grey100)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)

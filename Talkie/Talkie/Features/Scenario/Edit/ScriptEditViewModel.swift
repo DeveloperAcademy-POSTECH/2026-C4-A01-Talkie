@@ -14,6 +14,8 @@ import SwiftUI
 @Observable
 final class ScriptEditViewModel {
     private let modelContext: ModelContext
+    private let insertsScenarioOnComplete: Bool
+    private var hasInsertedScenario = false
     private var audioRecorder: AVAudioRecorder?
     private var audioPlayer: AVAudioPlayer?
     private var recordingFileName: String?
@@ -25,10 +27,12 @@ final class ScriptEditViewModel {
 
     init(
         scenario: Scenario,
-        modelContext: ModelContext
+        modelContext: ModelContext,
+        insertsScenarioOnComplete: Bool = false
     ) {
         self.scenario = scenario
         self.modelContext = modelContext
+        self.insertsScenarioOnComplete = insertsScenarioOnComplete
     }
 
     // MARK: - View Data
@@ -172,7 +176,7 @@ final class ScriptEditViewModel {
         }
         
         scenario.scriptLines.removeAll { $0 === scriptLine }
-        modelContext.delete(scriptLine)
+        deleteFromModelContextIfNeeded(scriptLine)
         reassignSortOrders()
         saveChanges()
     }
@@ -273,6 +277,7 @@ final class ScriptEditViewModel {
         }
         
         stopPlayback()
+        insertScenarioIfNeeded()
         return saveChanges()
     }
     
@@ -382,6 +387,23 @@ final class ScriptEditViewModel {
     }
 
     // MARK: - Persistence
+
+    private func insertScenarioIfNeeded() {
+        guard insertsScenarioOnComplete, !hasInsertedScenario else {
+            return
+        }
+
+        modelContext.insert(scenario)
+        hasInsertedScenario = true
+    }
+
+    private func deleteFromModelContextIfNeeded(_ scriptLine: ScriptLine) {
+        guard !insertsScenarioOnComplete || hasInsertedScenario else {
+            return
+        }
+
+        modelContext.delete(scriptLine)
+    }
 
     @discardableResult
     private func saveChanges() -> Bool {

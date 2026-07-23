@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScriptLineCardView: View {
     let scriptLine: ScriptLine
     let isRecording: Bool
     let isEditing: Bool
     let isReadOnly: Bool
+    let focusedScriptLineID: FocusState<PersistentIdentifier?>.Binding
     let onPlay: () -> Void
     let onRecordToggle: () -> Void
     let onTextChange: (String) -> Void
@@ -28,22 +30,23 @@ struct ScriptLineCardView: View {
                     Spacer()
                 }
                 
-                if isEditing && !isReadOnly {
+                if shouldShowTextField {
                     TextField(
                         "",
                         text: scriptTextBinding,
                         prompt: placeholderText,
                         axis: .vertical
                     )
-                    .font(.custom("Pretendard", size: 16))
+                    .font(.pretendard(.regular, size: 16))
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
+                    .focused(focusedScriptLineID, equals: scriptLine.persistentModelID)
                 } else {
                     if scriptLine.text.isEmpty {
                         placeholderText
                     } else {
                         Text(scriptLine.text)
-                            .font(.custom("Pretendard", size: 16))
+                            .font(.pretendard(.regular, size: 16))
                             .foregroundColor(textColor)
                             .lineSpacing(4)
                             .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .topLeading)
@@ -76,6 +79,10 @@ struct ScriptLineCardView: View {
 
     private var showsTrailingControls: Bool {
         !isEditing && !isReadOnly
+    }
+
+    private var shouldShowTextField: Bool {
+        !isReadOnly
     }
     
     private var textColor: Color {
@@ -120,7 +127,7 @@ struct ScriptLineCardView: View {
 
     private var placeholderText: Text {
         Text("대화 내용을 입력하고 녹음해보세요.")
-            .font(Font.custom("Pretendard", size: 16))
+            .font(.pretendard(.regular, size: 16))
             .foregroundColor(Constants.textTertiary)
     }
     

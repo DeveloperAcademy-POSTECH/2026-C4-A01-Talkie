@@ -51,8 +51,7 @@ private extension OnboardingView {
                         onFinish()
                     } label: {
                         Text("다음으로")
-                            .font(.headline)
-                            .fontWeight(.semibold)
+                            .font(.pretendard(.semiBold, size: 17))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
