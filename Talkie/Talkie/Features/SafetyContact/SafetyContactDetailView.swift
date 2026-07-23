@@ -58,7 +58,7 @@ struct SafetyContactDetailView: View {
                         // 이름 입력 섹션
                         VStack(alignment: .leading, spacing: 8) {
                             Text("이름")
-                                .font(.pretendard(.medium, size: 14))
+                                .font(Font.pretendard(.medium, size: 14))
                                 .foregroundColor(Constants.textSecondary)
 
                             contactTextField(
@@ -70,7 +70,7 @@ struct SafetyContactDetailView: View {
                         // 연락처 입력 섹션
                         VStack(alignment: .leading, spacing: 8) {
                             Text("연락처")
-                                .font(.pretendard(.medium, size: 14))
+                                .font(Font.pretendard(.medium, size: 14))
                                 .foregroundColor(Constants.textSecondary)
 
                             contactTextField(
@@ -83,11 +83,11 @@ struct SafetyContactDetailView: View {
                         Toggle(isOn: $shouldShareLocation) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("위치 공유 문자 보내기")
-                                    .font(.pretendard(.medium, size: 16))
+                                    .font(Font.pretendard(.medium, size: 16))
                                     .foregroundColor(Constants.grey100)
 
                                 Text("SOS 탭에서 위치 공유를 실행하면 이 연락처로 문자가 전송됩니다.")
-                                    .font(.pretendard(.regular, size: 13))
+                                    .font(Font.pretendard(.regular, size: 13))
                                     .foregroundColor(Constants.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -180,7 +180,7 @@ private extension SafetyContactDetailView {
     var deleteButton: some View {
         Button(action: requestDeleteContact) {
             Text("삭제하기")
-                .font(.pretendard(.semiBold, size: 16))
+                .font(Font.pretendard(.semiBold, size: 16))
                 .foregroundColor(Constants.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 10)
@@ -203,13 +203,13 @@ private extension SafetyContactDetailView {
             VStack(alignment: .center, spacing: 20) {
                 VStack(alignment: .center, spacing: 6) {
                     Text("연락망을 삭제하시겠습니까?")
-                        .font(.pretendard(.semiBold, size: 18))
+                        .font(Font.pretendard(.semiBold, size: 18))
                         .multilineTextAlignment(.center)
                         .foregroundColor(Constants.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .top)
 
                     Text("다시 복구할 수 없습니다.")
-                        .font(.pretendard(.regular, size: 14))
+                        .font(Font.pretendard(.regular, size: 14))
                         .multilineTextAlignment(.center)
                         .foregroundColor(Constants.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .top)
@@ -225,7 +225,7 @@ private extension SafetyContactDetailView {
                 HStack(alignment: .center, spacing: 10) {
                     Button(action: cancelDeleteContact) {
                         Text("취소")
-                            .font(.pretendard(.semiBold, size: 16))
+                            .font(Font.pretendard(.semiBold, size: 16))
                             .foregroundColor(Constants.textInverse)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)
@@ -237,7 +237,7 @@ private extension SafetyContactDetailView {
 
                     Button(action: confirmDeleteContact) {
                         Text("삭제하기")
-                            .font(.pretendard(.semiBold, size: 16))
+                            .font(Font.pretendard(.semiBold, size: 16))
                             .foregroundColor(Constants.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 44)
@@ -279,7 +279,7 @@ private extension SafetyContactDetailView {
             prompt: Text(placeholder)
                 .foregroundColor(Constants.grey400)
         )
-        .font(.pretendard(.medium, size: 16))
+        .font(Font.pretendard(.medium, size: 16))
         .foregroundColor(Constants.grey100)
         .keyboardType(keyboardType)
         .padding(16)

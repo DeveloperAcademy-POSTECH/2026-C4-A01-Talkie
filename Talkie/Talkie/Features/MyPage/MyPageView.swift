@@ -87,7 +87,7 @@ private struct MyPageMenuSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.pretendard(.semiBold, size: 17))
+                .font(Font.pretendard(.semiBold, size: 17))
                 .foregroundStyle(Constants.grey300.opacity(0.72))
 
             content
@@ -102,7 +102,7 @@ private struct MyPageNavigationRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(title)
-                .font(.pretendard(.medium, size: 18))
+                .font(Font.pretendard(.medium, size: 18))
                 .foregroundStyle(.white)
 
             Spacer()
@@ -131,7 +131,7 @@ private struct MyPageToggleRow: View {
 
     var body: some View {
         Toggle(title, isOn: $isOn)
-            .font(.pretendard(.medium, size: 18))
+            .font(Font.pretendard(.medium, size: 18))
             .foregroundStyle(.white)
             .tint(Color(red: 0.20, green: 0.78, blue: 0.35))
             .padding(.horizontal, 20)

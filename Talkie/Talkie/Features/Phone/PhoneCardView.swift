@@ -50,7 +50,7 @@ private extension PhoneCardView {
     var cardHeader: some View {
         Button(action: onChangeScenario) {
             Text("변경")
-                .font(.pretendard(.bold, size: 14))
+                .font(Font.pretendard(.bold, size: 14))
                 .foregroundStyle(.white.opacity(0.86))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
@@ -84,26 +84,26 @@ private extension PhoneCardView {
         if let scenario {
             VStack(spacing: 8) {
                 Text(scenario.title)
-                    .font(.pretendard(.bold, size: 24))
+                    .font(Font.pretendard(.bold, size: 24))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                 
                 Text("발화자 | \(scenario.callerName)")
-                    .font(.pretendard(.medium, size: 15))
+                    .font(Font.pretendard(.medium, size: 15))
                     .foregroundStyle(.white.opacity(0.42))
                     .lineLimit(1)
             }
         } else {
             VStack(spacing: 8){
                 Text("선택된 대화가 없습니다")
-                    .font(.pretendard(.semiBold, size: 24))
+                    .font(Font.pretendard(.semiBold, size: 24))
                     .foregroundStyle(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                 
                 HStack(spacing: 6){
                     Text("발화자")
-                        .font(.pretendard(.medium, size: 15))
+                        .font(Font.pretendard(.medium, size: 15))
                         .foregroundStyle(.white.opacity(0.4))
                         .lineLimit(1)
                     
@@ -112,7 +112,7 @@ private extension PhoneCardView {
                         .frame(width: 1, height: 14)
                     
                     Text("대화를 선택해주세요")
-                        .font(.pretendard(.medium, size: 15))
+                        .font(Font.pretendard(.medium, size: 15))
                         .foregroundStyle(.white.opacity(0.4))
                         .lineLimit(1)
                 }

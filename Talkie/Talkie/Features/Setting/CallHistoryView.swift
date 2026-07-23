@@ -33,7 +33,7 @@ struct CallHistoryView: View {
                 )
 
                 Text("통화 내역")
-                    .font(.pretendard(.bold, size: 28))
+                    .font(Font.pretendard(.bold, size: 28))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
 
@@ -227,7 +227,7 @@ private struct CallHistoryRow: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text("\(Self.dateFormatter.string(from: session.startedAt)) 녹음")
-                    .font(.pretendard(.medium, size: 18))
+                    .font(Font.pretendard(.medium, size: 18))
                     .foregroundStyle(.white)
 
                 Text(Self.durationText(session.recording?.duration ?? 0))

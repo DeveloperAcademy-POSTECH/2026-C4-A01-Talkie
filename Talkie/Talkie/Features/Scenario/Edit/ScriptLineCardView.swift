@@ -37,7 +37,7 @@ struct ScriptLineCardView: View {
                         prompt: placeholderText,
                         axis: .vertical
                     )
-                    .font(.pretendard(.regular, size: 16))
+                    .font(Font.pretendard(.regular, size: 16))
                     .foregroundColor(Constants.textPrimary)
                     .lineLimit(1...4)
                     .focused(focusedScriptLineID, equals: scriptLine.persistentModelID)
@@ -46,7 +46,7 @@ struct ScriptLineCardView: View {
                         placeholderText
                     } else {
                         Text(scriptLine.text)
-                            .font(.pretendard(.regular, size: 16))
+                            .font(Font.pretendard(.regular, size: 16))
                             .foregroundColor(textColor)
                             .lineSpacing(4)
                             .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .topLeading)
@@ -127,7 +127,7 @@ struct ScriptLineCardView: View {
 
     private var placeholderText: Text {
         Text("대화 내용을 입력하고 녹음해보세요.")
-            .font(.pretendard(.regular, size: 16))
+            .font(Font.pretendard(.regular, size: 16))
             .foregroundColor(Constants.textTertiary)
     }
     

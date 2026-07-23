@@ -40,7 +40,7 @@ struct DepthNavigationBar<TrailingContent: View>: View {
 
                 if let title {
                     Text(title)
-                        .font(.pretendard(.semiBold, size: 18))
+                        .font(Font.pretendard(.semiBold, size: 18))
                         .foregroundColor(Constants.textPrimary)
                         .lineLimit(1)
                 }

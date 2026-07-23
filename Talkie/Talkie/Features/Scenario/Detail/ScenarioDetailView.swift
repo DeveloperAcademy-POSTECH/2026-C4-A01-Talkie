@@ -117,11 +117,11 @@ struct ScenarioDetailView: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(viewModel.content.title)
-                        .font(.pretendard(.bold, size: 20))
+                        .font(Font.pretendard(.bold, size: 20))
                         .foregroundColor(.grey100)
 
                     Text("발화자 | \(viewModel.content.callerName)")
-                        .font(.pretendard(.medium, size: 14))
+                        .font(Font.pretendard(.medium, size: 14))
                         .foregroundColor(.grey500)
                 }
 
@@ -134,7 +134,7 @@ struct ScenarioDetailView: View {
                         viewModel.isPlayingAll ? "정지" : "전체 듣기",
                         systemImage: viewModel.isPlayingAll ? "pause.fill" : "play.fill"
                     )
-                    .font(.pretendard(.semiBold, size: 16))
+                    .font(Font.pretendard(.semiBold, size: 16))
                     .foregroundColor(.main500)
                     .padding(.leading, 12)
                     .padding(.trailing, 16)
@@ -170,7 +170,7 @@ struct ScenarioDetailView: View {
     private func scriptLineRow(_ scriptLine: ScenarioLineContent) -> some View {
         HStack(alignment: .center, spacing: 14) {
             Text(scriptLine.text)
-                .font(.pretendard(.regular, size: 16))
+                .font(Font.pretendard(.regular, size: 16))
                 .foregroundColor(.grey100)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)

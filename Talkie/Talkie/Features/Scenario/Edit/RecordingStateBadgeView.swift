@@ -15,7 +15,7 @@ struct RecordingStateBadgeView: View {
         if isRecording {
             HStack(spacing: 3) {
                 Text("녹음 중")
-                    .font(.pretendard(.bold, size: 12))
+                    .font(Font.pretendard(.bold, size: 12))
 
                 RecordingWaveView()
             }
@@ -27,7 +27,7 @@ struct RecordingStateBadgeView: View {
         } else if isRecorded {
             HStack(spacing: 4) {
                 Text("녹음 완료")
-                    .font(.pretendard(.semiBold, size: 12))
+                    .font(Font.pretendard(.semiBold, size: 12))
                 
                 Image(systemName: "checkmark")
                     .font(.system(size: 10, weight: .bold))
@@ -40,7 +40,7 @@ struct RecordingStateBadgeView: View {
             .cornerRadius(12)
         } else {
             Text("녹음 준비")
-                .font(.pretendard(.medium, size: 12))
+                .font(Font.pretendard(.medium, size: 12))
                 .foregroundColor(Constants.textSecondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)

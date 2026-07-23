@@ -64,7 +64,7 @@ struct ActiveFakeCallView: View {
                 }
 
                 Text(profile.displayName)
-                    .font(.pretendard(.bold, size: 34))
+                    .font(Font.pretendard(.bold, size: 34))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.62)
@@ -191,7 +191,7 @@ private struct ActiveCallControlButton: View {
             .opacity(1)
 
             Text(title)
-                .font(.pretendard(.regular, size: 17))
+                .font(Font.pretendard(.regular, size: 17))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -219,7 +219,7 @@ private struct ActiveCallControlButton: View {
                     .font(.system(size: 30, weight: .semibold))
 
                 Text("?")
-                    .font(.pretendard(.bold, size: 12))
+                    .font(Font.pretendard(.bold, size: 12))
                     .foregroundStyle(Color.black.opacity(0.7))
                     .offset(x: -4)
             }

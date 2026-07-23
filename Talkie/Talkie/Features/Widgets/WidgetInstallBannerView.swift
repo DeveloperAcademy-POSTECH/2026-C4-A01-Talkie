@@ -14,7 +14,7 @@ struct WidgetInstallBannerView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("위젯으로 간편하게 가상통화를 시작하세요!")
-                    .font(.pretendard(.semiBold, size: 14))
+                    .font(Font.pretendard(.semiBold, size: 14))
                     .foregroundStyle(.white.opacity(0.78))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
@@ -22,7 +22,7 @@ struct WidgetInstallBannerView: View {
 
                 HStack(spacing: 6) {
                     Text("설치방법 보러가기")
-                        .font(.pretendard(.medium, size: 12))
+                        .font(Font.pretendard(.medium, size: 12))
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))
