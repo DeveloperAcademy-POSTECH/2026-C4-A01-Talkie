@@ -201,12 +201,12 @@ private struct CallHistoryHeader: View {
         DepthNavigationBar {
             onBack()
         } trailingContent: {
-//            Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
-//                .font(Font.pretendard(.semiBold, size: 16))
-//                .foregroundStyle(.white)
-//                .frame(width: 57, height: 44)
-//                .buttonStyle(.glass)
-//                .buttonBorderShape(.capsule)
+            Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
+                .font(Font.pretendard(.semiBold, size: 16))
+                .foregroundStyle(.white)
+                .frame(width: 57, height: 44)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.capsule)
             Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
                 .font(Font.pretendard(.semiBold, size: 16))
                 .foregroundStyle(.white)
