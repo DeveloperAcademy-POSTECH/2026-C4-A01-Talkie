@@ -115,6 +115,12 @@ final class CloudSyncCoordinator {
         scheduleSync()
     }
 
+    /// 사용자가 새 동기화 범위에 동의한 직후 기존 로컬 데이터도 빠짐없이 올립니다.
+    func syncAllLocalData() {
+        guard isEnabled else { return }
+        scheduleSync(includeFullLocalSnapshot: true)
+    }
+
     private func scheduleSync(
         rebuildEngine: Bool = false,
         includeFullLocalSnapshot: Bool = false
@@ -192,6 +198,11 @@ final class CloudSyncCoordinator {
             contacts.forEach {
                 CloudSyncChangeTracker.savedSafetyContact($0, notifyCoordinator: false)
             }
+
+            let callSessions = try context.fetch(FetchDescriptor<CallSession>())
+            callSessions.forEach {
+                CloudSyncChangeTracker.savedCallSession($0, notifyCoordinator: false)
+            }
         } catch {
             logger.error("Failed to create local sync snapshot: \(error.localizedDescription, privacy: .public)")
         }
@@ -236,7 +247,13 @@ final class CloudSyncCoordinator {
         case .accountChange(let change):
             switch change.changeType {
             case .signIn:
-                scheduleSync(includeFullLocalSnapshot: true)
+                // CKSyncEngine serializes delegate callbacks. A Task created directly
+                // in this callback inherits its CloudKit execution context, so awaiting
+                // fetchChanges/sendChanges from that task causes a delegate re-entry trap.
+                // Detach the follow-up sync before returning to the main-actor coordinator.
+                Task.detached { [weak self] in
+                    await self?.scheduleSync(includeFullLocalSnapshot: true)
+                }
             case .signOut, .switchAccounts:
                 status = .unavailable("iCloud 계정이 변경되었습니다. 다시 동기화해 주세요.")
             @unknown default:
@@ -316,6 +333,29 @@ final class CloudSyncCoordinator {
                 record["phoneNumber"] = contact.phoneNumber as NSString
                 record["shouldShareLocation"] = contact.shouldShareLocation as NSNumber
                 record["updatedAt"] = contact.updatedAt as NSDate
+
+            case .callRecording:
+                guard
+                    let session = try fetchCallSession(id: identity.id, context: context),
+                    let recording = session.recording
+                else { return nil }
+
+                let fileURL = try CallRecordingFileStore().url(for: recording.fileName)
+                guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
+
+                record["id"] = session.id.uuidString as NSString
+                record["recordingID"] = recording.id.uuidString as NSString
+                record["startedAt"] = session.startedAt as NSDate
+                record["endedAt"] = session.endedAt as NSDate
+                record["scenarioTitle"] = session.scenarioTitle as NSString
+                record["callerName"] = session.callerName as NSString
+                record["endReason"] = session.endReasonRawValue as NSString
+                record["duration"] = recording.duration as NSNumber
+                record["fileSize"] = recording.fileSize as NSNumber
+                record["createdAt"] = recording.createdAt as NSDate
+                record["updatedAt"] = session.endedAt as NSDate
+                record["audioFormat"] = fileURL.pathExtension.lowercased() as NSString
+                record["audio"] = CKAsset(fileURL: fileURL)
             }
             return record
         } catch {
@@ -429,7 +469,77 @@ final class CloudSyncCoordinator {
             contact.phoneNumber = stringField("phoneNumber", in: record) ?? contact.phoneNumber
             contact.shouldShareLocation = boolField("shouldShareLocation", in: record) ?? contact.shouldShareLocation
             contact.updatedAt = remoteUpdatedAt
+
+        case .callRecording:
+            try applyCallRecording(record, sessionID: id, context: context)
         }
+    }
+
+    private func applyCallRecording(
+        _ record: CKRecord,
+        sessionID: UUID,
+        context: ModelContext
+    ) throws {
+        guard
+            let asset = record["audio"] as? CKAsset,
+            let sourceURL = asset.fileURL
+        else { return }
+
+        let recordingID = uuidField("recordingID", in: record) ?? UUID()
+        let fileExtension = safeAudioFileExtension(stringField("audioFormat", in: record))
+        let localFileName = "icloud-call-\(recordingID.uuidString.lowercased()).\(fileExtension)"
+        let fileStore = CallRecordingFileStore()
+        let destinationURL = try fileStore.url(for: localFileName)
+
+        let session = try fetchCallSession(id: sessionID, context: context) ?? CallSession(
+            id: sessionID,
+            startedAt: dateField("startedAt", in: record) ?? Date(),
+            endedAt: dateField("endedAt", in: record) ?? Date(),
+            scenarioTitle: stringField("scenarioTitle", in: record) ?? "가상 통화",
+            callerName: stringField("callerName", in: record) ?? "",
+            endReason: CallEndReason(rawValue: stringField("endReason", in: record) ?? "") ?? .unknown
+        )
+        if session.modelContext == nil { context.insert(session) }
+
+        let existingRecording = session.recording
+        let existingFileIsCurrent = existingRecording?.id == recordingID
+            && existingRecording?.fileName == localFileName
+            && FileManager.default.fileExists(atPath: destinationURL.path)
+
+        if !existingFileIsCurrent {
+            let temporaryURL = destinationURL
+                .deletingLastPathComponent()
+                .appendingPathComponent(".download-\(UUID().uuidString).\(fileExtension)")
+            try FileManager.default.copyItem(at: sourceURL, to: temporaryURL)
+            try? FileManager.default.removeItem(at: destinationURL)
+            try FileManager.default.moveItem(at: temporaryURL, to: destinationURL)
+        }
+
+        if let oldFileName = existingRecording?.fileName, oldFileName != localFileName {
+            try? fileStore.delete(fileName: oldFileName)
+        }
+
+        let recording = existingRecording ?? CallRecording(
+            id: recordingID,
+            fileName: localFileName,
+            duration: doubleField("duration", in: record) ?? 0,
+            fileSize: int64Field("fileSize", in: record) ?? 0,
+            createdAt: dateField("createdAt", in: record) ?? Date(),
+            session: session
+        )
+        recording.id = recordingID
+        recording.fileName = localFileName
+        recording.duration = doubleField("duration", in: record) ?? recording.duration
+        recording.fileSize = int64Field("fileSize", in: record) ?? recording.fileSize
+        recording.createdAt = dateField("createdAt", in: record) ?? recording.createdAt
+        recording.session = session
+
+        session.startedAt = dateField("startedAt", in: record) ?? session.startedAt
+        session.endedAt = dateField("endedAt", in: record) ?? session.endedAt
+        session.scenarioTitle = stringField("scenarioTitle", in: record) ?? session.scenarioTitle
+        session.callerName = stringField("callerName", in: record) ?? session.callerName
+        session.endReasonRawValue = stringField("endReason", in: record) ?? session.endReasonRawValue
+        session.recording = recording
     }
 
     private func applyDeletion(
@@ -470,6 +580,13 @@ final class CloudSyncCoordinator {
         case .safetyContact:
             if let contact = try fetchSafetyContact(id: identity.id, context: context) {
                 context.delete(contact)
+            }
+        case .callRecording:
+            if let session = try fetchCallSession(id: identity.id, context: context) {
+                if let fileName = session.recording?.fileName {
+                    try? CallRecordingFileStore().delete(fileName: fileName)
+                }
+                context.delete(session)
             }
         }
         stateStore.removeSystemFields(for: [recordID.recordName])
@@ -576,8 +693,14 @@ final class CloudSyncCoordinator {
         return try context.fetch(descriptor).first
     }
 
+    private func fetchCallSession(id: UUID, context: ModelContext) throws -> CallSession? {
+        var descriptor = FetchDescriptor<CallSession>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
     private func recordIdentity(from recordID: CKRecord.ID) -> (type: CloudSyncRecordType, id: UUID)? {
-        for type in [CloudSyncRecordType.scenario, .scriptLine, .scenarioAudio, .safetyContact] {
+        for type in CloudSyncRecordType.allCases {
             let prefix = "\(type.rawValue)-"
             guard recordID.recordName.hasPrefix(prefix) else { continue }
             let value = String(recordID.recordName.dropFirst(prefix.count))
@@ -592,7 +715,8 @@ final class CloudSyncCoordinator {
         case .scriptLine: 1
         case .scenarioAudio: 2
         case .safetyContact: 3
-        case nil: 4
+        case .callRecording: 4
+        case nil: 5
         }
     }
 
@@ -614,6 +738,21 @@ final class CloudSyncCoordinator {
 
     private func boolField(_ key: String, in record: CKRecord) -> Bool? {
         (record[key] as? NSNumber)?.boolValue
+    }
+
+    private func doubleField(_ key: String, in record: CKRecord) -> Double? {
+        (record[key] as? NSNumber)?.doubleValue
+    }
+
+    private func int64Field(_ key: String, in record: CKRecord) -> Int64? {
+        (record[key] as? NSNumber)?.int64Value
+    }
+
+    private func safeAudioFileExtension(_ value: String?) -> String {
+        switch value?.lowercased() {
+        case "caf": "caf"
+        default: "m4a"
+        }
     }
 }
 

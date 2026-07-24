@@ -8,11 +8,12 @@
 import CloudKit
 import Foundation
 
-enum CloudSyncRecordType: String, Codable, Sendable {
+enum CloudSyncRecordType: String, Codable, CaseIterable, Sendable {
     case scenario = "TLScenario"
     case scriptLine = "TLScriptLine"
     case scenarioAudio = "TLScenarioAudio"
     case safetyContact = "TLSafetyContact"
+    case callRecording = "TLCallRecording"
 }
 
 enum CloudSyncOperation: String, Codable, Sendable {

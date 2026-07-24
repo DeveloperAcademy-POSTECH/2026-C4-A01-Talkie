@@ -18,6 +18,11 @@ struct MyPageView: View {
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
 
+    @AppStorage(TalkiePreferenceKey.didAcknowledgeICloudRecordingSync)
+    private var didAcknowledgeICloudRecordingSync = false
+
+    @State private var shouldConfirmICloudRecordingSync = false
+
     private var recordedCallCount: Int {
         callSessions.lazy.filter { $0.recording != nil }.count
     }
@@ -63,10 +68,10 @@ struct MyPageView: View {
                                     title: "iCloud 동기화",
                                     isOn: Binding(
                                         get: { cloudSyncCoordinator.isEnabled },
-                                        set: { cloudSyncCoordinator.setEnabled($0) }
+                                        set: handleICloudToggle
                                     )
                                 )
-                                .accessibilityHint("시나리오, 대사 녹음, 안전 연락망을 iCloud와 동기화합니다.")
+                                .accessibilityHint("시나리오, 대사 녹음, 가상 통화 녹음 및 안전 연락망을 개인 iCloud와 동기화합니다.")
 
                                 Text(cloudSyncCoordinator.status.message)
                                     .font(Font.pretendard(.regular, size: 13))
@@ -85,6 +90,37 @@ struct MyPageView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            if cloudSyncCoordinator.isEnabled && !didAcknowledgeICloudRecordingSync {
+                shouldConfirmICloudRecordingSync = true
+            }
+        }
+        .alert("가상 통화 녹음도 동기화할까요?", isPresented: $shouldConfirmICloudRecordingSync) {
+            Button("취소", role: .cancel) { }
+            Button("동기화 켜기") {
+                didAcknowledgeICloudRecordingSync = true
+                if cloudSyncCoordinator.isEnabled {
+                    cloudSyncCoordinator.syncAllLocalData()
+                } else {
+                    cloudSyncCoordinator.setEnabled(true)
+                }
+            }
+        } message: {
+            Text("자동 녹음에는 사용자의 목소리와 주변 소리가 포함될 수 있으며, 녹음 파일은 사용자의 개인 iCloud에 저장됩니다.")
+        }
+    }
+
+    private func handleICloudToggle(_ enabled: Bool) {
+        guard enabled else {
+            cloudSyncCoordinator.setEnabled(false)
+            return
+        }
+
+        if didAcknowledgeICloudRecordingSync {
+            cloudSyncCoordinator.setEnabled(true)
+        } else {
+            shouldConfirmICloudRecordingSync = true
+        }
     }
 
     private var syncStatusColor: Color {

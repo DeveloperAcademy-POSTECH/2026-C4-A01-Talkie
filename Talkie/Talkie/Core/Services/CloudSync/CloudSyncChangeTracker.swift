@@ -98,4 +98,31 @@ enum CloudSyncChangeTracker {
     static func deletedSafetyContact(id: UUID) {
         CloudSyncJournal.shared.enqueue(.delete, type: .safetyContact, id: id)
     }
+
+    /// 녹음 파일이 있는 통화만 하나의 CloudKit 레코드로 동기화합니다.
+    /// 레코드 ID는 세션 ID를 사용하므로 여러 기기에서 같은 통화를 중복 생성하지 않습니다.
+    static func savedCallSession(
+        _ session: CallSession,
+        notifyCoordinator: Bool = true
+    ) {
+        guard
+            session.recording != nil,
+            UserDefaults.standard.bool(forKey: TalkiePreferenceKey.didAcknowledgeICloudRecordingSync)
+        else { return }
+        CloudSyncJournal.shared.enqueue(
+            [
+                CloudSyncChange(
+                    recordType: .callRecording,
+                    localID: session.id,
+                    operation: .save,
+                    changedAt: session.endedAt
+                )
+            ],
+            notifyCoordinator: notifyCoordinator
+        )
+    }
+
+    static func deletedCallSession(id: UUID) {
+        CloudSyncJournal.shared.enqueue(.delete, type: .callRecording, id: id)
+    }
 }
