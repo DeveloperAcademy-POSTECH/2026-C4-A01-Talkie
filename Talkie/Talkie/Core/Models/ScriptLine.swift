@@ -16,6 +16,8 @@ final class ScriptLine {
     var sortOrder: Int
     var isRecorded: Bool
     var audioFileName: String?
+    /// 대사와 연결된 녹음 파일의 마지막 변경 시각입니다.
+    var updatedAt: Date = Date()
     var scenario: Scenario?
     
     @Relationship(deleteRule: .cascade, inverse: \AudioClipMetadata.scriptLine)
@@ -27,6 +29,7 @@ final class ScriptLine {
         sortOrder: Int,
         isRecorded: Bool = false,
         audioFileName: String? = nil,
+        updatedAt: Date = Date(),
         scenario: Scenario?,
         audioMetadata: AudioClipMetadata? = nil
     ) {
@@ -35,6 +38,7 @@ final class ScriptLine {
         self.sortOrder = sortOrder
         self.isRecorded = isRecorded
         self.audioFileName = audioFileName
+        self.updatedAt = updatedAt
         self.scenario = scenario
         self.audioMetadata = audioMetadata
     }

@@ -293,7 +293,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
+				CODE_SIGN_ENTITLEMENTS = CallShortcutWidget/CallShortcutWidgetExtension.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -329,7 +329,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = Talkie/Talkie.entitlements;
+				CODE_SIGN_ENTITLEMENTS = CallShortcutWidget/CallShortcutWidgetExtension.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -504,7 +504,7 @@
 				INFOPLIST_KEY_UIAppFonts = "Pretendard-Black.otf Pretendard-Bold.otf Pretendard-ExtraBold.otf Pretendard-ExtraLight.otf Pretendard-Light.otf Pretendard-Medium.otf Pretendard-Regular.otf Pretendard-SemiBold.otf Pretendard-Thin.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = audio;
+				INFOPLIST_KEY_UIBackgroundModes = "audio remote-notification";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
@@ -550,7 +550,7 @@
 				INFOPLIST_KEY_UIAppFonts = "Pretendard-Black.otf Pretendard-Bold.otf Pretendard-ExtraBold.otf Pretendard-ExtraLight.otf Pretendard-Light.otf Pretendard-Medium.otf Pretendard-Regular.otf Pretendard-SemiBold.otf Pretendard-Thin.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = audio;
+				INFOPLIST_KEY_UIBackgroundModes = "audio remote-notification";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;

@@ -18,7 +18,7 @@ nonisolated struct CallRecordingFileStore: Sendable {
     }
 
     func makeFileName() -> String {
-        "\(UUID().uuidString).caf"
+        "\(UUID().uuidString).m4a"
     }
 
     func directoryURL() throws -> URL {

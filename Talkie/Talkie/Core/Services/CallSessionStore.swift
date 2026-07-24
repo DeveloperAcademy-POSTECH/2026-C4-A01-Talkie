@@ -40,6 +40,7 @@ struct CallSessionStore {
 
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.savedCallSession(session)
         } catch {
             if let recording {
                 try? recordingFileStore.delete(fileName: recording.fileName)

@@ -145,10 +145,13 @@ struct SafetyContactDetailView: View {
             return
         }
 
+        let savedContact: SafetyContact
         if let contact {
             contact.name = trimmedName
             contact.phoneNumber = trimmedPhoneNumber
             contact.shouldShareLocation = shouldShareLocation
+            contact.updatedAt = Date()
+            savedContact = contact
         } else {
             let contact = SafetyContact(
                 name: trimmedName,
@@ -156,10 +159,12 @@ struct SafetyContactDetailView: View {
                 shouldShareLocation: shouldShareLocation
             )
             modelContext.insert(contact)
+            savedContact = contact
         }
 
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.savedSafetyContact(savedContact)
             dismiss()
         } catch {
             print("안전 연락망 저장 실패: \(error.localizedDescription)")
@@ -184,6 +189,7 @@ struct SafetyContactDetailView: View {
 
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.deletedSafetyContact(id: contact.id)
             isShowingDeleteConfirmation = false
             dismiss()
         } catch {

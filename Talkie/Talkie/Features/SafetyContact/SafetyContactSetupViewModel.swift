@@ -27,6 +27,7 @@ struct SafetyContactInput: Identifiable {
     }
 }
 
+@MainActor
 @Observable
 final class SafetyContactSetupViewModel {
     var contactInputs: [SafetyContactInput]
@@ -68,6 +69,7 @@ final class SafetyContactSetupViewModel {
         
         do {
             try modelContext.save()
+            contacts.forEach { CloudSyncChangeTracker.savedSafetyContact($0) }
             onComplete()
         } catch {
             errorMessage = "안전 연락망을 저장하지 못했습니다."

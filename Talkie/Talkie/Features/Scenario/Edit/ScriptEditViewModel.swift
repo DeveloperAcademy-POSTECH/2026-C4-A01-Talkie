@@ -21,6 +21,7 @@ final class ScriptEditViewModel {
     private var playbackTask: Task<Void, Never>?
     private var recordingFileName: String?
     private var pendingPermissionScriptLine: ScriptLine?
+    private var pendingDeletedScriptLineIDs: Set<UUID> = []
 
     var scenario: Scenario
     private(set) var recordingScriptLine: ScriptLine?
@@ -120,7 +121,7 @@ final class ScriptEditViewModel {
         recordingFileName = nil
         recordingScriptLine = nil
 
-        saveChanges()
+        saveChanges(audioChangedLineID: scriptLine.id)
     }
 
     func isRecording(_ scriptLine: ScriptLine) -> Bool {
@@ -187,6 +188,7 @@ final class ScriptEditViewModel {
         }
         
         scenario.scriptLines.removeAll { $0 === scriptLine }
+        pendingDeletedScriptLineIDs.insert(scriptLine.id)
         deleteFromModelContextIfNeeded(scriptLine)
         reassignSortOrders()
         saveChanges()
@@ -300,7 +302,7 @@ final class ScriptEditViewModel {
         
         stopPlayback()
         insertScenarioIfNeeded()
-        return saveChanges()
+        return saveChanges(includeAllAudio: insertsScenarioOnComplete)
     }
     
     func clearErrorMessage() {
@@ -355,7 +357,7 @@ final class ScriptEditViewModel {
             scriptLine.isRecorded = false
             recordingFileName = newFileName
             recordingScriptLine = scriptLine
-            saveChanges()
+            saveChanges(audioChangedLineID: scriptLine.id)
         } catch {
             cleanupFailedRecording()
             errorMessage = "녹음을 시작하지 못했습니다."
@@ -449,9 +451,31 @@ final class ScriptEditViewModel {
     }
 
     @discardableResult
-    private func saveChanges() -> Bool {
+    private func saveChanges(
+        audioChangedLineID: UUID? = nil,
+        includeAllAudio: Bool = false
+    ) -> Bool {
         do {
+            let now = Date()
+            scenario.updatedAt = now
+            scenario.scriptLines.forEach { $0.updatedAt = now }
             try modelContext.save()
+
+            // A newly composed scenario is not part of SwiftData until the user
+            // completes editing, so it must not enter the cloud journal earlier.
+            if !insertsScenarioOnComplete || hasInsertedScenario {
+                CloudSyncChangeTracker.savedScenario(scenario, includeAudio: includeAllAudio)
+                if
+                    let audioChangedLineID,
+                    let line = scenario.scriptLines.first(where: { $0.id == audioChangedLineID })
+                {
+                    CloudSyncChangeTracker.savedScriptLineAudio(line)
+                }
+                pendingDeletedScriptLineIDs.forEach {
+                    CloudSyncChangeTracker.deletedScriptLine(id: $0)
+                }
+                pendingDeletedScriptLineIDs.removeAll()
+            }
             return true
         } catch {
             errorMessage = "녹음 상태를 저장하지 못했습니다."

@@ -47,19 +47,20 @@ nonisolated final class CallRecordingWriter: @unchecked Sendable {
         let fileName = fileStore.makeFileName()
         let fileURL = try fileStore.url(for: fileName)
         let settings: [String: Any] = [
-            AVFormatIDKey: Int(kAudioFormatLinearPCM),
+            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: inputFormat.sampleRate,
             AVNumberOfChannelsKey: Int(inputFormat.channelCount),
-            AVLinearPCMBitDepthKey: 16,
-            AVLinearPCMIsFloatKey: false,
-            AVLinearPCMIsBigEndianKey: false,
+            AVEncoderBitRateKey: 64_000,
+            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
         ]
-        // AVAudioFile은 입력 tap의 Float32 PCM을 파일의 Int16 PCM으로 변환합니다.
-        // 압축은 통화 종료 후 별도 비동기 작업으로 확장할 수 있으며, 현재 단계에서는
-        // 종료 시점에 동기적으로 확정할 수 있는 형식을 사용해 파일 손상을 방지합니다.
+        // 마이크 tap은 Float32 PCM을 전달하지만 파일은 AAC로 인코딩합니다.
+        // client format을 입력 형식과 같게 지정하면 AVAudioFile이 쓰기 과정에서
+        // 변환하며, 긴 녹음도 CloudKit CKAsset에 올릴 수 있는 크기로 유지됩니다.
         let audioFile = try AVAudioFile(
             forWriting: fileURL,
-            settings: settings
+            settings: settings,
+            commonFormat: inputFormat.commonFormat,
+            interleaved: inputFormat.isInterleaved
         )
 
         stateLock.lock()

@@ -145,9 +145,11 @@ struct ScenarioInfoEditView: View {
 
         scenario.title = trimmedTitle
         scenario.callerName = trimmedCallerName
+        scenario.updatedAt = Date()
 
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.savedScenario(scenario, includeScriptLines: false)
             dismiss()
         } catch {
             errorMessage = "시나리오 정보를 저장하지 못했습니다."

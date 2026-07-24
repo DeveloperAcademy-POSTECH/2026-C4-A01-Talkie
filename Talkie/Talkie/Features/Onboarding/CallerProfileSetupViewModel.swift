@@ -46,6 +46,7 @@ final class CallerProfileSetupViewModel {
         
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.savedScenario(scenario)
         } catch {
             errorMessage = error.localizedDescription
         }
