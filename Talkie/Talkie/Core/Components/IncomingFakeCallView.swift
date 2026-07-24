@@ -34,26 +34,21 @@ struct IncomingFakeCallView: View {
     }
 
     private var callerHeader: some View {
-        HStack(spacing: 14) {
-            IncomingCallerAvatar(systemImageName: profile.imageSystemName)
+        VStack(spacing: 8) {
+            Text("Talkie 음성통화")
+                .font(Font.pretendard(.medium, size: 22))
+                .foregroundStyle(.white.opacity(0.68))
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("휴대전화")
-                    .font(Font.pretendard(.medium, size: 22))
-                    .foregroundStyle(.white.opacity(0.58))
-
-                Text(profile.displayName)
-                    .font(Font.pretendard(.bold, size: 34))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.62)
-            }
-
-            Spacer(minLength: 0)
+            Text(profile.displayName)
+                .font(Font.pretendard(.bold, size: 36))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.62)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("휴대전화, \(profile.displayName)에게서 걸려온 전화")
+        .accessibilityLabel("Talkie 음성통화, \(profile.displayName)에게서 걸려온 전화")
     }
 
     private var secondaryActions: some View {
@@ -106,26 +101,6 @@ struct IncomingFakeCallView: View {
                 action: onAccept
             )
         }
-    }
-}
-
-private struct IncomingCallerAvatar: View {
-    let systemImageName: String?
-
-    var body: some View {
-        Image(systemName: systemImageName ?? "person.crop.circle.fill")
-            .resizable()
-            .scaledToFill()
-            .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(.white.opacity(0.9))
-            .frame(width: 64, height: 64)
-            .background(.white.opacity(0.12), in: Circle())
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(.white.opacity(0.16), lineWidth: 0.5)
-            }
-            .accessibilityHidden(true)
     }
 }
 
