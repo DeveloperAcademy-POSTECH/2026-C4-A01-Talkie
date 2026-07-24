@@ -28,7 +28,7 @@ struct SafetyContactSetupView: View {
 
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("안심 연락망을 입력해주세요.")
+                        Text("안전 연락망을 입력해주세요.")
                             .font(Font.pretendard(.semiBold, size: 24))
                             .foregroundColor(Constants.grey100)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -68,8 +68,9 @@ struct SafetyContactSetupView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 120)
+                .padding(.top, 58)
                 .padding(.bottom, 32)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 startButton
                     .padding(.horizontal, 16)

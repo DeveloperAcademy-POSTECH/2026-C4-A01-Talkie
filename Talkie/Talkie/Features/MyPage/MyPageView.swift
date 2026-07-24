@@ -14,6 +14,9 @@ struct MyPageView: View {
     @Query(sort: \CallSession.startedAt, order: .reverse)
     private var callSessions: [CallSession]
 
+    @Query(sort: \SafetyContact.name)
+    private var safetyContacts: [SafetyContact]
+
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
 
@@ -37,7 +40,10 @@ struct MyPageView: View {
                             NavigationLink {
                                 SafetyContactListView()
                             } label: {
-                                MyPageNavigationRow(title: "안전 연락망 모두 보기")
+                                MyPageNavigationRow(
+                                    title: "안전 연락망 모두 보기",
+                                    trailingText: "\(safetyContacts.count)"
+                                )
                             }
                         }
 
@@ -74,6 +80,9 @@ struct MyPageView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)

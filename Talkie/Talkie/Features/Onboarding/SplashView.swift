@@ -10,11 +10,18 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         DarkScreen {
-            Image("Talkie_logo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 120, height: 120)
-                .accessibilityLabel("Talkie 로고")
+            VStack(spacing: 0) {
+                Spacer()
+
+                Image("Talkie_logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+                    .accessibilityLabel("Talkie 로고")
+
+                Spacer()
+                    .frame(height: 404)
+            }
         }
     }
 }

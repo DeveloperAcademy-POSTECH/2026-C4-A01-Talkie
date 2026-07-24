@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct ScriptEditView: View {
     @Environment(\.dismiss) private var dismiss
@@ -55,6 +56,9 @@ struct ScriptEditView: View {
             bottomActionButton
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
@@ -82,30 +86,36 @@ struct ScriptEditView: View {
     @ViewBuilder
     private var trailingNavigationControl: some View {
         if viewModel.canEditScripts {
-            Button {
-                withAnimation {
-                    isEditingScripts.toggle()
-                }
-            } label: {
-                if isEditingScripts {
+            if isEditingScripts {
+                Button {
+                    withAnimation {
+                        isEditingScripts.toggle()
+                    }
+                } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(Constants.grey800)
                         .frame(width: 48, height: 48)
                         .background(Constants.main500)
                         .clipShape(Circle())
-                } else {
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("편집 완료")
+            } else {
+                Button {
+                    withAnimation {
+                        isEditingScripts.toggle()
+                    }
+                } label: {
                     Text("편집")
                         .font(Font.pretendard(.medium, size: 16))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.white.opacity(0.08))
-                        .cornerRadius(40)
+                        .frame(width: 44, height: 30)
                 }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.capsule)
+                .accessibilityLabel("대사 편집")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(isEditingScripts ? "편집 완료" : "대사 편집")
         } else {
             Text("읽기 전용")
                 .font(Font.pretendard(.medium, size: 14))
@@ -129,6 +139,10 @@ struct ScriptEditView: View {
                 .font(Font.pretendard(.regular, size: 16))
                 .foregroundColor(Constants.grey300)
         )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            dismissKeyboard()
+        }
         .padding(.horizontal, 16)
         .padding(.top, 32)
         .padding(.bottom, 16)
@@ -235,6 +249,12 @@ struct ScriptEditView: View {
 
     private func dismissKeyboard() {
         focusedScriptLineID = nil
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 

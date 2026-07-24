@@ -59,6 +59,9 @@ struct CallHistoryView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -201,34 +204,18 @@ private struct CallHistoryHeader: View {
         DepthNavigationBar {
             onBack()
         } trailingContent: {
-            Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
-                .font(Font.pretendard(.semiBold, size: 16))
-                .foregroundStyle(.white)
-                .frame(width: 57, height: 44)
+            Button(action: onToggleSelection) {
+                Text(isSelecting ? "취소" : "선택")
+                    .font(Font.pretendard(.semiBold, size: 16))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 30)
+            }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
-            Button(isSelecting ? "취소" : "선택", action: onToggleSelection)
-                .font(Font.pretendard(.semiBold, size: 16))
-                .foregroundStyle(.white)
-                .frame(width: 57, height: 44)
-                .background(Color.white.opacity(0.06))
-                .clipShape(Capsule())
-                .overlay {
-                    Capsule()
-                        .stroke(Color.white.opacity(0.20), lineWidth: 1)
-                }
-                .buttonStyle(PressableCapsuleButtonStyle())
         }
     }
 }
-struct PressableCapsuleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-            .opacity(configuration.isPressed ? 0.78 : 1.0)
-            .animation(.spring(response: 0.18, dampingFraction: 0.72), value: configuration.isPressed)
-    }
-}
+
 
 private struct CallHistoryRow: View {
     let session: CallSession

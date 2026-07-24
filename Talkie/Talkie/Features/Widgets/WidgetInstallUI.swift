@@ -17,7 +17,7 @@ struct WidgetInstallUI: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    header(topInset: proxy.safeAreaInsets.top)
+                    header()
 
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
@@ -60,10 +60,13 @@ struct WidgetInstallUI: View {
                 }
             }
         }
+        .edgeSwipeBack {
+            dismiss()
+        }
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    private func header(topInset: CGFloat) -> some View {
+    private func header() -> some View {
         VStack(spacing: 0) {
             HStack {
                 Button {
@@ -72,7 +75,7 @@ struct WidgetInstallUI: View {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(.white)
-                        .frame(width:36, height:36)
+                        .frame(width:48, height:48)
                         .background {
                             Circle()
                                 .fill(.white.opacity(0.04))
@@ -94,7 +97,7 @@ struct WidgetInstallUI: View {
                     .frame(width:36, height:36)
             }
             .padding(.horizontal, 16)
-            .padding(.top, topInset + 26)
+            .padding(.top, 12)
             .padding(.bottom, 14)
 
             Rectangle()

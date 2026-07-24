@@ -43,6 +43,9 @@ struct ScenarioDetailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)
         .navigationDestination(isPresented: $isShowingInfoEditView) {

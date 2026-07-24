@@ -33,9 +33,6 @@ struct AppMainView: View {
                 switch launchState {
                 case .splash:
                     SplashView()
-                        .task {
-                            await finishSplash()
-                        }
                 case .onboarding:
                     OnboardingView {
                         finishOnboarding()
@@ -48,8 +45,8 @@ struct AppMainView: View {
                     MainTabView()
                 }
             }
+            .transition(.opacity)
         }
-        .animation(.easeInOut, value: launchState)
         // 분기 화면이 바뀌어도 유지되는 루트 수명에 연결해 위젯 딥링크가 splash를
         // 건너뛰는 경우에도 고아 Live Activity 정리가 취소되지 않게 합니다.
         .task {
@@ -74,7 +71,11 @@ struct AppMainView: View {
         try? await Task.sleep(for: .seconds(1.5))
         
         await MainActor.run {
-            withAnimation {
+            guard launchState == .splash else {
+                return
+            }
+
+            withAnimation(.easeInOut(duration: 0.24)) {
                 if isFirstLaunch {
                     launchState = .onboarding
                 } else if !hasCompletedSafetyContactSetup {
@@ -87,7 +88,7 @@ struct AppMainView: View {
     }
     
     private func finishOnboarding() {
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.24)) {
             launchState = .safetyContactSetup
         }
     }
@@ -96,7 +97,7 @@ struct AppMainView: View {
         isFirstLaunch = false
         hasCompletedSafetyContactSetup = true
         
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.24)) {
             launchState = .main
         }
     }
@@ -114,7 +115,7 @@ struct AppMainView: View {
             return
         }
 
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.24)) {
             launchState = .main
         }
     }

@@ -37,8 +37,8 @@ struct PhoneCardView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             cardHeader
-                .padding(.top, 32)
-                .padding(.trailing, 32)
+                .padding(.top, 16)
+                .padding(.trailing, 16)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 434)
@@ -50,23 +50,20 @@ private extension PhoneCardView {
     var cardHeader: some View {
         Button(action: onChangeScenario) {
             Text("변경")
-                .font(Font.pretendard(.bold, size: 14))
+                .font(Font.pretendard(.medium, size: 14))
                 .foregroundStyle(.white.opacity(0.86))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(Constants.grey800.opacity(0.72))
-                .clipShape(Capsule())
+                .frame(width: 35, height: 20)
         }
-        .buttonStyle(.plain)
-        .padding(.horizontal, -12)
-        .padding(.vertical, -12)
+        .buttonStyle(.glass)
+        .buttonBorderShape(.capsule)
+        .accessibilityLabel("통화용 오디오 변경")
     }
     
     var profilePlaceholder: some View {
         ZStack {
             Circle()
                 .fill(Color.white.opacity(0.08))
-                .frame(width: 112, height: 112)
+                .frame(width: 140, height: 140)
                 .overlay {
                     Circle()
                         .stroke(Color.white.opacity(0.12), lineWidth: 1)
@@ -74,7 +71,7 @@ private extension PhoneCardView {
             
             Image("Profile")
                 .resizable()
-                .frame(width: 112, height: 112)
+                .frame(width: 140, height: 140)
                 .clipShape(Circle())
                 .accessibilityHidden(true)
         }

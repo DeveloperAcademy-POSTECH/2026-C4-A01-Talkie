@@ -67,8 +67,10 @@ struct ScenarioView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 16)
+                        .padding(.bottom, 120)
                     }
                     .scrollIndicators(.hidden)
+                    .ignoresSafeArea(.container, edges: .bottom)
                     .mask {
                         VStack(spacing: 0) {
                             LinearGradient(
@@ -82,7 +84,6 @@ struct ScenarioView: View {
                                 .fill(.black)
                         }
                     }
-                    Spacer()
                 }
             }
             .navigationDestination(isPresented: $isShowingCreateView) {
@@ -90,6 +91,8 @@ struct ScenarioView: View {
                     isShowingCreateView = false
                 }
             }
+            .toolbarBackground(.hidden, for: .tabBar)
         }
+        .ignoresSafeArea()
     }
 }

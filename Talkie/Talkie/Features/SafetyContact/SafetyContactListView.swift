@@ -81,6 +81,9 @@ struct SafetyContactListView: View {
                 .padding(.top, 32)
             }
         }
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $isShowingAddContact) {
