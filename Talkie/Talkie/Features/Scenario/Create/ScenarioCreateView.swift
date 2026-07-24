@@ -93,6 +93,9 @@ struct ScenarioCreateView: View {
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .alert(

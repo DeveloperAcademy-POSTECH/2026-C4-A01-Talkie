@@ -84,6 +84,9 @@ struct ScenarioInfoEditView: View {
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .preferredColorScheme(.dark)

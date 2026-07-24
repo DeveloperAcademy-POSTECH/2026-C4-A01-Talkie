@@ -130,6 +130,9 @@ struct SafetyContactDetailView: View {
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .edgeSwipeBack {
+            dismiss()
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
     }
