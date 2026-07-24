@@ -48,31 +48,28 @@ struct ActiveFakeCallView: View {
     }
 
     private var callerHeader: some View {
-        HStack(spacing: 14) {
-            ActiveCallerAvatar(systemImageName: profile.imageSystemName)
-
-            VStack(alignment: .leading, spacing: 2) {
-                TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
-                    Text(callDuration(at: context.date))
-                        .font(Font.pretendard(.medium, size: 22).monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.58))
-                        .contentTransition(.numericText())
-                        .onLongPressGesture(minimumDuration: 1) {
-                            onSkipLine()
-                        }
-                        .accessibilityLabel("통화 시간 \(callDuration(at: context.date))")
-                }
-
-                Text(profile.displayName)
-                    .font(Font.pretendard(.bold, size: 34))
-                    .foregroundStyle(.white)
+        VStack(spacing: 8) {
+            TimelineView(.periodic(from: callStartedAt, by: 1)) { context in
+                Text("Talkie 음성통화 - \(callDuration(at: context.date))")
+                    .font(Font.pretendard(.medium, size: 22).monospacedDigit())
+                    .foregroundStyle(.white.opacity(0.68))
+                    .contentTransition(.numericText())
                     .lineLimit(1)
-                    .minimumScaleFactor(0.62)
+                    .minimumScaleFactor(0.75)
+                    .onLongPressGesture(minimumDuration: 1) {
+                        onSkipLine()
+                    }
+                    .accessibilityLabel("Talkie 음성통화, 통화 시간 \(callDuration(at: context.date))")
             }
 
-            Spacer(minLength: 0)
+            Text(profile.displayName)
+                .font(Font.pretendard(.bold, size: 36))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.62)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
     }
 
@@ -133,26 +130,6 @@ struct ActiveFakeCallView: View {
     private func callDuration(at date: Date) -> String {
         let elapsed = max(0, Int(date.timeIntervalSince(callStartedAt)))
         return String(format: "%02d:%02d", elapsed / 60, elapsed % 60)
-    }
-}
-
-private struct ActiveCallerAvatar: View {
-    let systemImageName: String?
-
-    var body: some View {
-        Image(systemName: systemImageName ?? "person.crop.circle.fill")
-            .resizable()
-            .scaledToFill()
-            .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(.white.opacity(0.9))
-            .frame(width: 64, height: 64)
-            .background(.white.opacity(0.12), in: Circle())
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(.white.opacity(0.16), lineWidth: 0.5)
-            }
-            .accessibilityHidden(true)
     }
 }
 
