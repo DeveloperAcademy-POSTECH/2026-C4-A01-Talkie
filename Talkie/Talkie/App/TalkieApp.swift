@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct TalkieApp: App {
     let container: ModelContainer
+    let cloudSyncCoordinator: CloudSyncCoordinator
     
     init() {
         do {
@@ -25,6 +26,8 @@ struct TalkieApp: App {
         } catch {
             fatalError("ModelContainer 생성 실패: \(String(reflecting: error))")
         }
+
+        cloudSyncCoordinator = CloudSyncCoordinator(modelContainer: container)
         
         do {
             try ScenarioSeedService.migrateLegacyPresetDataIfNeeded(
@@ -38,6 +41,10 @@ struct TalkieApp: App {
     var body: some Scene {
         WindowGroup {
             AppMainView()
+                .environment(cloudSyncCoordinator)
+                .task {
+                    cloudSyncCoordinator.startIfNeeded()
+                }
         }
         .modelContainer(container)
     }

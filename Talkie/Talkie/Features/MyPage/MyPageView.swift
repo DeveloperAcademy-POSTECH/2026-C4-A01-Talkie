@@ -10,15 +10,13 @@ import SwiftUI
 
 struct MyPageView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(CloudSyncCoordinator.self) private var cloudSyncCoordinator
 
     @Query(sort: \CallSession.startedAt, order: .reverse)
     private var callSessions: [CallSession]
 
     @AppStorage(TalkiePreferenceKey.automaticCallRecordingEnabled)
     private var isAutomaticRecordingEnabled = false
-
-    @AppStorage(TalkiePreferenceKey.iCloudSyncEnabled)
-    private var isICloudSyncEnabled = false
 
     private var recordedCallCount: Int {
         callSessions.lazy.filter { $0.recording != nil }.count
@@ -60,11 +58,21 @@ struct MyPageView: View {
                         }
 
                         MyPageMenuSection(title: "iCloud 동기화") {
-                            MyPageToggleRow(
-                                title: "iCloud 동기화",
-                                isOn: $isICloudSyncEnabled
-                            )
-                            .accessibilityHint("현재는 동기화 설정 인터페이스만 제공됩니다.")
+                            VStack(alignment: .leading, spacing: 10) {
+                                MyPageToggleRow(
+                                    title: "iCloud 동기화",
+                                    isOn: Binding(
+                                        get: { cloudSyncCoordinator.isEnabled },
+                                        set: { cloudSyncCoordinator.setEnabled($0) }
+                                    )
+                                )
+                                .accessibilityHint("시나리오, 대사 녹음, 안전 연락망을 iCloud와 동기화합니다.")
+
+                                Text(cloudSyncCoordinator.status.message)
+                                    .font(Font.pretendard(.regular, size: 13))
+                                    .foregroundStyle(syncStatusColor)
+                                    .padding(.horizontal, 8)
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -77,6 +85,15 @@ struct MyPageView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+    }
+
+    private var syncStatusColor: Color {
+        switch cloudSyncCoordinator.status {
+        case .failed, .unavailable:
+            Constants.primaryNormal
+        default:
+            Constants.textSecondary
+        }
     }
 }
 
@@ -143,15 +160,19 @@ private struct MyPageToggleRow: View {
 }
 
 #Preview {
+    let container = try! ModelContainer(
+        for: Scenario.self,
+        ScriptLine.self,
+        AudioClipMetadata.self,
+        SafetyContact.self,
+        CallSession.self,
+        CallRecording.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+
     NavigationStack {
         MyPageView()
     }
-    .modelContainer(
-        for: [
-            CallSession.self,
-            CallRecording.self,
-            SafetyContact.self
-        ],
-        inMemory: true
-    )
+    .modelContainer(container)
+    .environment(CloudSyncCoordinator(modelContainer: container))
 }

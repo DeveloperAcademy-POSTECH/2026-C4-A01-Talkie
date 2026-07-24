@@ -13,6 +13,8 @@ final class Scenario {
     var id: UUID = UUID()
     var title: String
     var createdAt: Date
+    /// 로컬 변경과 iCloud 변경이 충돌할 때 더 최신 값을 고르기 위한 시각입니다.
+    var updatedAt: Date = Date()
     /// #54 이전 seed 데이터를 한 번 정리하기 위한 임시 호환 필드입니다.
     /// 새 프리셋은 이 모델에 저장하지 않습니다.
     var presetID: String?
@@ -28,6 +30,7 @@ final class Scenario {
         title: String,
         callerName: String,
         createdAt: Date = Date(),
+        updatedAt: Date = Date(),
         presetID: String? = nil,
         isCurrentSelection: Bool = false
     ) {
@@ -35,6 +38,7 @@ final class Scenario {
         self.title = title
         self.callerName = callerName
         self.createdAt = createdAt
+        self.updatedAt = updatedAt
         self.presetID = presetID
         self.isCurrentSelection = isCurrentSelection
     }

@@ -89,10 +89,13 @@ final class ScenarioDetailViewModel {
             }
         }
 
+        let scenarioID = customScenario.id
+        let scriptLineIDs = customScenario.scriptLines.map(\.id)
         modelContext.delete(customScenario)
 
         do {
             try modelContext.save()
+            CloudSyncChangeTracker.deletedScenario(id: scenarioID, scriptLineIDs: scriptLineIDs)
             return true
         } catch {
             errorMessage = "시나리오를 삭제하지 못했습니다."
