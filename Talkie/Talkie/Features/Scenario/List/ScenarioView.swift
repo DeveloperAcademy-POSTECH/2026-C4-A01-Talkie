@@ -43,7 +43,7 @@ struct ScenarioView: View {
                         .frame(width: 95, height: 24, alignment: .leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
-                        .padding(.top, 16)
+                        .padding(.top, 10)
 
                     LazyVStack(spacing: 24) {
                         ForEach(scenarios) { scenario in
@@ -76,7 +76,7 @@ struct ScenarioView: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 25)
+                    .frame(height: 20)
                     .allowsHitTesting(false)
                 }
             }
