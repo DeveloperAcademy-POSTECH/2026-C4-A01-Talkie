@@ -42,6 +42,7 @@ struct MainTabView: View {
         .onChange(of: widgetCallRequestID) { _, _ in
             selectPhoneTabIfWidgetCallIsPending()
         }
+        .toolbarBackground(.hidden, for: .tabBar)
         .tint(Constants.primaryNormal)
     }
 
