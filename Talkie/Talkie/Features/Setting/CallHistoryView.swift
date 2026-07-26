@@ -210,7 +210,7 @@ private struct CallHistoryHeader: View {
                 Text(isSelecting ? "취소" : "선택")
                     .font(Font.pretendard(.semiBold, size: 16))
                     .foregroundStyle(.white)
-                    .frame(width: 40, height: 28)
+                    .frame(width: 35, height: 28)
             }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
