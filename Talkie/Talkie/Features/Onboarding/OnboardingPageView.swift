@@ -10,13 +10,13 @@ struct OnboardingPageView: View {
             
             VStack(alignment: .leading, spacing: 3) {
                 Text(data.title)
-                    .font(Font.pretendard(.bold, size: 22))
+                    .font(Font.pretendard(.semiBold, size: 24))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.leading)
                  
                 Text(data.description)
                     .font(Font.pretendard(.regular, size: 16))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(Constants.grey300)
                     .multilineTextAlignment(.leading)
             }
             .frame(height: 90, alignment: .topLeading)

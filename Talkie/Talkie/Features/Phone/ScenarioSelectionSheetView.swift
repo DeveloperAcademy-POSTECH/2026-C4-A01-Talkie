@@ -28,11 +28,14 @@ struct ScenarioSelectionSheetView: View {
 
     var body: some View {
         ZStack {
+            Color.black
+                .ignoresSafeArea()
+
             VStack(spacing: 24) {
                 dragHandle
 
-                Text("통화용 오디오")
-                    .font(Font.pretendard(.bold, size: 18))
+                Text("시나리오 목록")
+                    .font(Font.pretendard(.semiBold, size: 18))
                     .foregroundStyle(.white)
 
                 scenarioList
@@ -95,8 +98,8 @@ struct ScenarioSelectionSheetView: View {
                         .lineLimit(1)
 
                     Text("발화자 | \(scenario.callerName)")
-                        .font(Font.pretendard(.medium, size: 13))
-                        .foregroundStyle(.white.opacity(0.42))
+                        .font(Font.pretendard(.medium, size: 14))
+                        .foregroundStyle(Constants.grey500)
                         .lineLimit(1)
                 }
 
