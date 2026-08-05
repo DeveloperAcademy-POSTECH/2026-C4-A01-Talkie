@@ -228,8 +228,8 @@ final class ScriptEditViewModel {
         let movedLine = lines.remove(at: sourceIndex)
         let adjustedDestinationIndex = sourceIndex < destinationIndex ? destinationIndex - 1 : destinationIndex
         lines.insert(movedLine, at: adjustedDestinationIndex)
+        reassignSortOrders(for: lines)
         scenario.scriptLines = lines
-        reassignSortOrders()
         saveChanges()
     }
 
@@ -241,8 +241,8 @@ final class ScriptEditViewModel {
 
         var lines = sortedScriptLines
         lines.move(fromOffsets: source, toOffset: destination)
+        reassignSortOrders(for: lines)
         scenario.scriptLines = lines
-        reassignSortOrders()
         saveChanges()
     }
     
@@ -426,7 +426,11 @@ final class ScriptEditViewModel {
     }
     
     private func reassignSortOrders() {
-        for (index, scriptLine) in sortedScriptLines.enumerated() {
+        reassignSortOrders(for: sortedScriptLines)
+    }
+
+    private func reassignSortOrders(for lines: [ScriptLine]) {
+        for (index, scriptLine) in lines.enumerated() {
             scriptLine.sortOrder = index
         }
     }

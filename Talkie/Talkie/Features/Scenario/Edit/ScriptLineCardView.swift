@@ -153,11 +153,19 @@ struct ScriptLineCardView: View {
     
     private var recordButton: some View {
         Button(action: onRecordToggle) {
-            Image(systemName: isRecording ? "square.fill" : "mic.fill")
-                .font(.system(size: isRecording ? 24 : 18, weight: .semibold))
-                .foregroundColor(Constants.primaryNormal)
-                .frame(width: 36, height: 36)
-                .background(Constants.surfaceButton)
+            Group {
+                if isRecording {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Constants.grey800)
+                        .frame(width: 12, height: 12)
+                } else {
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Constants.primaryNormal)
+                }
+            }
+                .frame(width: 28, height: 28)
+                .background(isRecording ? Constants.primaryNormal : Constants.surfaceButton)
                 .clipShape(RoundedRectangle(cornerRadius: 70))
         }
         .buttonStyle(.plain)

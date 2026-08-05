@@ -38,7 +38,7 @@ struct ScriptEditView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Color.black
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
@@ -51,11 +51,7 @@ struct ScriptEditView: View {
                 recordingProgressHeader
                 scriptLineList
             }
-            .padding(.bottom, 88)
-
-            bottomActionButton
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
         .edgeSwipeBack {
             dismiss()
         }
@@ -110,7 +106,7 @@ struct ScriptEditView: View {
                     Text("편집")
                         .font(Font.pretendard(.medium, size: 16))
                         .foregroundColor(.white)
-                        .frame(width: 44, height: 30)
+                        .frame(width: 35, height: 28)
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
@@ -168,7 +164,7 @@ struct ScriptEditView: View {
                         viewModel.updateText(text, for: scriptLine)
                     }
                 )
-                .listRowBackground(Color.clear)
+                .listRowBackground(dismissKeyboardRowBackground)
                 .listRowSeparator(.hidden)
                 .listRowInsets(
                     EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
@@ -188,12 +184,19 @@ struct ScriptEditView: View {
 
             if viewModel.canEditScripts && !isEditingScripts {
                 addScriptLineButton
-                    .listRowBackground(Color.clear)
+                    .listRowBackground(dismissKeyboardRowBackground)
                     .listRowSeparator(.hidden)
                     .listRowInsets(
                         EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
                     )
             }
+
+            bottomActionButton
+                .listRowBackground(dismissKeyboardRowBackground)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(top: 16, leading: 0, bottom: 36, trailing: 0)
+                )
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -204,6 +207,14 @@ struct ScriptEditView: View {
             \.editMode,
             .constant(isEditingScripts ? EditMode.active : EditMode.inactive)
         )
+    }
+
+    private var dismissKeyboardRowBackground: some View {
+        Color.black
+            .contentShape(Rectangle())
+            .onTapGesture {
+                dismissKeyboard()
+            }
     }
 
     private var addScriptLineButton: some View {
@@ -243,8 +254,6 @@ struct ScriptEditView: View {
                 .cornerRadius(16)
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 36)
-        .background(Color.black)
     }
 
     private func dismissKeyboard() {
