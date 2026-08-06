@@ -33,7 +33,7 @@ struct SafetyContactSetupView: View {
                             .foregroundColor(Constants.grey100)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                        Text("설정에서 언제든지 변경할 수 있어요.")
+                        Text("위급한 상황에 등록한 연락처로 현재 위치를 전송합니다. 설정에서 언제든 변경할 수 있어요.")
                             .font(Font.pretendard(.regular, size: 16))
                             .foregroundColor(Constants.grey300)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -97,13 +97,13 @@ private extension SafetyContactSetupView {
             )
         } label: {
             Text("시작하기")
-                .font(Font.pretendard(.medium, size: 16))
+                .font(Font.pretendard(.semiBold, size: 17))
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 16)
         }
         .background(viewModel.canStart ? Constants.main500 : Constants.surfaceDisable)
-        .foregroundStyle(.black)
+        .foregroundStyle(.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .disabled(!viewModel.canStart)
     }

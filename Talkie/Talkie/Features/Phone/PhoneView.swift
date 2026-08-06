@@ -113,6 +113,7 @@ struct PhoneView: View {
                     onSelect: selectScenario
                 )
                 .presentationDetents([.height(520), .large])
+                .presentationBackground(.black)
                 .presentationDragIndicator(.hidden)
             }
             .alert("통화내역 저장 실패", isPresented: isHistorySaveErrorPresented) {

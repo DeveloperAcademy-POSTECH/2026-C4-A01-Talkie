@@ -34,7 +34,7 @@ final class SafetyContactSetupViewModel {
     var errorMessage: String?
     
     init() {
-        contactInputs = Array(repeating: SafetyContactInput(), count: 3)
+        contactInputs = [SafetyContactInput()]
     }
     
     var canStart: Bool {

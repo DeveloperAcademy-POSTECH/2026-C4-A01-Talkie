@@ -41,7 +41,7 @@ struct PhoneCardView: View {
                 .padding(.trailing, 16)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 434)
+        .frame(height: 411)
         .background(cardBackground)
     }
 }
@@ -52,7 +52,7 @@ private extension PhoneCardView {
             Text("변경")
                 .font(Font.pretendard(.medium, size: 14))
                 .foregroundStyle(.white.opacity(0.86))
-                .frame(width: 35, height: 20)
+                .frame(width: 33, height: 23)
         }
         .buttonStyle(.glass)
         .buttonBorderShape(.capsule)
@@ -82,14 +82,14 @@ private extension PhoneCardView {
         if let scenario {
             VStack(spacing: 8) {
                 Text(scenario.title)
-                    .font(Font.pretendard(.bold, size: 24))
+                    .font(Font.pretendard(.bold, size: 28))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                 
                 Text("발화자 | \(scenario.callerName)")
-                    .font(Font.pretendard(.medium, size: 15))
-                    .foregroundStyle(.white.opacity(0.42))
+                    .font(Font.pretendard(.medium, size: 16))
+                    .foregroundStyle(Constants.textTertiary)
                     .lineLimit(1)
             }
         } else {

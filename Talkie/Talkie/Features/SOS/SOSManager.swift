@@ -75,7 +75,7 @@ final class SOSManager {
             return
         }
 
-        let emergencyNumber = SOSEmergencyDestination.displayName
+        let emergencyNumber = SOSEmergencyDestination.phoneNumber
         
         pendingMessageRequest = SOSMessageRequest(
             mode: .emergencySMS112,
@@ -87,7 +87,7 @@ final class SOSManager {
     func callEmergencyServices() {
         currentError = nil
 
-        let emergencyNumber = SOSEmergencyDestination.displayName
+        let emergencyNumber = SOSEmergencyDestination.phoneNumber
 
         Task { [weak self] in
             let didOpen = await SOSEmergencyCallService.call(phoneNumber: emergencyNumber)
