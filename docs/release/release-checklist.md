@@ -3,13 +3,15 @@
 ## 현재 확인된 상태
 
 - 앱 버전 / 빌드: `1.0 (1)`
-- 앱 Bundle ID: `com.NestLeavers.Talkie`
-- 위젯 Bundle ID: `com.NestLeavers.Talkie.Widget`
-- App Group: `group.com.Talkie.app`
-- iCloud Container: `iCloud.com.NestLeavers.Talkie`
+- App Store 이름: `Talkie - 안심 가상통화`
+- 앱 Bundle ID: `com.bk.spatial.talkie`
+- 위젯 Bundle ID: `com.bk.spatial.talkie.Widget`
+- App Group: `group.com.bk.spatial.talkie`
+- iCloud Container: `iCloud.com.bk.spatial.talkie`
 - 최소 iOS: 앱 `26.0`, 위젯 `26.5`
 - 지원 기기: 앱은 iPhone 전용
 - 스크린샷: 한국어 6.9형 5장 자동 생성 구성
+- App Store Connect 앱 ID: `6798574594`
 
 ## 로컬 준비
 
@@ -24,15 +26,16 @@
 
 ## 계정과 서명 — 출시 전 차단 항목
 
-현재 프로젝트는 `UFXU86865W` 팀과 `NestLeavers` 식별자를 사용한다. 개인 계정으로 출시하려면 아래 항목을 같은 소유권 아래 다시 맞춰야 한다.
+프로젝트는 개인 Apple Developer 팀 `F6NWQ49U3H`의 Talkie 식별자 체계로 전환했다.
 
-- [ ] 개인 Apple Developer 팀의 앱 App ID
-- [ ] 위젯 App ID와 앱-위젯 포함 관계
-- [ ] App Group 생성 및 양쪽 타깃 연결
-- [ ] iCloud Container / CloudKit 권한과 production schema
+- [x] 개인 Apple Developer 팀의 앱 App ID
+- [x] 위젯 App ID 등록
+- [x] App Group 생성 및 양쪽 App ID 연결
+- [x] iCloud Container 생성 및 앱 App ID에 CloudKit 연결
+- [ ] CloudKit production schema 배포
 - [ ] 배포 인증서와 App Store provisioning profile
-- [ ] 개인 App Store Connect의 앱 레코드
-- [ ] Fastlane용 App Store Connect API key 또는 로그인 세션
+- [x] 개인 App Store Connect의 앱 레코드 생성 (`Talkie - 안심 가상통화`, 2026-08-06)
+- [x] Talkie 전용 App Store Connect API key 발급 및 Fastlane 조회 검증 (2026-08-06)
 
 기존 팀의 iCloud Container 데이터는 자동으로 개인 팀 Container로 이동하지 않는다. 출시 계정이 확정되기 전에 실제 사용자 데이터를 만들지 않는 것이 안전하다.
 
@@ -68,7 +71,8 @@
 - API 키, Apple ID, 팀 ID를 저장소에 커밋하지 않는다.
 - `upload_screenshots`는 `CONFIRM_SCREENSHOT_UPLOAD=YES`가 없으면 중단한다.
 - TestFlight, 메타데이터, 스크린샷과 심사 제출 lane은 서로 분리하고 버전값 확인 잠금을 둔다.
-- 개인 팀·앱 레코드가 확정되기 전에는 외부 변경 lane을 실행하지 않는다.
+- 새 앱 레코드는 App Store Connect 웹에서 생성한다. Apple의 Apps API는 새 앱 생성을 지원하지 않는다.
+- 외부 변경 lane은 개인 팀·앱 레코드와 API 키 연결을 확인한 뒤 실행한다.
 
 ## AirGiggle 방식 적용 상태
 
@@ -78,4 +82,4 @@
 - [x] 앱·위젯·App Group·CloudKit·아이콘·스크린샷을 검사하는 `preflight` lane 구성
 - [x] App Store Connect API key와 심사 담당자 정보를 환경변수로 분리
 - [x] 개인 GitHub Pages 경로 `https://lepurecafe.github.io/Talkie/` 공개 (2026-08-06)
-- [ ] 개인 Apple Developer 식별자로 프로젝트와 Fastlane 환경변수 통일
+- [x] 개인 Apple Developer 식별자로 프로젝트와 Fastlane 기본값 통일 (2026-08-06)
