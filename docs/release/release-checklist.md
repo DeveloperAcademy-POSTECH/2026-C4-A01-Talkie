@@ -40,8 +40,8 @@
 
 - [x] 앱 이름(30자 이하), 부제(30자 이하) 초안
 - [x] 설명, 키워드, 프로모션 문구 초안
-- [ ] 서포트 URL 공개 및 HTTPS 200 확인
-- [ ] 개인정보 처리방침 URL 공개 및 HTTPS 200 확인 — iOS 앱 필수
+- [x] 서포트 URL 공개 및 HTTPS 200 확인 (2026-08-06)
+- [x] 개인정보 처리방침 URL 공개 및 HTTPS 200 확인 — iOS 앱 필수 (2026-08-06)
 - [ ] 카테고리와 연령 등급
 - [ ] 앱 개인정보: 연락처, 위치, 오디오, 사용자 콘텐츠, iCloud 처리 여부
 - [ ] 심사 노트: 가상 통화 목적, 마이크·위치 권한, 위젯, 녹음 테스트 방법
@@ -77,5 +77,5 @@
 - [x] 한국어 App Store 메타데이터와 영문 심사 노트를 파일로 관리
 - [x] 앱·위젯·App Group·CloudKit·아이콘·스크린샷을 검사하는 `preflight` lane 구성
 - [x] App Store Connect API key와 심사 담당자 정보를 환경변수로 분리
-- [ ] 개인 GitHub Pages 경로 `https://lepurecafe.github.io/Talkie/` 공개
+- [x] 개인 GitHub Pages 경로 `https://lepurecafe.github.io/Talkie/` 공개 (2026-08-06)
 - [ ] 개인 Apple Developer 식별자로 프로젝트와 Fastlane 환경변수 통일
