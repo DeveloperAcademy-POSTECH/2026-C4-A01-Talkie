@@ -1,0 +1,2 @@
+app_identifier(ENV.fetch("TALKIE_APP_IDENTIFIER", "com.NestLeavers.Talkie"))
+team_id(ENV.fetch("TALKIE_TEAM_ID", "UFXU86865W"))

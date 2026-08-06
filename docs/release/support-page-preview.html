@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talkie Support Design Preview</title>
+  <link rel="stylesheet" href="./support-page-tokens.css">
+  <style>
+    main { padding: 72px 0; }
+    .hero { max-width: 720px; padding: 48px 0 64px; }
+    .eyebrow { color: var(--talkie-orange-500); font-weight: 700; }
+    h1 { margin: 8px 0 16px; font-size: clamp(36px, 7vw, 56px); line-height: 1.15; }
+    h2 { margin: 0 0 24px; font-size: 24px; }
+    p { color: var(--talkie-grey-300); }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .talkie-card h3 { margin-top: 0; }
+    .emergency { margin-top: 48px; border-left: 3px solid var(--talkie-danger); }
+  </style>
+</head>
+<body>
+  <main class="talkie-container">
+    <section class="hero">
+      <div class="eyebrow">Talkie Support</div>
+      <h1>혼자 걷는 밤길도,<br>혼자가 아니도록</h1>
+      <p>가상 통화, 위젯, SOS와 녹음 기능을 쉽고 빠르게 확인하세요.</p>
+      <a class="talkie-button" href="#quick-help">빠른 도움 보기</a>
+    </section>
+
+    <section id="quick-help">
+      <h2>빠른 도움</h2>
+      <div class="grid">
+        <article class="talkie-card"><h3>가상 통화</h3><p>대화를 선택하고 자연스럽게 가상 통화를 시작하는 방법을 확인해요.</p><a href="#">사용 방법</a></article>
+        <article class="talkie-card"><h3>위젯</h3><p>홈 화면에서 한 번의 터치로 바로 통화를 시작해요.</p><a href="#">설정 방법</a></article>
+        <article class="talkie-card"><h3>녹음과 iCloud</h3><p>자동 녹음과 동기화 범위, 삭제 방법을 확인해요.</p><a href="#">데이터 안내</a></article>
+      </div>
+    </section>
+
+    <aside class="talkie-card emergency">
+      <h3>즉각적인 위험 상황인가요?</h3>
+      <p>Talkie는 실제 보호나 범죄 예방을 보장하지 않습니다. 긴급 상황에서는 112에 먼저 연락하세요.</p>
+    </aside>
+  </main>
+</body>
+</html>

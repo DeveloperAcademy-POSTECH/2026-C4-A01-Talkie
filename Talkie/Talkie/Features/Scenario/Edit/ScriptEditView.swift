@@ -124,17 +124,19 @@ struct ScriptEditView: View {
     }
 
     private var recordingProgressHeader: some View {
-        (
+        HStack(spacing: 0) {
             Text("대화 문장 녹음 진행도 ")
                 .font(Font.pretendard(.semiBold, size: 16))
                 .foregroundColor(.white)
-            + Text("\(viewModel.recordedCount)")
+
+            Text("\(viewModel.recordedCount)")
                 .font(Font.pretendard(.regular, size: 16))
                 .foregroundColor(Constants.primaryNormal)
-            + Text("/\(viewModel.totalCount)")
+
+            Text("/\(viewModel.totalCount)")
                 .font(Font.pretendard(.regular, size: 16))
                 .foregroundColor(Constants.grey300)
-        )
+        }
         .contentShape(Rectangle())
         .onTapGesture {
             dismissKeyboard()
