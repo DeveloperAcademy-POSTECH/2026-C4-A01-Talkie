@@ -21,8 +21,9 @@
 - [ ] 위젯 설치·실행과 Live Activity / Dynamic Island 확인
 - [ ] 자동 녹음과 iCloud 동기화 켜기·끄기·삭제 확인
 - [ ] 위치 공유, 112 문자, 112 전화의 확인 단계 점검
-- [ ] Release 구성 Archive 성공
-- [ ] 앱·위젯 버전과 빌드 번호 일치
+- [x] Release 구성 Archive 및 App Store IPA 내보내기 성공 (2026-08-06)
+- [x] 앱·위젯 버전과 빌드 번호 `1.0 (1)` 일치
+- [x] TestFlight `1.0 (1)` 업로드·처리·내부 테스터 배포 완료 (2026-08-06)
 
 ## 계정과 서명 — 출시 전 차단 항목
 
@@ -33,7 +34,7 @@
 - [x] App Group 생성 및 양쪽 App ID 연결
 - [x] iCloud Container 생성 및 앱 App ID에 CloudKit 연결
 - [ ] CloudKit production schema 배포
-- [ ] 배포 인증서와 App Store provisioning profile
+- [x] 자동 서명으로 앱·위젯 App Store provisioning profile 생성 및 Archive 검증
 - [x] 개인 App Store Connect의 앱 레코드 생성 (`Talkie - 안심 가상통화`, 2026-08-06)
 - [x] Talkie 전용 App Store Connect API key 발급 및 Fastlane 조회 검증 (2026-08-06)
 
@@ -43,6 +44,9 @@
 
 - [x] 앱 이름(30자 이하), 부제(30자 이하) 초안
 - [x] 설명, 키워드, 프로모션 문구 초안
+- [x] 한국어 설명·부제·키워드·프로모션 문구·URL·저작권 업로드 (2026-08-06)
+- [x] 한국어 iPhone 6.9형 스크린샷 5장 업로드 (2026-08-06)
+- [x] Fastlane App Store 메타데이터 정책 사전검사 통과 (2026-08-06)
 - [x] 서포트 URL 공개 및 HTTPS 200 확인 (2026-08-06)
 - [x] 개인정보 처리방침 URL 공개 및 HTTPS 200 확인 — iOS 앱 필수 (2026-08-06)
 - [ ] 카테고리와 연령 등급
