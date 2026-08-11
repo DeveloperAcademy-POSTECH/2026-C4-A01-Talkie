@@ -1,0 +1,2 @@
+app_identifier(ENV.fetch("TALKIE_APP_IDENTIFIER", "com.bk.spatial.talkie"))
+team_id(ENV.fetch("TALKIE_TEAM_ID", "F6NWQ49U3H"))

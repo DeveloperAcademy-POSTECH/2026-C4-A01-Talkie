@@ -1,0 +1,9 @@
+Talkie provides a simulated personal phone call for users who feel uneasy while walking alone. It does not impersonate emergency services and does not claim to prevent crime or guarantee safety. No demo account is required.
+
+On first launch, complete the onboarding flow, select one of the included conversation scenarios, and tap the call button. During a simulated call, microphone input is used only to detect speech activity and continuous silence so the prerecorded conversation can advance naturally. The app does not transcribe speech.
+
+Automatic recording is optional and disabled unless the user enables it. A recording contains the user's microphone input and surrounding sound. It is stored locally and can be played or deleted from the app. If the user separately enables iCloud sync and confirms the recording notice, supported app data and recordings are stored in the user's private iCloud database.
+
+Location permission is requested only when the user taps location sharing or an emergency message action. Talkie prepares a Messages composer containing a map link; the user reviews and sends it. The emergency call action opens the system phone flow for 112.
+
+The home-screen widget starts the selected simulated-call scenario. Live Activity and background audio are used only while a simulated call is active.

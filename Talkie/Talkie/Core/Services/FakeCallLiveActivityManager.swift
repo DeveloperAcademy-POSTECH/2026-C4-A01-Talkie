@@ -16,7 +16,7 @@ final class FakeCallLiveActivityManager {
     static let shared = FakeCallLiveActivityManager()
 
     private let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier ?? "com.Team01.Talkie",
+        subsystem: Bundle.main.bundleIdentifier ?? "com.bk.spatial.talkie",
         category: "FakeCallLiveActivity"
     )
 

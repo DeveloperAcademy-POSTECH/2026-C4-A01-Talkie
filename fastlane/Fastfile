@@ -1,0 +1,293 @@
+require "fileutils"
+require "json"
+require "spaceship"
+
+ENV["DEVELOPER_DIR"] ||= "/Applications/Xcode.app/Contents/Developer"
+
+ROOT = File.expand_path("..", __dir__)
+PROJECT_PATH = File.join(ROOT, "Talkie", "Talkie.xcodeproj")
+APP_VERSION = ENV.fetch("TALKIE_APP_VERSION", "1.0")
+APP_IDENTIFIER = ENV.fetch("TALKIE_APP_IDENTIFIER", "com.bk.spatial.talkie")
+WIDGET_IDENTIFIER = ENV.fetch("TALKIE_WIDGET_IDENTIFIER", "com.bk.spatial.talkie.Widget")
+DEVELOPMENT_TEAM = ENV.fetch("TALKIE_TEAM_ID", "F6NWQ49U3H")
+APP_GROUP = ENV.fetch("TALKIE_APP_GROUP", "group.com.bk.spatial.talkie")
+ICLOUD_CONTAINER = ENV.fetch("TALKIE_ICLOUD_CONTAINER", "iCloud.com.bk.spatial.talkie")
+METADATA_PATH = File.join(__dir__, "metadata")
+SCREENSHOTS_PATH = File.join(__dir__, "screenshots")
+APP_ICON_PATH = File.join(ROOT, "Talkie", "Talkie", "Assets.xcassets", "AppIcon.appiconset", "AppIcon.png")
+APP_ENTITLEMENTS_PATH = File.join(ROOT, "Talkie", "Talkie", "Talkie.entitlements")
+WIDGET_ENTITLEMENTS_PATH = File.join(ROOT, "Talkie", "CallShortcutWidget", "CallShortcutWidgetExtension.entitlements")
+
+def app_store_api_key!
+  required = %w[ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_FILEPATH]
+  missing = required.reject { |name| !ENV[name].to_s.empty? }
+  UI.user_error!("Missing App Store Connect API variables: #{missing.join(', ')}") unless missing.empty?
+  UI.user_error!("ASC_KEY_FILEPATH does not point to a file") unless File.file?(ENV.fetch("ASC_KEY_FILEPATH"))
+
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_filepath: ENV.fetch("ASC_KEY_FILEPATH"),
+    duration: 1_200,
+    in_house: false
+  )
+end
+
+def require_confirmation!(variable, expected = APP_VERSION)
+  UI.user_error!("Set #{variable}=#{expected} to continue") unless ENV[variable] == expected
+end
+
+def read_metadata(locale, field)
+  path = File.join(METADATA_PATH, locale, "#{field}.txt")
+  UI.user_error!("Missing metadata file: #{path}") unless File.file?(path) && !File.zero?(path)
+  File.read(path).sub(/\R\z/, "")
+end
+
+def verify_metadata!
+  locale = "ko"
+  values = %w[name subtitle promotional_text description keywords support_url privacy_url marketing_url].to_h do |field|
+    [field, read_metadata(locale, field)]
+  end
+  limits = { "name" => 30, "subtitle" => 30, "promotional_text" => 170, "description" => 4_000, "keywords" => 100 }
+  limits.each do |field, limit|
+    UI.user_error!("#{field} exceeds #{limit} characters") if values.fetch(field).length > limit
+  end
+  %w[support_url privacy_url marketing_url].each do |field|
+    UI.user_error!("#{field} must use HTTPS") unless values.fetch(field).start_with?("https://")
+  end
+  UI.user_error!("Review notes are missing") unless File.file?(File.join(METADATA_PATH, "review_information", "notes.txt"))
+  UI.success("Korean metadata is complete and within App Store field limits")
+end
+
+def verify_icon!
+  UI.user_error!("App icon is missing") unless File.file?(APP_ICON_PATH)
+  output = Actions.sh("sips", "-g", "pixelWidth", "-g", "pixelHeight", "-g", "hasAlpha", "-g", "format", APP_ICON_PATH, log: false)
+  UI.user_error!("App icon must be an opaque 1024x1024 PNG") unless output.include?("pixelWidth: 1024") && output.include?("pixelHeight: 1024") && output.include?("hasAlpha: no") && output.downcase.include?("format: png")
+  UI.success("App icon is a valid opaque 1024x1024 PNG")
+end
+
+def build_settings_for(target)
+  output = Actions.sh(
+    "xcodebuild", "-project", PROJECT_PATH, "-target", target,
+    "-configuration", "Release", "-showBuildSettings", log: false
+  )
+  output.lines.each_with_object({}) do |line, settings|
+    match = line.match(/^\s*([A-Z0-9_]+) = (.*)$/)
+    settings[match[1]] = match[2].strip if match
+  end
+end
+
+def verify_project_contract!
+  app = build_settings_for("Talkie")
+  widget = build_settings_for("CallShortcutWidgetExtension")
+  checks = {
+    "App version" => [app["MARKETING_VERSION"], APP_VERSION],
+    "App bundle identifier" => [app["PRODUCT_BUNDLE_IDENTIFIER"], APP_IDENTIFIER],
+    "Widget bundle identifier" => [widget["PRODUCT_BUNDLE_IDENTIFIER"], WIDGET_IDENTIFIER],
+    "App development team" => [app["DEVELOPMENT_TEAM"], DEVELOPMENT_TEAM],
+    "Widget development team" => [widget["DEVELOPMENT_TEAM"], DEVELOPMENT_TEAM],
+    "App device family" => [app["TARGETED_DEVICE_FAMILY"], "1"]
+  }
+  mismatches = checks.filter_map { |label, pair| "#{label}: #{pair[0].inspect} != #{pair[1].inspect}" unless pair[0] == pair[1] }
+  UI.user_error!(mismatches.join("; ")) unless mismatches.empty?
+
+  app_entitlements = Plist.parse_xml(APP_ENTITLEMENTS_PATH)
+  widget_entitlements = Plist.parse_xml(WIDGET_ENTITLEMENTS_PATH)
+  UI.user_error!("App Group is missing from the app target") unless app_entitlements.fetch("com.apple.security.application-groups", []).include?(APP_GROUP)
+  UI.user_error!("App Group is missing from the widget target") unless widget_entitlements.fetch("com.apple.security.application-groups", []).include?(APP_GROUP)
+  UI.user_error!("CloudKit container is missing") unless app_entitlements.fetch("com.apple.developer.icloud-container-identifiers", []).include?(ICLOUD_CONTAINER)
+  UI.user_error!("CloudKit service entitlement is missing") unless app_entitlements.fetch("com.apple.developer.icloud-services", []).include?("CloudKit")
+  UI.success("App, widget, App Group, CloudKit, version, and team settings are consistent")
+end
+
+def screenshot_files!
+  paths = Dir[File.join(SCREENSHOTS_PATH, "ko-KR", "*.jpg")].sort
+  UI.user_error!("Expected 5 Korean screenshots, found #{paths.count}") unless paths.count == 5
+  paths.each do |path|
+    info = Actions.sh("sips", "-g", "pixelWidth", "-g", "pixelHeight", "-g", "hasAlpha", path, log: false)
+    UI.user_error!("Invalid screenshot: #{path}") unless info.include?("pixelWidth: 1320") && info.include?("pixelHeight: 2868") && info.include?("hasAlpha: no")
+  end
+  paths
+end
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Validate Talkie's release package locally without contacting Apple"
+  lane :preflight do
+    verify_project_contract!
+    verify_icon!
+    verify_metadata!
+    screenshot_files!
+    sh(
+      "env", "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer",
+      "xcodebuild", "-project", PROJECT_PATH, "-scheme", "Talkie",
+      "-configuration", "Release", "-destination", "generic/platform=iOS Simulator",
+      "-derivedDataPath", "/tmp/TalkieReleaseDerivedData", "CODE_SIGNING_ALLOWED=NO", "build"
+    )
+  end
+
+  desc "Capture the deterministic Korean App Store screenshot set"
+  lane :screenshots do
+    sh(File.join(ROOT, "Scripts", "capture_app_store_screenshots.sh"))
+  end
+
+  desc "Read the Talkie record and latest TestFlight build from App Store Connect"
+  lane :asc_status do
+    api_key = app_store_api_key!
+    app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+    UI.user_error!("Talkie app record was not found: #{APP_IDENTIFIER}") unless app
+    latest = latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      version: APP_VERSION,
+      platform: "ios",
+      initial_build_number: 0
+    )
+    UI.success("App Store Connect: #{APP_IDENTIFIER}, version #{APP_VERSION}, latest build #{latest}")
+  end
+
+  desc "Build and upload Talkie to TestFlight without submitting for review"
+  lane :beta do |options|
+    require_confirmation!("CONFIRM_TESTFLIGHT_UPLOAD")
+    preflight
+    api_key = app_store_api_key!
+    build_number = options[:build_number] || Time.now.utc.strftime("%Y%m%d%H%M")
+    build_app(
+      project: PROJECT_PATH,
+      scheme: "Talkie",
+      configuration: "Release",
+      clean: true,
+      export_method: "app-store",
+      output_directory: File.join(__dir__, "build"),
+      output_name: "Talkie-#{APP_VERSION}-#{build_number}.ipa",
+      derived_data_path: "/tmp/TalkieArchiveDerivedData",
+      xcargs: "CURRENT_PROJECT_VERSION=#{build_number} DEVELOPMENT_TEAM=#{DEVELOPMENT_TEAM} -allowProvisioningUpdates",
+      export_options: { signingStyle: "automatic", teamID: DEVELOPMENT_TEAM },
+      export_xcargs: "-allowProvisioningUpdates"
+    )
+    upload_to_testflight(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      skip_waiting_for_build_processing: false,
+      distribute_external: false
+    )
+  end
+
+  desc "Upload Korean metadata only; no screenshots, binary, or review submission"
+  lane :upload_metadata do
+    require_confirmation!("CONFIRM_METADATA_UPLOAD")
+    verify_metadata!
+    app_store_api_key!
+
+    app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+    UI.user_error!("Talkie app record was not found: #{APP_IDENTIFIER}") unless app
+
+    platform = Spaceship::ConnectAPI::Platform::IOS
+    version = app.get_edit_app_store_version(platform: platform)
+    UI.user_error!("Talkie #{APP_VERSION} iOS version was not found") unless version&.version_string == APP_VERSION
+
+    version_localization = version.get_app_store_version_localizations.find { |item| item.locale == "ko" }
+    version_localization ||= version.create_app_store_version_localization(attributes: { locale: "ko" })
+    version_localization.update(
+      attributes: {
+        "description" => read_metadata("ko", "description"),
+        "keywords" => read_metadata("ko", "keywords"),
+        "marketing_url" => read_metadata("ko", "marketing_url"),
+        "promotional_text" => read_metadata("ko", "promotional_text"),
+        "support_url" => read_metadata("ko", "support_url")
+      }
+    )
+
+    app_info = app.fetch_edit_app_info
+    UI.user_error!("Editable Talkie app information was not found") unless app_info
+    info_localization = app_info.get_app_info_localizations.find { |item| item.locale == "ko" }
+    info_localization ||= app_info.create_app_info_localization(attributes: { locale: "ko" })
+    info_localization.update(
+      attributes: {
+        "name" => read_metadata("ko", "name"),
+        "subtitle" => read_metadata("ko", "subtitle"),
+        "privacy_policy_url" => read_metadata("ko", "privacy_url")
+      }
+    )
+
+    copyright = File.read(File.join(METADATA_PATH, "copyright.txt")).strip
+    version.update(attributes: { "copyright" => copyright })
+
+    category = File.read(File.join(METADATA_PATH, "primary_category.txt")).strip
+    category_id = Spaceship::ConnectAPI::AppCategory.map_category_from_itc(category)
+    app_info.update_categories(category_id_map: { primary_category_id: category_id })
+
+    UI.success("Uploaded Korean product-page metadata without review information or submission")
+  end
+
+  desc "Upload approved screenshots only; no metadata, binary, or review submission"
+  lane :upload_screenshots do
+    require_confirmation!("CONFIRM_SCREENSHOT_UPLOAD")
+    paths = screenshot_files!
+    api_key = app_store_api_key!
+    app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+    UI.user_error!("Talkie app record was not found: #{APP_IDENTIFIER}") unless app
+    version = app.get_app_store_versions(filter: { versionString: APP_VERSION, platform: Spaceship::ConnectAPI::Platform::IOS }, includes: nil).first
+    UI.user_error!("Talkie #{APP_VERSION} iOS version was not found") unless version
+    localization = version.get_app_store_version_localizations.find { |item| item.locale == "ko" }
+    UI.user_error!("Korean App Store localization is missing; upload metadata first") unless localization
+    display_type = Spaceship::ConnectAPI::AppScreenshotSet::DisplayType::APP_IPHONE_67
+    set = localization.get_app_screenshot_sets.find { |item| item.screenshot_display_type == display_type }
+    set ||= localization.create_app_screenshot_set(attributes: { screenshotDisplayType: display_type })
+    refreshed = Spaceship::ConnectAPI::AppScreenshotSet.get(app_screenshot_set_id: set.id)
+    refreshed.app_screenshots.to_a.each(&:delete!)
+    paths.each { |path| set.upload_screenshot(path: path, wait_for_processing: true) }
+    UI.success("Uploaded 5 Korean iPhone 6.7-inch screenshots")
+  end
+
+  desc "Run App Store metadata policy checks without submitting for review"
+  lane :review_precheck do
+    precheck(
+      api_key: app_store_api_key!,
+      app_identifier: APP_IDENTIFIER,
+      platform: "ios",
+      default_rule_level: :error,
+      include_in_app_purchases: false,
+      use_live: false
+    )
+  end
+
+  desc "Submit the selected build to App Review after explicit confirmation"
+  lane :submit_review do |options|
+    require_confirmation!("CONFIRM_APP_REVIEW_SUBMIT")
+    required = %w[ASC_REVIEW_FIRST_NAME ASC_REVIEW_LAST_NAME ASC_REVIEW_PHONE ASC_REVIEW_EMAIL ASC_CONTAINS_THIRD_PARTY_CONTENT]
+    missing = required.reject { |name| !ENV[name].to_s.empty? }
+    UI.user_error!("Missing review variables: #{missing.join(', ')}") unless missing.empty?
+    UI.user_error!("Pass build_number:<number>") if options[:build_number].to_s.empty?
+    third_party_content = ENV.fetch("ASC_CONTAINS_THIRD_PARTY_CONTENT").downcase
+    UI.user_error!("ASC_CONTAINS_THIRD_PARTY_CONTENT must be true or false") unless %w[true false].include?(third_party_content)
+    upload_to_app_store(
+      api_key: app_store_api_key!,
+      app_identifier: APP_IDENTIFIER,
+      app_version: APP_VERSION,
+      build_number: options[:build_number].to_s,
+      platform: "ios",
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      automatic_release: false,
+      phased_release: false,
+      force: true,
+      run_precheck_before_submit: true,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: third_party_content == "true"
+      },
+      review_information: {
+        first_name: ENV.fetch("ASC_REVIEW_FIRST_NAME"),
+        last_name: ENV.fetch("ASC_REVIEW_LAST_NAME"),
+        phone_number: ENV.fetch("ASC_REVIEW_PHONE"),
+        email_address: ENV.fetch("ASC_REVIEW_EMAIL"),
+        notes: File.read(File.join(METADATA_PATH, "review_information", "notes.txt"))
+      }
+    )
+  end
+end

@@ -169,7 +169,9 @@ struct CallHistoryView: View {
                 modelContext.delete(session)
             }
             try modelContext.save()
-            sessionIDs.forEach(CloudSyncChangeTracker.deletedCallSession)
+            for sessionID in sessionIDs {
+                CloudSyncChangeTracker.deletedCallSession(id: sessionID)
+            }
 
             // 메타데이터 삭제를 먼저 확정해 앱 목록과 저장소가 반쯤 삭제되는 상태를 피합니다.
             // 이후 파일 정리가 실패해도 다음 정리 작업에서 제거할 수 있는 고아 파일만 남습니다.

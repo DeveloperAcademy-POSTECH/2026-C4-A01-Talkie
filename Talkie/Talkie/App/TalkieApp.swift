@@ -47,12 +47,31 @@ struct TalkieApp: App {
     
     var body: some Scene {
         WindowGroup {
-            AppMainView()
-                .environment(cloudSyncCoordinator)
-                .task {
-                    cloudSyncCoordinator.startIfNeeded()
-                }
+            rootView
         }
         .modelContainer(container)
+    }
+
+    @ViewBuilder
+    private var rootView: some View {
+#if DEBUG
+        if let screenshotMode = ReleaseScreenshotMode.current {
+            // App Store 스크린샷은 실제 제품 화면을 그대로 사용하되, 권한 팝업이나
+            // 사용자 데이터에 영향받지 않는 결정적인 상태로 실행합니다.
+            ReleaseScreenshotView(mode: screenshotMode)
+        } else {
+            appMainView
+        }
+#else
+        appMainView
+#endif
+    }
+
+    private var appMainView: some View {
+        AppMainView()
+            .environment(cloudSyncCoordinator)
+            .task {
+                cloudSyncCoordinator.startIfNeeded()
+            }
     }
 }

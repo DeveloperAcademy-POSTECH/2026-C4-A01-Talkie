@@ -9,7 +9,7 @@ import SwiftUI
 import WidgetKit
 
 private enum CallShortcutWidgetConfiguration {
-    static let appGroupID = "group.com.Talkie.app"
+    static let appGroupID = "group.com.bk.spatial.talkie"
     static let scenarioTitleKey = "widget.currentScenario.title"
     static let callerNameKey = "widget.currentScenario.callerName"
     static let deepLinkURL = URL(string: "myapp://call")!
