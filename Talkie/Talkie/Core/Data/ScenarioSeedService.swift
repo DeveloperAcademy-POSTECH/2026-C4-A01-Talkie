@@ -11,7 +11,6 @@ import SwiftData
 enum ScenarioSeedService {
     /// #54 이전 버전이 SwiftData에 복사한 프리셋을 제거하고 선택값만 새 저장소로 옮깁니다.
     /// 새 프리셋은 PresetScenarioCatalog에서 직접 읽으므로 더 이상 seed하지 않습니다.
-    @MainActor
     static func migrateLegacyPresetDataIfNeeded(into modelContext: ModelContext) throws {
         let descriptor = FetchDescriptor<Scenario>(
             sortBy: [
@@ -51,5 +50,23 @@ enum ScenarioSeedService {
         if needsSave {
             try modelContext.save()
         }
+    }
+}
+
+/// SwiftData 정리는 UI용 mainContext와 분리된 직렬 executor에서 수행합니다.
+/// ModelContext를 detached task로 직접 전달하지 않고 ModelActor가 소유하게 해
+/// SwiftData 모델의 실행 격리를 보장합니다.
+actor ScenarioMigrationActor: ModelActor {
+    nonisolated let modelContainer: ModelContainer
+    nonisolated let modelExecutor: any ModelExecutor
+
+    init(modelContainer: ModelContainer) {
+        self.modelContainer = modelContainer
+        let modelContext = ModelContext(modelContainer)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: modelContext)
+    }
+
+    func migrateLegacyPresetData() throws {
+        try ScenarioSeedService.migrateLegacyPresetDataIfNeeded(into: modelContext)
     }
 }
