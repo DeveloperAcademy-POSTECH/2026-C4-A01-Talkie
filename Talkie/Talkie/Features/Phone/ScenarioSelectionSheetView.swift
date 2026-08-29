@@ -51,7 +51,7 @@ struct ScenarioSelectionSheetView: View {
                     dismiss()
                 } label: {
                     Text("선택하기")
-                        .font(Font.pretendard(.bold, size: 18))
+                        .font(Font.pretendard(.semiBold, size: 18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)

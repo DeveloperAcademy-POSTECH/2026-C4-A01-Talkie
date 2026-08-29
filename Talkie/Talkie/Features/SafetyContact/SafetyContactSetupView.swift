@@ -188,14 +188,16 @@ private extension SafetyContactSetupView {
             prompt: Text(placeholder)
                 .foregroundColor(Constants.grey400)
         )
+        .textFieldStyle(.plain)
         .font(Font.pretendard(.medium, size: 16))
         .foregroundColor(Constants.grey100)
         .keyboardType(keyboardType)
         .focused($focusedField, equals: field)
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 52)
         .background(Constants.surfaceTextField)
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
