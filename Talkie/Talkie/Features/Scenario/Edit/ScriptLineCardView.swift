@@ -164,7 +164,7 @@ struct ScriptLineCardView: View {
                         .foregroundColor(Constants.primaryNormal)
                 }
             }
-                .frame(width: 28, height: 28)
+                .frame(width: 36, height: 36)
                 .background(isRecording ? Constants.primaryNormal : Constants.surfaceButton)
                 .clipShape(RoundedRectangle(cornerRadius: 70))
         }

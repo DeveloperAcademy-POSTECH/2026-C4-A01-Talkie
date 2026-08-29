@@ -149,28 +149,33 @@ struct ScriptEditView: View {
     private var scriptLineList: some View {
         List {
             ForEach(viewModel.sortedScriptLines) { scriptLine in
-                ScriptLineCardView(
-                    scriptLine: scriptLine,
-                    isRecording: viewModel.isRecording(scriptLine),
-                    isPlaying: viewModel.isPlaying(scriptLine),
-                    isEditing: isEditingScripts,
-                    isReadOnly: viewModel.isPresetScenario,
-                    focusedScriptLineID: $focusedScriptLineID,
-                    onPlay: {
-                        viewModel.playRecording(for: scriptLine)
-                    },
-                    onRecordToggle: {
-                        viewModel.toggleRecording(for: scriptLine)
-                    },
-                    onTextChange: { text in
-                        viewModel.updateText(text, for: scriptLine)
-                    }
-                )
-                .listRowBackground(dismissKeyboardRowBackground)
+                VStack(spacing: 0) {
+                    keyboardDismissArea(height: 16)
+
+                    ScriptLineCardView(
+                        scriptLine: scriptLine,
+                        isRecording: viewModel.isRecording(scriptLine),
+                        isPlaying: viewModel.isPlaying(scriptLine),
+                        isEditing: isEditingScripts,
+                        isReadOnly: viewModel.isPresetScenario,
+                        focusedScriptLineID: $focusedScriptLineID,
+                        onPlay: {
+                            viewModel.playRecording(for: scriptLine)
+                        },
+                        onRecordToggle: {
+                            viewModel.toggleRecording(for: scriptLine)
+                        },
+                        onTextChange: { text in
+                            viewModel.updateText(text, for: scriptLine)
+                        }
+                    )
+                    .padding(.horizontal, 16)
+
+                    keyboardDismissArea(height: 8)
+                }
+                .listRowBackground(Color.black)
                 .listRowSeparator(.hidden)
-                .listRowInsets(
-                    EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
-                )
+                .listRowInsets(EdgeInsets())
                 .deleteDisabled(!isEditingScripts || !viewModel.canEditScripts)
                 .moveDisabled(!isEditingScripts || !viewModel.canEditScripts)
             }
@@ -185,16 +190,19 @@ struct ScriptEditView: View {
             }
 
             if viewModel.canEditScripts && !isEditingScripts {
-                addScriptLineButton
-                    .listRowBackground(dismissKeyboardRowBackground)
+                VStack(spacing: 0) {
+                    keyboardDismissArea(height: 16)
+                    addScriptLineButton
+                        .padding(.horizontal, 16)
+                    keyboardDismissArea(height: 8)
+                }
+                    .listRowBackground(Color.black)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(
-                        EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16)
-                    )
+                    .listRowInsets(EdgeInsets())
             }
 
             bottomActionButton
-                .listRowBackground(dismissKeyboardRowBackground)
+                .listRowBackground(Color.black)
                 .listRowSeparator(.hidden)
                 .listRowInsets(
                     EdgeInsets(top: 16, leading: 0, bottom: 36, trailing: 0)
@@ -211,8 +219,10 @@ struct ScriptEditView: View {
         )
     }
 
-    private var dismissKeyboardRowBackground: some View {
+    private func keyboardDismissArea(height: CGFloat) -> some View {
         Color.black
+            .frame(height: height)
+            .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             .onTapGesture {
                 dismissKeyboard()

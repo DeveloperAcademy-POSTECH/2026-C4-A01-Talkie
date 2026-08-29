@@ -158,7 +158,7 @@ struct ScenarioDetailView: View {
 
     private var scriptLineList: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
+            LazyVStack(spacing: 24) {
                 ForEach(viewModel.sortedScriptLines) { scriptLine in
                     scriptLineRow(scriptLine)
                 }
@@ -171,47 +171,44 @@ struct ScenarioDetailView: View {
     private func scriptLineRow(_ scriptLine: ScenarioLineContent) -> some View {
         let isRecorded = scriptLine.audioSource != nil
 
-        return VStack(alignment: .leading, spacing: 24) {
-            RecordingStateBadgeView(
-                isRecording: false,
-                isRecorded: isRecorded
-            )
+        return ZStack(alignment: .bottomTrailing) {
+            VStack(alignment: .leading, spacing: 12) {
+                RecordingStateBadgeView(
+                    isRecording: false,
+                    isRecorded: isRecorded
+                )
 
-            HStack(alignment: .center, spacing: 14) {
                 Text(scriptLine.text)
                     .font(Font.pretendard(.regular, size: 16))
-                    .foregroundColor(.grey100)
+                    .foregroundColor(isRecorded ? Constants.textPrimary : Constants.textSecondary)
                     .lineSpacing(4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .topLeading)
+            }
+            .padding(.trailing, isRecorded ? 52 : 0)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-                if isRecorded {
-                    Button {
-                        viewModel.playSingleLine(scriptLine)
-                    } label: {
-                        Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(viewModel.isPlaying(scriptLine) ? .main500 : .grey100)
-                            .frame(width: 36, height: 36)
-                            .background(.grey900)
-                            .clipShape(Circle())
-                    }
-                    .accessibilityLabel("\(scriptLine.text) 재생")
-                    .accessibilityValue(viewModel.isPlaying(scriptLine) ? "재생 중" : "정지됨")
+            if isRecorded {
+                Button {
+                    viewModel.playSingleLine(scriptLine)
+                } label: {
+                    Image(systemName: viewModel.isPlaying(scriptLine) ? "pause.fill" : "play.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(viewModel.isPlaying(scriptLine) ? Constants.primaryNormal : .white)
+                        .frame(width: 36, height: 36)
+                        .background(Constants.surfaceButton)
+                        .clipShape(RoundedRectangle(cornerRadius: 70))
                 }
+                .buttonStyle(.plain)
+                .contentShape(Circle())
+                .accessibilityLabel("\(scriptLine.text) 재생")
+                .accessibilityValue(viewModel.isPlaying(scriptLine) ? "재생 중" : "정지됨")
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(viewModel.isPlaying(scriptLine) ? .main500.opacity(0.22) : .grey700)
-                .overlay {
-                    if viewModel.isPlaying(scriptLine) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(.main500.opacity(0.9), lineWidth: 1)
-                    }
-                }
+                .fill(Constants.grey700)
         )
     }
 
