@@ -6,7 +6,7 @@ ENV["DEVELOPER_DIR"] ||= "/Applications/Xcode.app/Contents/Developer"
 
 ROOT = File.expand_path("..", __dir__)
 PROJECT_PATH = File.join(ROOT, "Talkie", "Talkie.xcodeproj")
-APP_VERSION = ENV.fetch("TALKIE_APP_VERSION", "1.0")
+APP_VERSION = ENV.fetch("TALKIE_APP_VERSION", "1.0.1")
 APP_IDENTIFIER = ENV.fetch("TALKIE_APP_IDENTIFIER", "com.bk.spatial.talkie")
 WIDGET_IDENTIFIER = ENV.fetch("TALKIE_WIDGET_IDENTIFIER", "com.bk.spatial.talkie.Widget")
 DEVELOPMENT_TEAM = ENV.fetch("TALKIE_TEAM_ID", "F6NWQ49U3H")
@@ -184,6 +184,7 @@ platform :ios do
     UI.user_error!("Talkie app record was not found: #{APP_IDENTIFIER}") unless app
 
     platform = Spaceship::ConnectAPI::Platform::IOS
+    app.ensure_version!(APP_VERSION, platform: platform)
     version = app.get_edit_app_store_version(platform: platform)
     UI.user_error!("Talkie #{APP_VERSION} iOS version was not found") unless version&.version_string == APP_VERSION
 
