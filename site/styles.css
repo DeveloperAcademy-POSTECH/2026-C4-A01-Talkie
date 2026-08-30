@@ -90,6 +90,9 @@ nav a:hover, nav a[aria-current="page"] { color: var(--orange); }
 .support-contact h2, .faq > h2 { font-size: 28px; }
 .support-contact p { max-width: 660px; margin-top: 10px; }
 .support-contact .primary-button { flex: 0 0 auto; margin-top: 0; }
+.team-credit { padding: 66px 0; border-bottom: 1px solid var(--line); }
+.team-credit h2 { margin-top: 10px; font-size: 28px; }
+.team-credit p:last-child { margin-top: 12px; color: var(--ink); font-weight: 600; word-break: keep-all; }
 .faq { padding: 72px 0 112px; }
 .faq > h2 { margin-bottom: 26px; }
 .faq details { border-top: 1px solid var(--line); }
